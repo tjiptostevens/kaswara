@@ -6,6 +6,7 @@ export function useAuth() {
   const organisasi = useAuthStore((s) => s.organisasi)
   const loading = useAuthStore((s) => s.loading)
   const error = useAuthStore((s) => s.error)
+  const initialize = useAuthStore((s) => s.initialize)
   const login = useAuthStore((s) => s.login)
   const logout = useAuthStore((s) => s.logout)
   const clearError = useAuthStore((s) => s.clearError)
@@ -22,6 +23,7 @@ export function useAuth() {
     organisasi,
     loading,
     error,
+    initialize,
     login,
     logout,
     clearError,

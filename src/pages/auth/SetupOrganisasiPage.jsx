@@ -27,7 +27,7 @@ export default function SetupOrganisasiPage() {
     // Create organisasi
     const { data: org, error: orgError } = await supabase
       .from('organisasi')
-      .insert({ nama: form.nama, tipe: form.tipe, alamat: form.alamat })
+      .insert({ nama: form.nama, tipe: form.tipe, alamat: form.alamat, created_by: user.id })
       .select()
       .single()
 
