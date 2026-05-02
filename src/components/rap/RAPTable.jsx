@@ -1,0 +1,48 @@
+import React from 'react'
+import Table from '../ui/Table'
+import { formatRupiah, formatTanggalPendek } from '../../lib/formatters'
+
+/**
+ * @param {object} props
+ * @param {Array} props.data
+ * @param {boolean} props.loading
+ */
+export default function RAPTable({ data = [], loading }) {
+  const columns = [
+    { key: 'nama_item', label: 'Item Realisasi' },
+    {
+      key: 'jumlah_realisasi',
+      label: 'Jumlah',
+      render: (row) => (
+        <span className="font-mono font-medium text-charcoal">
+          {formatRupiah(row.jumlah_realisasi)}
+        </span>
+      ),
+    },
+    {
+      key: 'tanggal_realisasi',
+      label: 'Tanggal',
+      render: (row) => formatTanggalPendek(row.tanggal_realisasi),
+    },
+    { key: 'keterangan', label: 'Keterangan', render: (row) => row.keterangan || '—' },
+    {
+      key: 'foto',
+      label: 'Bukti',
+      render: (row) =>
+        row.rap_foto?.length ? (
+          <span className="text-xs text-brand">{row.rap_foto.length} foto</span>
+        ) : (
+          <span className="text-xs text-stone">—</span>
+        ),
+    },
+  ]
+
+  return (
+    <Table
+      columns={columns}
+      data={data}
+      loading={loading}
+      emptyText="Belum ada RAP"
+    />
+  )
+}
