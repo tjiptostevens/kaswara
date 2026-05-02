@@ -22,14 +22,13 @@ const useAnggotaStore = create((set) => ({
   },
 
   addAnggota: async (data) => {
-    const { data: result, error } = await supabase
-      .from('anggota_organisasi')
-      .insert(data)
-      .select()
-      .single()
+    const { data: result, error } = await supabase.functions.invoke('create-anggota-with-auth', {
+      body: data,
+    })
     if (error) return { error }
-    set((state) => ({ anggota: [...state.anggota, result] }))
-    return { data: result, error: null }
+    if (result?.error) return { error: { message: result.error } }
+    set((state) => ({ anggota: [...state.anggota, result.data] }))
+    return { data: result.data, error: null }
   },
 
   updateAnggota: async (id, updates) => {

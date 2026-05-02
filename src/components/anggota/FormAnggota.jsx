@@ -35,6 +35,21 @@ export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
         hint="Opsional"
         {...register('nomor_anggota')}
       />
+      <Input
+        label="Email"
+        type="email"
+        placeholder="contoh@email.com"
+        error={errors.email?.message}
+        {...register('email')}
+      />
+      <Input
+        label="Nomor HP"
+        type="tel"
+        placeholder="Contoh: 08123456789"
+        hint="Opsional"
+        error={errors.no_hp?.message}
+        {...register('no_hp')}
+      />
       <div className="flex flex-col gap-1">
         <label className="text-xs font-medium text-charcoal uppercase tracking-wide">
           Role

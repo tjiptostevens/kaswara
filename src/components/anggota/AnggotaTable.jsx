@@ -20,6 +20,20 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
     },
     { key: 'nama_lengkap', label: 'Nama Lengkap' },
     {
+      key: 'email',
+      label: 'Email',
+      render: (row) => (
+        <span className="text-xs text-stone">{row.email || '—'}</span>
+      ),
+    },
+    {
+      key: 'no_hp',
+      label: 'No. HP',
+      render: (row) => (
+        <span className="text-xs text-stone">{row.no_hp || '—'}</span>
+      ),
+    },
+    {
       key: 'role',
       label: 'Role',
       render: (row) => (
