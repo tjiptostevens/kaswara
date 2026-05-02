@@ -2,7 +2,7 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, ArrowLeftRight, Users, Wallet,
-  FileText, Receipt, BarChart2, Settings2, LogOut, X,
+  FileText, Receipt, BarChart2, Settings2, LogOut, X, Home,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
@@ -12,6 +12,7 @@ const navItems = [
   { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
   { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
   { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
+  { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
   { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
   { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
   { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },

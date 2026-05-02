@@ -10,3 +10,6 @@ export const anggotaSchema = z.object({
   }),
   aktif: z.boolean().default(true),
 })
+
+// Schema untuk edit — email tidak bisa diubah setelah undangan dikirim
+export const editAnggotaSchema = anggotaSchema.omit({ email: true })

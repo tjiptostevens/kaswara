@@ -9,10 +9,11 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 
 export default function AnggotaPage() {
-  const { isBendahara, organisasi } = useAuth()
+  const { isBendahara, isKetua, organisasi } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const { anggota, loading, addAnggota, updateAnggota, deleteAnggota } = useAnggota()
 
+  const canManage = isBendahara || isKetua
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
 
@@ -21,7 +22,7 @@ export default function AnggotaPage() {
     if (error) {
       showToast('Gagal menambah anggota: ' + error.message, 'error')
     } else {
-      showToast('Anggota berhasil ditambahkan!')
+      showToast('Undangan berhasil dikirim ke email anggota!')
       setModalOpen(false)
     }
   }
@@ -51,7 +52,7 @@ export default function AnggotaPage() {
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-[#0f3d32]">Manajemen Anggota</h2>
-          {isBendahara && (
+          {canManage && (
             <Button
               variant="primary"
               size="md"
@@ -68,7 +69,7 @@ export default function AnggotaPage() {
           loading={loading}
           onEdit={(row) => setEditing(row)}
           onDelete={handleDelete}
-          canManage={isBendahara}
+          canManage={canManage}
         />
       </div>
 

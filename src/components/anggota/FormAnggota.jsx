@@ -1,9 +1,10 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { anggotaSchema } from '../../schemas/anggotaSchema'
+import { anggotaSchema, editAnggotaSchema } from '../../schemas/anggotaSchema'
 import { Input, Button } from '../ui'
 import { ROLE_LABELS } from '../../constants/roles'
+import { Mail } from 'lucide-react'
 
 /**
  * @param {object} props
@@ -12,12 +13,13 @@ import { ROLE_LABELS } from '../../constants/roles'
  * @param {() => void} props.onCancel
  */
 export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
+  const isEdit = !!defaultValues
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(anggotaSchema),
+    resolver: zodResolver(isEdit ? editAnggotaSchema : anggotaSchema),
     defaultValues: defaultValues || { aktif: true, role: 'anggota' },
   })
 
@@ -35,13 +37,30 @@ export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
         hint="Opsional"
         {...register('nomor_anggota')}
       />
-      <Input
-        label="Email"
-        type="email"
-        placeholder="contoh@email.com"
-        error={errors.email?.message}
-        {...register('email')}
-      />
+      {isEdit ? (
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-medium text-charcoal uppercase tracking-wide">Email</p>
+          <p className="text-sm text-stone px-3 py-2 bg-warm rounded-input border border-border">
+            {defaultValues.email || '—'}
+          </p>
+          <p className="text-xs text-stone">Email tidak dapat diubah setelah undangan dikirim</p>
+        </div>
+      ) : (
+        <>
+          <Input
+            label="Email"
+            type="email"
+            placeholder="contoh@email.com"
+            error={errors.email?.message}
+            leftIcon={<Mail size={14} />}
+            {...register('email')}
+          />
+          <div className="flex items-start gap-2 bg-[#E1F5EE] text-[#0F6E56] rounded-input px-3 py-2 text-xs">
+            <Mail size={13} className="mt-0.5 flex-shrink-0" />
+            <span>Undangan akan dikirim ke email ini. Anggota menetapkan passwordnya sendiri saat menerima link undangan.</span>
+          </div>
+        </>
+      )}
       <Input
         label="Nomor HP"
         type="tel"
@@ -73,7 +92,7 @@ export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
           </Button>
         )}
         <Button type="submit" variant="primary" fullWidth loading={isSubmitting}>
-          {defaultValues ? 'Simpan perubahan' : 'Tambah anggota'}
+          {isEdit ? 'Simpan perubahan' : 'Kirim undangan'}
         </Button>
       </div>
     </form>

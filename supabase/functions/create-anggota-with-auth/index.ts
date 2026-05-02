@@ -1,6 +1,7 @@
 // supabase/functions/create-anggota-with-auth/index.ts
-// Edge Function: buat auth user + insert anggota_organisasi dalam satu transaksi.
+// Edge Function: kirim undangan (invite) ke anggota baru + insert anggota_organisasi.
 // Dijalankan server-side dengan service role key — kunci ini TIDAK pernah dikirim ke frontend.
+// Anggota baru menerima email undangan dari Supabase dan menetapkan password sendiri.
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -9,12 +10,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
-
-// Password default yang digunakan saat pertama kali akun dibuat.
-// CATATAN KEAMANAN: Anggota baru wajib mengganti password ini setelah login pertama.
-// Pertimbangkan menggunakan supabase.auth.admin.generateLink({ type: 'invite' })
-// agar Supabase mengirim email undangan sehingga anggota menetapkan password sendiri.
-const DEFAULT_PASSWORD = 'demo@demo1'
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -26,6 +21,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const siteUrl = Deno.env.get('SITE_URL') ?? supabaseUrl
 
     // Admin client (tidak pernah dikirim ke browser)
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
@@ -58,7 +54,7 @@ serve(async (req) => {
       })
     }
 
-    // Pastikan pemanggil adalah bendahara organisasi tersebut
+    // Hanya bendahara atau ketua yang boleh menambah anggota
     const { data: callerProfile } = await supabaseAdmin
       .from('anggota_organisasi')
       .select('role')
@@ -67,32 +63,37 @@ serve(async (req) => {
       .eq('aktif', true)
       .single()
 
-    if (!callerProfile || callerProfile.role !== 'bendahara') {
-      return new Response(JSON.stringify({ error: 'Forbidden: hanya bendahara yang bisa menambah anggota' }), {
+    if (!callerProfile || !['bendahara', 'ketua'].includes(callerProfile.role)) {
+      return new Response(JSON.stringify({ error: 'Forbidden: hanya bendahara atau ketua yang bisa menambah anggota' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Buat akun auth dengan password default (email langsung dikonfirmasi)
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    // Kirim undangan — Supabase membuat akun auth dan mengirim email invite ke anggota.
+    // Anggota akan menetapkan passwordnya sendiri saat menerima link undangan.
+    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'invite',
       email,
-      password: DEFAULT_PASSWORD,
-      email_confirm: true,
+      options: {
+        redirectTo: `${siteUrl}/login`,
+      },
     })
 
-    if (authError) {
-      return new Response(JSON.stringify({ error: authError.message }), {
+    if (inviteError) {
+      return new Response(JSON.stringify({ error: inviteError.message }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
+    const newUserId = inviteData.user.id
+
     // Insert record anggota
     const { data: anggota, error: anggotaError } = await supabaseAdmin
       .from('anggota_organisasi')
       .insert({
-        user_id: authData.user.id,
+        user_id: newUserId,
         organisasi_id,
         role,
         nama_lengkap,
@@ -106,7 +107,7 @@ serve(async (req) => {
 
     if (anggotaError) {
       // Rollback: hapus akun auth jika insert anggota gagal
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      await supabaseAdmin.auth.admin.deleteUser(newUserId)
       return new Response(JSON.stringify({ error: anggotaError.message }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
