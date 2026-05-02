@@ -4,6 +4,7 @@ export const ROUTES = {
   DASHBOARD: '/',
   TRANSAKSI: '/transaksi',
   ANGGOTA: '/anggota',
+  KELUARGA: '/keluarga',
   IURAN: '/iuran',
   RAB: '/rab',
   RAP: '/rap',

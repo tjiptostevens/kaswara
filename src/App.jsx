@@ -16,6 +16,7 @@ import IuranPage from './pages/IuranPage'
 import RABPage from './pages/RABPage'
 import RAPPage from './pages/RAPPage'
 import LaporanPage from './pages/LaporanPage'
+import KelargaPage from './pages/KelargaPage'
 import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
@@ -54,6 +55,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AnggotaPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.KELUARGA}
+          element={
+            <ProtectedRoute>
+              <KelargaPage />
             </ProtectedRoute>
           }
         />
