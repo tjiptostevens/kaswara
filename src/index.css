@@ -1,23 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
-    --color-brand:        #1a6b5a;
-    --color-brand-dark:   #0f3d32;
-    --color-brand-light:  #e8f5f1;
-    --color-accent:       #e8a020;
+    --color-brand: #1a6b5a;
+    --color-brand-dark: #0f3d32;
+    --color-brand-light: #e8f5f1;
+    --color-accent: #e8a020;
     --color-accent-light: #faeeda;
-    --color-danger:       #e24b4a;
-    --color-success:      #1D9E75;
-    --color-info:         #185FA5;
-    --color-warm:         #f8f7f3;
-    --color-charcoal:     #3d3d3a;
-    --color-stone:        #9b9b95;
-    --color-border:       #e5e4de;
+    --color-danger: #e24b4a;
+    --color-success: #1D9E75;
+    --color-info: #185FA5;
+    --color-warm: #f8f7f3;
+    --color-charcoal: #3d3d3a;
+    --color-stone: #9b9b95;
+    --color-border: #e5e4de;
   }
 
   html {
