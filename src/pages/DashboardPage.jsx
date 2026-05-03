@@ -4,6 +4,7 @@ import StatGrid from '../components/dashboard/StatGrid'
 import TransaksiRecent from '../components/dashboard/TransaksiRecent'
 import CashflowChart from '../components/dashboard/CashflowChart'
 import KategoriBreakdown from '../components/dashboard/KategoriBreakdown'
+import Skeleton from '../components/ui/Skeleton'
 import { useTransaksi } from '../hooks/useTransaksi'
 import { useSupabaseRealtime } from '../hooks/useSupabaseRealtime'
 import { useAuth } from '../hooks/useAuth'
@@ -30,22 +31,44 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <StatGrid
-          saldo={saldo}
-          totalPemasukan={totalPemasukan}
-          totalPengeluaran={totalPengeluaran}
-          periode={periode}
-        />
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={3} /></div>
+            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={3} /></div>
+            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={3} /></div>
+          </div>
+        ) : (
+          <StatGrid
+            saldo={saldo}
+            totalPemasukan={totalPemasukan}
+            totalPengeluaran={totalPengeluaran}
+            periode={periode}
+          />
+        )}
 
         {/* Cashflow chart */}
-        <CashflowChart transaksi={transaksi} />
+        {loading ? (
+          <div className="bg-white border border-border rounded-card p-4">
+            <Skeleton lines={6} />
+          </div>
+        ) : (
+          <CashflowChart transaksi={transaksi} />
+        )}
 
         {/* Category breakdown + Recent transactions side by side on large screens */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <KategoriBreakdown transaksi={transaksi} />
+          {loading ? (
+            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={5} /></div>
+          ) : (
+            <KategoriBreakdown transaksi={transaksi} />
+          )}
           <div>
             <h3 className="text-sm font-semibold text-[#0f3d32] mb-3">5 Transaksi Terakhir</h3>
-            <TransaksiRecent transaksi={transaksi} />
+            {loading ? (
+              <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={5} /></div>
+            ) : (
+              <TransaksiRecent transaksi={transaksi} />
+            )}
           </div>
         </div>
       </div>

@@ -20,42 +20,61 @@ const sizes = {
  * @param {'primary'|'secondary'|'accent'|'ghost'|'danger'} props.variant
  * @param {'sm'|'md'|'lg'} props.size
  * @param {boolean} props.loading
+ * @param {string} props.loadingText
  * @param {boolean} props.fullWidth
  * @param {React.ReactNode} props.icon
+ * @param {React.ReactNode} props.leftIcon
+ * @param {React.ReactNode} props.rightIcon
  */
 export default function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
+  loadingText,
   fullWidth = false,
   icon,
+  leftIcon,
+  rightIcon,
+  iconOnly = false,
   children,
   className = '',
   disabled,
+  type = 'button',
+  'aria-label': ariaLabel,
   ...props
 }) {
+  const resolvedLeftIcon = leftIcon ?? icon
+  const isDisabled = disabled || loading
+
   return (
     <button
       className={[
         'inline-flex items-center justify-center rounded-input font-medium',
-        'transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50',
+        'transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],
         fullWidth ? 'w-full' : '',
+        iconOnly ? 'aspect-square px-0' : '',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
-      disabled={disabled || loading}
+      type={type}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
+      aria-label={iconOnly ? ariaLabel : undefined}
       {...props}
     >
-      {loading ? (
-        <Loader2 size={size === 'sm' ? 14 : 16} className="animate-spin" />
-      ) : (
-        icon && <span className="flex-shrink-0">{icon}</span>
+      {loading && <Loader2 size={size === 'sm' ? 14 : 16} className="animate-spin" aria-hidden="true" />}
+      {!loading && resolvedLeftIcon && (
+        <span className="flex-shrink-0" aria-hidden="true">{resolvedLeftIcon}</span>
       )}
-      {children}
+      {children && <span>{loading && loadingText ? loadingText : children}</span>}
+      {!loading && rightIcon && (
+        <span className="flex-shrink-0" aria-hidden="true">{rightIcon}</span>
+      )}
     </button>
   )
 }

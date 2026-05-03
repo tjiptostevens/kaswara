@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { formatRupiah } from '../../lib/formatters'
+import EmptyState from '../ui/EmptyState'
 
 const TIPE_OPTIONS = [
   { value: 'pemasukan', label: 'Pemasukan', color: '#1a6b5a', bg: '#E1F5EE', text: 'text-success' },
@@ -41,11 +42,10 @@ export default function KategoriBreakdown({ transaksi = [] }) {
             <button
               key={opt.value}
               onClick={() => setActiveTipe(opt.value)}
-              className={`px-3 py-1.5 transition-colors ${
-                activeTipe === opt.value
+              className={`px-3 py-1.5 transition-colors ${activeTipe === opt.value
                   ? 'bg-[#0f3d32] text-white font-medium'
                   : 'text-stone hover:bg-warm'
-              }`}
+                }`}
             >
               {opt.label}
             </button>
@@ -54,9 +54,10 @@ export default function KategoriBreakdown({ transaksi = [] }) {
       </div>
 
       {breakdown.entries.length === 0 ? (
-        <p className="text-sm text-stone text-center py-6">
-          Belum ada data {cfg.label.toLowerCase()}
-        </p>
+        <EmptyState
+          title={`Belum ada data ${cfg.label.toLowerCase()}`}
+          description="Transaksi akan muncul setelah data tersedia"
+        />
       ) : (
         <div className="space-y-3">
           {breakdown.entries.map(({ nama, total }) => {

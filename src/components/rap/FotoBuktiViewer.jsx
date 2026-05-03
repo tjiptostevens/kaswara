@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { Camera, X } from 'lucide-react'
+import EmptyState from '../ui/EmptyState'
 
 /**
  * @param {object} props
@@ -17,10 +18,12 @@ export default function FotoBuktiViewer({ rapId, fotos = [] }) {
 
   if (fotos.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-stone text-sm py-4 border border-dashed border-border rounded-card">
-        <Camera size={18} className="mx-auto" />
-        <span className="mx-auto">Belum ada foto bukti</span>
-      </div>
+      <EmptyState
+        icon={<Camera size={22} />}
+        title="Belum ada foto bukti"
+        description="Unggah foto untuk melengkapi laporan RAP"
+        className="border-dashed"
+      />
     )
   }
 

@@ -58,9 +58,11 @@ export default function RAPTable({ data = [], loading, onView }) {
 
   return (
     <Table
+      caption="Daftar realisasi anggaran"
       columns={columns}
       data={data}
       loading={loading}
+      loadingText="Memuat data RAP..."
       emptyText="Belum ada RAP"
     />
   )

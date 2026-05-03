@@ -45,9 +45,8 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
       label: 'Kelola RAB',
       render: (row) => (
         <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${
-            row.can_manage_rab ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
-          }`}
+          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${row.can_manage_rab ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
+            }`}
         >
           {row.can_manage_rab ? 'Ya' : 'Tidak'}
         </span>
@@ -58,9 +57,8 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
       label: 'Setujui RAB',
       render: (row) => (
         <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${
-            row.can_approve_rab ? 'bg-[#E6F1FB] text-[#185FA5]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
-          }`}
+          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${row.can_approve_rab ? 'bg-[#E6F1FB] text-[#185FA5]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
+            }`}
         >
           {row.can_approve_rab ? 'Ya' : 'Tidak'}
         </span>
@@ -71,9 +69,8 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
       label: 'Status',
       render: (row) => (
         <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${
-            row.aktif ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
-          }`}
+          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${row.aktif ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
+            }`}
         >
           {row.aktif ? 'Aktif' : 'Nonaktif'}
         </span>
@@ -81,37 +78,39 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
     },
     ...(canManage
       ? [
-          {
-            key: 'actions',
-            label: '',
-            render: (row) => (
-              <div className="flex gap-1">
-                <button
-                  onClick={() => onEdit(row)}
-                  className="text-stone hover:text-brand transition-colors p-1"
-                  aria-label="Edit anggota"
-                >
-                  <Pencil size={15} />
-                </button>
-                <button
-                  onClick={() => onDelete(row.id)}
-                  className="text-stone hover:text-danger transition-colors p-1"
-                  aria-label="Hapus anggota"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            ),
-          },
-        ]
+        {
+          key: 'actions',
+          label: '',
+          render: (row) => (
+            <div className="flex gap-1">
+              <button
+                onClick={() => onEdit(row)}
+                className="text-stone hover:text-brand transition-colors p-1"
+                aria-label="Edit anggota"
+              >
+                <Pencil size={15} />
+              </button>
+              <button
+                onClick={() => onDelete(row.id)}
+                className="text-stone hover:text-danger transition-colors p-1"
+                aria-label="Hapus anggota"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ),
+        },
+      ]
       : []),
   ]
 
   return (
     <Table
+      caption="Daftar anggota organisasi"
       columns={columns}
       data={data}
       loading={loading}
+      loadingText="Memuat data anggota..."
       emptyText="Belum ada anggota"
     />
   )

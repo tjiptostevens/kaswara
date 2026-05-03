@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 import { CheckCheck, Trash2, BellOff } from 'lucide-react'
 import useNotifikasiStore from '../../stores/notifikasiStore'
+import EmptyState from '../ui/EmptyState'
 
 const TIPE_STYLE = {
   success: 'bg-[#e6f4f1] border-l-2 border-brand',
   warning: 'bg-[#FAEEDA] border-l-2 border-accent',
-  info:    'bg-[#F8F7F3] border-l-2 border-border',
+  info: 'bg-[#F8F7F3] border-l-2 border-border',
 }
 
 function formatRelative(iso) {
@@ -65,9 +66,12 @@ export default function NotifikasiDropdown({ onClose }) {
       {/* List */}
       <div className="max-h-80 overflow-y-auto">
         {notifikasi.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-10 text-stone">
-            <BellOff size={24} strokeWidth={1.5} />
-            <p className="text-sm">Tidak ada notifikasi</p>
+          <div className="p-3">
+            <EmptyState
+              icon={<BellOff size={24} strokeWidth={1.5} />}
+              title="Tidak ada notifikasi"
+              className="border-0 bg-transparent py-8"
+            />
           </div>
         ) : (
           notifikasi.map((n) => (

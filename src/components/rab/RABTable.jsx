@@ -47,9 +47,11 @@ export default function RABTable({ data = [], loading, onView }) {
 
   return (
     <Table
+      caption="Daftar rencana anggaran biaya"
       columns={columns}
       data={data}
       loading={loading}
+      loadingText="Memuat data RAB..."
       emptyText="Belum ada RAB"
     />
   )

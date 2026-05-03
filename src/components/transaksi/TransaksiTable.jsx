@@ -35,9 +35,8 @@ export default function TransaksiTable({ data = [], loading, onView, onDelete, c
       label: 'Jumlah',
       render: (row) => (
         <span
-          className={`font-mono font-medium ${
-            row.tipe === 'pemasukan' ? 'text-success' : 'text-danger'
-          }`}
+          className={`font-mono font-medium ${row.tipe === 'pemasukan' ? 'text-success' : 'text-danger'
+            }`}
         >
           {row.tipe === 'pemasukan' ? '+' : '-'}
           {formatRupiah(row.jumlah)}
@@ -85,9 +84,11 @@ export default function TransaksiTable({ data = [], loading, onView, onDelete, c
 
   return (
     <Table
+      caption="Daftar transaksi kas"
       columns={columns}
       data={data}
       loading={loading}
+      loadingText="Memuat transaksi..."
       emptyText="Belum ada transaksi"
     />
   )
