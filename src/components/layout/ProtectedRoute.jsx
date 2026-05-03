@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { ROUTES } from '../../constants/routes'
+import GlobalNotificationListener from '../notifications/GlobalNotificationListener'
 
 /**
  * Wraps routes that require authentication.
@@ -32,5 +33,10 @@ export default function ProtectedRoute({ children, requiredRoles }) {
     return <Navigate to={ROUTES.DASHBOARD} replace />
   }
 
-  return children
+  return (
+    <>
+      <GlobalNotificationListener />
+      {children}
+    </>
+  )
 }

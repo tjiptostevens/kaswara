@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/layout/ErrorBoundary'
 // Auth pages (no layout)
 import LoginPage from './pages/auth/LoginPage'
 import SetupOrganisasiPage from './pages/auth/SetupOrganisasiPage'
+import ToastProvider from './components/ui/ToastProvider'
 
 // Public page (no auth required)
 import PublikPage from './pages/PublikPage'
@@ -33,6 +34,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <ToastProvider />
       <BrowserRouter>
         <Routes>
           {/* Public routes */}

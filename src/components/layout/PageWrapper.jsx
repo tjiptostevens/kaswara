@@ -4,20 +4,7 @@ import Header from './Header'
 import useUIStore from '../../stores/uiStore'
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react'
 
-function Toast({ toast }) {
-  if (!toast) return null
-  const icons = {
-    success: <CheckCircle2 size={16} className="text-success flex-shrink-0" />,
-    error: <AlertCircle size={16} className="text-danger flex-shrink-0" />,
-    info: <Info size={16} className="text-info flex-shrink-0" />,
-  }
-  return (
-    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 glass-card !bg-white/80 rounded-card shadow-lg px-4 py-3 text-sm text-charcoal max-w-sm animate-fade-in border border-white/60">
-      {icons[toast.type] || icons.info}
-      {toast.message}
-    </div>
-  )
-}
+
 
 /**
  * @param {object} props
@@ -45,7 +32,7 @@ export default function PageWrapper({ title, children }) {
           </div>
         </main>
       </div>
-      <Toast toast={toast} />
+
     </div>
   )
 }

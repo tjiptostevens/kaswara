@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { toast as hotToast } from 'react-hot-toast'
 
 const useUIStore = create((set) => ({
   sidebarOpen: true,
@@ -13,10 +14,11 @@ const useUIStore = create((set) => ({
   closeModal: () => set({ modalOpen: false, modalContent: null }),
 
   showToast: (message, type = 'success') => {
-    set({ toast: { message, type } })
-    setTimeout(() => set({ toast: null }), 3500)
+    if (type === 'success') hotToast.success(message)
+    else if (type === 'error') hotToast.error(message)
+    else hotToast(message)
   },
-  clearToast: () => set({ toast: null }),
+  clearToast: () => hotToast.dismiss(),
 }))
 
 export default useUIStore

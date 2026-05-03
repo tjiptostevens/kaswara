@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '../ui'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 
 /**
  * @param {object} props
@@ -14,14 +15,26 @@ export default function ApprovalButtons({ rabId, onApprove, onReject }) {
 
   const handleApprove = async () => {
     setLoading('approve')
-    await onApprove(rabId, 'disetujui', catatan)
-    setLoading(null)
+    try {
+      await onApprove(rabId, 'disetujui', catatan)
+      toast.success('RAB berhasil disetujui')
+    } catch (error) {
+      toast.error('Gagal menyetujui RAB')
+    } finally {
+      setLoading(null)
+    }
   }
 
   const handleReject = async () => {
     setLoading('reject')
-    await onReject(rabId, 'ditolak', catatan)
-    setLoading(null)
+    try {
+      await onReject(rabId, 'ditolak', catatan)
+      toast.success('RAB berhasil ditolak')
+    } catch (error) {
+      toast.error('Gagal menolak RAB')
+    } finally {
+      setLoading(null)
+    }
   }
 
   return (
