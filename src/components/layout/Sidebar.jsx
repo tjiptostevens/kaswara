@@ -9,13 +9,25 @@ import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
 import { ROUTES } from '../../constants/routes'
 
-const navItems = [
+// Nav items shown in ORGANISASI workspace
+const orgNavItems = [
   { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
   { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
   { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
   { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
   { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
   { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
+  { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
+  { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
+  { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },
+]
+
+// Nav items shown in PERSONAL workspace
+const personalNavItems = [
+  { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
+  { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
+  { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
+  { to: ROUTES.KELUARGA, icon: Home, label: 'Data Keluarga' },
   { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
   { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
   { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },
@@ -45,15 +57,13 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
             {activeWorkspace?.nama || '—'}
           </p>
         </div>
-        {workspaces.length > 1 && (
-          <ChevronDown
-            size={14}
-            className={`text-white/40 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-          />
-        )}
+        <ChevronDown
+          size={14}
+          className={`text-white/40 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
       </button>
 
-      {open && workspaces.length > 1 && (
+      {open && (
         <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-[#0d3329] border border-white/10 rounded-lg shadow-lg overflow-hidden">
           {workspaces.map((ws) => {
             const active = ws.id === activeWorkspace?.id
@@ -90,17 +100,6 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
           </div>
         </div>
       )}
-      {open && workspaces.length === 1 && (
-        <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-[#0d3329] border border-white/10 rounded-lg shadow-lg overflow-hidden">
-          <NavLink
-            to={ROUTES.SETUP}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-3 py-2.5 text-white/50 hover:text-white text-xs hover:bg-white/5 transition-colors"
-          >
-            + Tambah / Bergabung Organisasi
-          </NavLink>
-        </div>
-      )}
 
       {/* Click-outside overlay */}
       {open && (
@@ -111,9 +110,11 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
 }
 
 export default function Sidebar() {
-  const { activeWorkspace, workspaces, switchWorkspace, logout } = useAuth()
+  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace } = useAuth()
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
+
+  const navItems = isPersonalWorkspace ? personalNavItems : orgNavItems
 
   return (
     <>
