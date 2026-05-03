@@ -27,7 +27,7 @@ export default function TransaksiPage() {
     const { error } = await addTransaksi({
       ...data,
       organisasi_id: organisasi.id,
-      dibuat_oleh_anggota_id: profile?.id,
+      dibuat_oleh_anggota_id: profile?.id ?? null,
     })
     if (error) {
       showToast('Gagal menyimpan transaksi: ' + error.message, 'error')
