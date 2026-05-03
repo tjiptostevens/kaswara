@@ -14,7 +14,7 @@ export function useRAB() {
     setError(null)
     const { data, error } = await supabase
       .from('rab')
-      .select('*, rab_item(*), anggota_organisasi!diajukan_oleh(nama_lengkap)')
+      .select('*, rab_item(*)')
       .eq('organisasi_id', activeWorkspace.id)
       .order('created_at', { ascending: false })
     setLoading(false)
@@ -24,9 +24,13 @@ export function useRAB() {
 
   const addRAB = async (data) => {
     const { items, ...rabData } = data
+    const total_anggaran = (items || []).reduce(
+      (sum, item) => sum + (Number(item.volume) || 0) * (Number(item.harga_satuan) || 0),
+      0
+    )
     const { data: result, error } = await supabase
       .from('rab')
-      .insert({ ...rabData, organisasi_id: activeWorkspace.id, status: 'draft', diajukan_oleh: user?.id })
+      .insert({ ...rabData, organisasi_id: activeWorkspace.id, status: 'draft', diajukan_oleh: user?.id, total_anggaran })
       .select()
       .single()
     if (error) return { error }
