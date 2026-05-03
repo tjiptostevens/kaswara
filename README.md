@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-18.x-61DAFB?logo=react" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-v4.2-38BDF8?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-v3.4-38BDF8?logo=tailwindcss" />
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase" />
   <img src="https://img.shields.io/badge/Vite-Build_Tool-646CFF?logo=vite" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
@@ -83,7 +83,7 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 | Layer | Teknologi | Keterangan |
 |---|---|---|
 | **Frontend** | React 18 + Vite | SPA, fast refresh |
-| **Styling** | Tailwind CSS v4.2 | Utility-first CSS |
+| **Styling** | Tailwind CSS v3.4 | Utility-first CSS |
 | **State Management** | Zustand | Lightweight, no boilerplate |
 | **Routing** | React Router v6 | Client-side routing |
 | **Form** | React Hook Form + Zod | Validasi form & schema |
@@ -242,22 +242,47 @@ Pilihan: JetBrains Mono, Fira Code, atau system monospace
 Fallback: 'Courier New', monospace
 ```
 
-#### Implementasi di Tailwind CSS v4
+#### Implementasi di Tailwind CSS v3
+
+```js
+// tailwind.config.js
+theme: {
+  extend: {
+    fontFamily: {
+      display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      body:    ['Lora', 'Georgia', 'serif'],
+      mono:    ['JetBrains Mono', 'Fira Code', 'monospace'],
+    },
+    colors: {
+      brand:  { DEFAULT: '#1a6b5a', dark: '#0f3d32', light: '#e8f5f1' },
+      accent: { DEFAULT: '#e8a020', light: '#faeeda' },
+    },
+  },
+},
+```
 
 ```css
 /* src/index.css */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
 
-@theme {
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body:    'Lora', Georgia, serif;
-  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  --color-brand:        #1a6b5a;
-  --color-brand-dark:   #0f3d32;
-  --color-brand-light:  #e8f5f1;
-  --color-accent:       #e8a020;
-  --color-accent-light: #faeeda;
+@layer base {
+  :root {
+    --color-brand:        #1a6b5a;
+    --color-brand-dark:   #0f3d32;
+    --color-brand-light:  #e8f5f1;
+    --color-accent:       #e8a020;
+    --color-accent-light: #faeeda;
+  }
+
+  html {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: #3d3d3a;
+    background-color: #f8f7f3;
+  }
 }
 ```
 
@@ -490,8 +515,10 @@ kaswara/
 │   │   │   └── ProtectedRoute.jsx
 │   │   ├── dashboard/
 │   │   │   ├── SaldoCard.jsx
+│   │   │   ├── StatGrid.jsx
 │   │   │   ├── TransaksiRecent.jsx
-│   │   │   └── StatGrid.jsx
+│   │   │   ├── CashflowChart.jsx
+│   │   │   └── KategoriBreakdown.jsx
 │   │   ├── transaksi/
 │   │   │   ├── FormTransaksi.jsx
 │   │   │   ├── TransaksiTable.jsx
@@ -505,10 +532,12 @@ kaswara/
 │   │   │   ├── RABTable.jsx
 │   │   │   ├── RABStatusFlow.jsx
 │   │   │   └── ApprovalButtons.jsx
-│   │   └── rap/
-│   │       ├── FormRAP.jsx
-│   │       ├── RAPTable.jsx
-│   │       └── FotoBuktiViewer.jsx
+│   │   ├── rap/
+│   │   │   ├── FormRAP.jsx
+│   │   │   ├── RAPTable.jsx
+│   │   │   └── FotoBuktiViewer.jsx
+│   │   └── kategori/
+│   │       └── FormKategori.jsx
 │   │
 │   ├── pages/
 │   │   ├── auth/
@@ -518,9 +547,11 @@ kaswara/
 │   │   ├── TransaksiPage.jsx
 │   │   ├── AnggotaPage.jsx
 │   │   ├── IuranPage.jsx
+│   │   ├── KelargaPage.jsx
 │   │   ├── RABPage.jsx
 │   │   ├── RAPPage.jsx
 │   │   ├── LaporanPage.jsx
+│   │   ├── KategoriPage.jsx
 │   │   └── SettingsPage.jsx
 │   │
 │   ├── stores/
@@ -560,7 +591,14 @@ kaswara/
 │   ├── migrations/
 │   │   ├── 001_create_tables.sql
 │   │   ├── 002_rls_policies.sql
-│   │   └── 003_seed_kategori.sql
+│   │   ├── 003_seed_kategori.sql
+│   │   ├── 004_fix_organisasi_rls.sql
+│   │   ├── 005_add_email_hp_to_anggota.sql
+│   │   ├── 006_ketua_manage_anggota.sql
+│   │   ├── 007_create_anggota_keluarga.sql
+│   │   ├── 008_personal_workspace.sql
+│   │   ├── 009_personal_rls.sql
+│   │   └── 010_can_manage_rab_and_transaksi_creator.sql
 │   └── functions/
 │       └── send-reminder/
 │
@@ -830,6 +868,13 @@ Masuk ke Supabase Dashboard → SQL Editor, jalankan berurutan:
 supabase/migrations/001_create_tables.sql
 supabase/migrations/002_rls_policies.sql
 supabase/migrations/003_seed_kategori.sql
+supabase/migrations/004_fix_organisasi_rls.sql
+supabase/migrations/005_add_email_hp_to_anggota.sql
+supabase/migrations/006_ketua_manage_anggota.sql
+supabase/migrations/007_create_anggota_keluarga.sql
+supabase/migrations/008_personal_workspace.sql
+supabase/migrations/009_personal_rls.sql
+supabase/migrations/010_can_manage_rab_and_transaksi_creator.sql
 ```
 
 Atau dengan Supabase CLI:
