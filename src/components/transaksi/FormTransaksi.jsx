@@ -76,7 +76,7 @@ export default function FormTransaksi({ kategori = [], onSubmit, onCancel }) {
           Kategori
         </label>
         <select
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
           {...register('kategori_id')}
         >
           <option value="">Pilih kategori</option>
@@ -99,7 +99,7 @@ export default function FormTransaksi({ kategori = [], onSubmit, onCancel }) {
         <textarea
           rows={2}
           placeholder="Keterangan opsional"
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal placeholder:text-stone focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand resize-none"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand resize-none transition-all"
           {...register('keterangan')}
         />
       </div>

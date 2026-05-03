@@ -8,7 +8,7 @@ import { TrendingUp, TrendingDown, Wallet, AlertCircle, Loader2 } from 'lucide-r
 
 function StatCard({ icon: Icon, label, amount, color }) {
   return (
-    <div className="bg-white border border-border rounded-card p-4 flex items-start gap-3">
+    <div className="glass-card p-5 flex items-start gap-4 transition-all duration-300 hover:-translate-y-1">
       <div className={`w-9 h-9 rounded-input flex items-center justify-center flex-shrink-0 ${color.bg}`}>
         <Icon size={18} className={color.text} strokeWidth={1.5} />
       </div>
@@ -59,7 +59,7 @@ function MiniChart({ transaksi }) {
   const barH = (v) => chartH * (v / maxVal)
 
   return (
-    <div className="bg-white border border-border rounded-card p-4">
+    <div className="glass-card p-5">
       <p className="text-xs font-semibold text-[#0f3d32] mb-3">Cashflow 6 Bulan Terakhir</p>
       <div className="flex items-center gap-4 text-xs text-stone mb-2">
         <span className="flex items-center gap-1">
@@ -171,9 +171,16 @@ export default function PublikPage() {
   }, [transaksi])
 
   return (
-    <div className="min-h-screen bg-warm">
+    <div className="min-h-screen bg-warm relative overflow-hidden">
+      {/* Decorative background ornaments */}
+      <div className="bg-ornament opacity-60">
+        <div className="bg-blob w-[60vw] h-[60vw] bg-brand/15 -top-[20vw] -left-[10vw]" />
+        <div className="bg-blob w-[50vw] h-[50vw] bg-accent/15 bottom-[10vw] -right-[10vw]" />
+        <div className="bg-blob w-[40vw] h-[40vw] bg-success/10 top-1/2 left-1/3 -translate-y-1/2" />
+      </div>
+
       {/* Navbar publik */}
-      <header className="bg-[#0f3d32] px-4 md:px-8 py-4 flex items-center justify-between">
+      <header className="glass-sidebar px-4 md:px-8 py-4 flex items-center justify-between border-b border-white/10 z-10 relative">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-[#1a6b5a] rounded-lg flex items-center justify-center flex-shrink-0">
             <svg viewBox="0 0 28 28" fill="none" width="16" height="16">
@@ -195,7 +202,7 @@ export default function PublikPage() {
         </span>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 relative z-10 animate-fade-in">
         {loading && (
           <div className="flex items-center justify-center py-20 text-stone gap-2">
             <Loader2 size={20} className="animate-spin" />
@@ -250,7 +257,7 @@ export default function PublikPage() {
             <MiniChart transaksi={transaksi} />
 
             {/* Transaksi table */}
-            <div className="bg-white border border-border rounded-card overflow-hidden">
+            <div className="glass-card overflow-hidden">
               <div className="px-4 py-3 border-b border-border">
                 <p className="text-sm font-semibold text-[#0f3d32]">Riwayat Transaksi</p>
                 <p className="text-xs text-stone mt-0.5">100 transaksi terbaru</p>

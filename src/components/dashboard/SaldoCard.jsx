@@ -36,16 +36,19 @@ export default function SaldoCard({ type, amount, periode }) {
   const cfg = configs[type] || configs.saldo
   const Icon = cfg.icon
   return (
-    <div className="bg-white border border-border rounded-card p-4 flex items-start gap-4">
-      <div className={`w-10 h-10 rounded-input flex items-center justify-center flex-shrink-0 ${cfg.iconBg}`}>
-        <Icon size={20} className={cfg.iconColor} strokeWidth={1.5} />
+    <div className="glass-card p-5 flex items-start gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${cfg.iconBg} border border-white/50`}>
+        <Icon size={24} className={cfg.iconColor} strokeWidth={2} />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-stone">{cfg.label}</p>
-        <p className={`text-xl font-bold font-mono mt-0.5 ${cfg.valueColor}`}>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-stone/80">{cfg.label}</p>
+        <p className={`text-2xl font-bold font-display mt-0.5 tracking-tight ${cfg.valueColor}`}>
           {formatRupiahShort(amount)}
         </p>
-        {periode && <p className="text-xs text-stone mt-1">{periode}</p>}
+        {periode && <p className="text-[10px] text-stone mt-1.5 font-medium flex items-center gap-1 opacity-70">
+          <span className="w-1 h-1 rounded-full bg-stone/40" />
+          {periode}
+        </p>}
       </div>
     </div>
   )

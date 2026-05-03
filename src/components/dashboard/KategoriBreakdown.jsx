@@ -33,7 +33,7 @@ export default function KategoriBreakdown({ transaksi = [] }) {
   }, [transaksi, activeTipe])
 
   return (
-    <div className="bg-white border border-border rounded-card p-4">
+    <div className="glass-card p-5 transition-all duration-300 hover:shadow-lg">
       {/* Header + toggle */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm font-semibold text-[#0f3d32]">Breakdown per Kategori</p>

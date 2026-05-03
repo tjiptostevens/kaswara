@@ -31,13 +31,13 @@ const Input = forwardRef(function Input(
   const describedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined
 
   const sharedClassName = [
-    'w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal',
-    'placeholder:text-stone',
-    'focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand',
+    'w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal',
+    'placeholder:text-stone/60 transition-all duration-200',
+    'focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand focus:bg-white',
     'disabled:bg-warm disabled:cursor-not-allowed',
-    error ? 'border-danger focus:ring-danger/40' : '',
-    leftIcon ? 'pl-9' : '',
-    rightIcon ? 'pr-9' : '',
+    error ? 'border-danger focus:ring-danger/30 focus:border-danger' : '',
+    leftIcon ? 'pl-10' : '',
+    rightIcon ? 'pr-10' : '',
     className,
   ]
     .filter(Boolean)
@@ -50,7 +50,7 @@ const Input = forwardRef(function Input(
       {label && (
         <label
           htmlFor={inputId}
-          className="text-xs font-medium text-charcoal uppercase tracking-wide"
+          className="text-[11px] font-bold text-stone uppercase tracking-widest"
         >
           {label}
         </label>

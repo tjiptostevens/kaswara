@@ -49,7 +49,7 @@ function FormKeluarga({ defaultValues, onSubmit, onCancel }) {
           Hubungan
         </label>
         <select
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
           {...register('hubungan')}
         >
           <option value="">Pilih hubungan</option>

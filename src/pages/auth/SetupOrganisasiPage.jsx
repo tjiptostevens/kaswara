@@ -12,9 +12,15 @@ export default function SetupOrganisasiPage() {
   const [tab, setTab] = useState('baru') // 'baru' | 'bergabung'
 
   return (
-    <div className="min-h-screen bg-warm flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+    <div className="min-h-screen bg-warm flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background ornaments */}
+      <div className="bg-ornament opacity-60">
+        <div className="bg-blob w-[60vw] h-[60vw] bg-brand/15 -top-[20vw] -left-[10vw]" />
+        <div className="bg-blob w-[50vw] h-[50vw] bg-accent/15 bottom-[10vw] -right-[10vw]" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
+        <div className="glass-card p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-[#0f3d32] mb-1">Tambah Organisasi</h2>
           <p className="text-sm text-stone mb-5">
             Buat organisasi baru atau bergabung ke organisasi yang sudah ada.
@@ -30,10 +36,10 @@ export default function SetupOrganisasiPage() {
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
-                className={`flex-1 py-2 font-medium transition-colors ${
+                className={`flex-1 py-2.5 font-medium transition-all ${
                   tab === key
-                    ? 'bg-brand text-white'
-                    : 'bg-white text-stone hover:text-charcoal'
+                    ? 'bg-brand/90 backdrop-blur text-white shadow-md'
+                    : 'bg-white/40 text-stone hover:text-charcoal hover:bg-white/60'
                 }`}
               >
                 {label}

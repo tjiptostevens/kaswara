@@ -10,7 +10,7 @@ import { Search } from 'lucide-react'
  */
 export default function FilterTransaksi({ filters, onChange, kategori = [] }) {
   return (
-    <div className="flex flex-wrap gap-3 items-end">
+    <div className="glass-card p-5 flex flex-wrap gap-4 items-end">
       <div className="flex-1 min-w-[160px]">
         <Input
           label="Dari Tanggal"
@@ -27,28 +27,28 @@ export default function FilterTransaksi({ filters, onChange, kategori = [] }) {
           onChange={(e) => onChange('sampai', e.target.value)}
         />
       </div>
-      <div className="flex-1 min-w-[140px] flex flex-col gap-1">
-        <label className="text-xs font-medium text-charcoal uppercase tracking-wide">
+      <div className="flex-1 min-w-[140px] flex flex-col gap-1.5">
+        <label className="text-[11px] font-bold text-stone uppercase tracking-widest">
           Tipe
         </label>
         <select
           value={filters.tipe || ''}
           onChange={(e) => onChange('tipe', e.target.value)}
-          className="rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+          className="rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
         >
           <option value="">Semua tipe</option>
           <option value="pemasukan">Pemasukan</option>
           <option value="pengeluaran">Pengeluaran</option>
         </select>
       </div>
-      <div className="flex-1 min-w-[140px] flex flex-col gap-1">
-        <label className="text-xs font-medium text-charcoal uppercase tracking-wide">
+      <div className="flex-1 min-w-[140px] flex flex-col gap-1.5">
+        <label className="text-[11px] font-bold text-stone uppercase tracking-widest">
           Kategori
         </label>
         <select
           value={filters.kategoriId || ''}
           onChange={(e) => onChange('kategoriId', e.target.value)}
-          className="rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+          className="rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
         >
           <option value="">Semua kategori</option>
           {kategori.map((k) => (

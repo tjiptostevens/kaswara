@@ -17,7 +17,7 @@ export default function EmptyState({
     return (
         <div
             className={[
-                'rounded-card border border-dashed border-border bg-white px-4 py-8 text-center',
+                'glass-card !bg-white/40 px-4 py-8 text-center',
                 className,
             ]
                 .filter(Boolean)

@@ -11,9 +11,9 @@ export default function TransaksiRecent({ transaksi = [] }) {
   const recent = transaksi.slice(0, 5)
 
   return (
-    <div className="bg-white border border-border rounded-card overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold text-[#0f3d32]">Transaksi Terbaru</h3>
+    <div className="glass-card overflow-hidden transition-all duration-300 hover:shadow-lg">
+      <div className="px-5 py-4 border-b border-white/20 bg-white/30">
+        <h3 className="text-sm font-bold text-brand-dark tracking-tight">Transaksi Terbaru</h3>
       </div>
       {recent.length === 0 ? (
         <div className="p-4">
@@ -23,9 +23,9 @@ export default function TransaksiRecent({ transaksi = [] }) {
           />
         </div>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="divide-y divide-white/20 bg-white/20">
           {recent.map((t) => (
-            <li key={t.id} className="flex items-center gap-3 px-4 py-3">
+            <li key={t.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/30 transition-colors">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${t.tipe === 'pemasukan' ? 'bg-[#E1F5EE]' : 'bg-[#FCEBEB]'
                   }`}

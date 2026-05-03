@@ -26,8 +26,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-warm flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-warm flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background ornaments */}
+      <div className="bg-ornament opacity-60">
+        <div className="bg-blob w-[60vw] h-[60vw] bg-brand/15 -top-[20vw] -left-[10vw]" />
+        <div className="bg-blob w-[50vw] h-[50vw] bg-accent/15 bottom-[10vw] -right-[10vw]" />
+      </div>
+
+      <div className="w-full max-w-sm relative z-10 animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
           <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center">
@@ -47,7 +53,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+        <div className="glass-card p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-[#0f3d32] mb-1">Masuk ke akun</h2>
           <p className="text-sm text-stone mb-6">
             Kelola keuangan kas RT/RW dengan mudah dan transparan.

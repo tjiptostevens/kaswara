@@ -33,9 +33,9 @@ export default function DashboardPage() {
         {/* Stats */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={3} /></div>
-            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={3} /></div>
-            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={3} /></div>
+            <div className="glass-card p-5"><Skeleton lines={3} /></div>
+            <div className="glass-card p-5"><Skeleton lines={3} /></div>
+            <div className="glass-card p-5"><Skeleton lines={3} /></div>
           </div>
         ) : (
           <StatGrid
@@ -48,7 +48,7 @@ export default function DashboardPage() {
 
         {/* Cashflow chart */}
         {loading ? (
-          <div className="bg-white border border-border rounded-card p-4">
+          <div className="glass-card p-5">
             <Skeleton lines={6} />
           </div>
         ) : (
@@ -58,14 +58,14 @@ export default function DashboardPage() {
         {/* Category breakdown + Recent transactions side by side on large screens */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {loading ? (
-            <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={5} /></div>
+            <div className="glass-card p-5"><Skeleton lines={5} /></div>
           ) : (
             <KategoriBreakdown transaksi={transaksi} />
           )}
           <div>
-            <h3 className="text-sm font-semibold text-[#0f3d32] mb-3">5 Transaksi Terakhir</h3>
+            <h3 className="text-sm font-bold text-brand-dark mb-3 tracking-tight">5 Transaksi Terakhir</h3>
             {loading ? (
-              <div className="bg-white border border-border rounded-card p-4"><Skeleton lines={5} /></div>
+              <div className="glass-card p-5"><Skeleton lines={5} /></div>
             ) : (
               <TransaksiRecent transaksi={transaksi} />
             )}

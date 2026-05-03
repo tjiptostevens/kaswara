@@ -168,7 +168,7 @@ export default function KategoriPage() {
 
         {/* Empty state with seed option */}
         {!loading && kategori.length === 0 && isBendahara && (
-          <div className="bg-white border border-border rounded-card p-6 text-center space-y-3">
+          <div className="glass-card p-6 text-center space-y-3">
             <p className="text-sm text-stone">Belum ada kategori. Mulai dengan kategori default?</p>
             <Button variant="ghost" size="sm" onClick={handleSeedDefaults}>
               Muat Kategori Default

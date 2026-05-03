@@ -59,7 +59,7 @@ export default function FormRAP({ rabList = [], onSubmit, onCancel }) {
           RAB Terkait
         </label>
         <select
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
           {...register('rab_id')}
         >
           <option value="">Pilih RAB</option>
@@ -94,7 +94,7 @@ export default function FormRAP({ rabList = [], onSubmit, onCancel }) {
         <textarea
           rows={2}
           placeholder="Opsional"
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal placeholder:text-stone focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand resize-none"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand resize-none transition-all"
           {...register('keterangan')}
         />
       </div>
@@ -133,7 +133,7 @@ export default function FormRAP({ rabList = [], onSubmit, onCancel }) {
                 <button
                   type="button"
                   onClick={() => removeFile(idx)}
-                  className="absolute -top-1.5 -right-1.5 bg-white border border-border rounded-full p-0.5 text-stone hover:text-danger transition-colors"
+                  className="absolute -top-1.5 -right-1.5 bg-white/80 backdrop-blur-sm border border-border rounded-full p-0.5 text-stone hover:text-danger transition-colors"
                 >
                   <X size={11} />
                 </button>

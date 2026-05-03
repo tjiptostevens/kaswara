@@ -56,8 +56,14 @@ export class ErrorBoundary extends React.Component {
  */
 function ErrorFallback({ error, onReset }) {
     return (
-        <div className="min-h-screen bg-warm flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white rounded-card border border-border p-6 text-center">
+        <div className="min-h-screen bg-warm relative overflow-hidden flex items-center justify-center p-4">
+            {/* Decorative background ornaments */}
+            <div className="bg-ornament opacity-60">
+                <div className="bg-blob w-[60vw] h-[60vw] bg-brand/15 -top-[20vw] -left-[10vw]" />
+                <div className="bg-blob w-[50vw] h-[50vw] bg-accent/15 bottom-[10vw] -right-[10vw]" />
+            </div>
+
+            <div className="max-w-md w-full glass-card p-6 text-center relative z-10 animate-fade-in">
                 <div className="flex justify-center mb-4">
                     <div className="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
                         <AlertCircle size={24} className="text-danger" />

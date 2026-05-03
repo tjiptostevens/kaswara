@@ -185,8 +185,8 @@ export default function TransaksiPage() {
             </div>
 
             {/* User History */}
-            <div className="bg-[#F8F7F3] rounded-input px-3 py-2 space-y-1 text-xs text-stone">
-              <p className="font-medium text-charcoal uppercase tracking-wide text-xs mb-1">Riwayat</p>
+            <div className="bg-brand-light/50 border border-brand/5 rounded-input px-4 py-3 space-y-1 text-xs text-stone">
+              <p className="font-bold text-brand-dark uppercase tracking-widest text-[9px] mb-2 opacity-60">Riwayat Transaksi</p>
               {detail.dibuat_oleh && (
                 <p>Dibuat oleh: <span className="text-charcoal">{detail.anggota_organisasi?.nama_lengkap || detail.dibuat_oleh}</span></p>
               )}

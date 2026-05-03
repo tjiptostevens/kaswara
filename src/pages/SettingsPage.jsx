@@ -73,7 +73,7 @@ export default function SettingsPage() {
         <h2 className="text-lg font-bold text-[#0f3d32]">Pengaturan</h2>
 
         {/* Org settings */}
-        <div className="bg-white border border-border rounded-card p-5">
+        <div className="glass-card p-5">
           <h3 className="text-sm font-semibold text-[#0f3d32] mb-4">Informasi Organisasi</h3>
           <form onSubmit={handleSaveOrg} className="space-y-4">
             <Input
@@ -100,7 +100,7 @@ export default function SettingsPage() {
 
         {/* Kode organisasi — hanya untuk workspace non-personal */}
         {!isPersonalWorkspace && organisasi?.id && (
-          <div className="bg-white border border-border rounded-card p-5">
+          <div className="glass-card p-5">
             <h3 className="text-sm font-semibold text-[#0f3d32] mb-1">Kode Undangan Organisasi</h3>
             <p className="text-xs text-stone mb-3">
               Bagikan kode ini ke calon anggota agar mereka bisa bergabung melalui menu "Tambah Organisasi → Bergabung dengan Kode".
@@ -126,7 +126,7 @@ export default function SettingsPage() {
 
         {/* Halaman publik transparansi — hanya untuk workspace non-personal */}
         {!isPersonalWorkspace && organisasi?.id && (
-          <div className="bg-white border border-border rounded-card p-5 space-y-4">
+          <div className="glass-card p-5 space-y-4">
             <div>
               <h3 className="text-sm font-semibold text-[#0f3d32] mb-1">Halaman Transparansi Publik</h3>
               <p className="text-xs text-stone">
@@ -191,7 +191,7 @@ export default function SettingsPage() {
 
         {/* Profile info */}
         {profile && (
-          <div className="bg-white border border-border rounded-card p-5">
+          <div className="glass-card p-5">
             <h3 className="text-sm font-semibold text-[#0f3d32] mb-4">Profil Anda</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

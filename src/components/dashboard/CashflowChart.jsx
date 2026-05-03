@@ -70,7 +70,7 @@ export default function CashflowChart({ transaksi = [] }) {
 
   if (!hasAnyData) {
     return (
-      <div className="bg-white border border-border rounded-card p-4">
+      <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-[#0f3d32]">Cashflow</p>
           <ModeControls mode={mode} setMode={setMode} tahun={tahun} setTahun={setTahun} />
@@ -109,7 +109,7 @@ export default function CashflowChart({ transaksi = [] }) {
   const yLabels = [0, Math.round(maxBar / 2), maxBar]
 
   return (
-    <div className="bg-white border border-border rounded-card p-4">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-[#0f3d32]">Cashflow</p>
         <div className="flex items-center gap-3 flex-wrap justify-end">

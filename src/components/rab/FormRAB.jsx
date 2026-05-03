@@ -44,7 +44,7 @@ export default function FormRAB({ onSubmit, onCancel }) {
         <textarea
           rows={2}
           placeholder="Opsional"
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal placeholder:text-stone focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand resize-none"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand resize-none transition-all"
           {...register('deskripsi')}
         />
       </div>
@@ -83,7 +83,7 @@ export default function FormRAB({ onSubmit, onCancel }) {
               <div className="flex-1">
                 <input
                   placeholder="Nama item"
-                  className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal placeholder:text-stone focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+                  className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   {...register(`items.${idx}.nama_item`)}
                 />
               </div>
@@ -92,14 +92,14 @@ export default function FormRAB({ onSubmit, onCancel }) {
                   type="number"
                   placeholder="Vol."
                   min="0"
-                  className="w-full rounded-input border border-border bg-white px-2 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+                  className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-2 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   {...register(`items.${idx}.volume`, { valueAsNumber: true })}
                 />
               </div>
               <div className="w-20">
                 <input
                   placeholder="Satuan"
-                  className="w-full rounded-input border border-border bg-white px-2 py-2 text-sm text-charcoal placeholder:text-stone focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+                  className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-2 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   {...register(`items.${idx}.satuan`)}
                 />
               </div>
@@ -108,7 +108,7 @@ export default function FormRAB({ onSubmit, onCancel }) {
                   type="number"
                   placeholder="Harga/satuan"
                   min="0"
-                  className="w-full rounded-input border border-border bg-white px-2 py-2 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+                  className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-2 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   {...register(`items.${idx}.harga_satuan`, { valueAsNumber: true })}
                 />
               </div>

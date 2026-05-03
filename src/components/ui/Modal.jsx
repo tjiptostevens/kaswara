@@ -67,13 +67,13 @@ export default function Modal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-md transition-opacity duration-300"
         onClick={handleBackdropClick}
       />
       {/* Panel */}
       <div
         ref={panelRef}
-        className={`relative w-full ${widths[size]} max-h-[90vh] overflow-hidden bg-white rounded-modal shadow-xl`}
+        className={`relative w-full ${widths[size]} max-h-[90vh] overflow-hidden glass-card !bg-white/80 rounded-modal shadow-2xl animate-fade-in`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}

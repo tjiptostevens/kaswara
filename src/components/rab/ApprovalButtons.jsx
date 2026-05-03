@@ -35,7 +35,7 @@ export default function ApprovalButtons({ rabId, onApprove, onReject }) {
           value={catatan}
           onChange={(e) => setCatatan(e.target.value)}
           placeholder="Tambahkan catatan persetujuan atau penolakan..."
-          className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm text-charcoal placeholder:text-stone focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand resize-none"
+          className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand resize-none transition-all"
         />
       </div>
       <div className="flex gap-3">

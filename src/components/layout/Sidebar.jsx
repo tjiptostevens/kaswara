@@ -64,7 +64,7 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
       </button>
 
       {open && (
-        <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-[#0d3329] border border-white/10 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-[#0d3329]/95 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden animate-fade-in">
           {workspaces.map((ws) => {
             const active = ws.id === activeWorkspace?.id
             const personal = ws.tipe === 'personal'
@@ -132,7 +132,7 @@ export default function Sidebar() {
 
       <aside
         className={[
-          'fixed top-0 left-0 z-30 h-screen w-60 bg-[#0f3d32] flex flex-col',
+          'fixed top-0 left-0 z-30 h-screen w-60 glass-sidebar flex flex-col',
           'transition-transform duration-200 ease-in-out',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           'lg:translate-x-0 lg:static lg:z-auto',
@@ -180,9 +180,9 @@ export default function Sidebar() {
               end={to === ROUTES.DASHBOARD}
               className={({ isActive }) =>
                 [
-                  'flex items-center gap-3 px-5 py-2.5 text-sm transition-colors',
+                  'flex items-center gap-3 px-5 py-2.5 text-sm transition-all duration-200 rounded-lg mx-2 my-0.5',
                   isActive
-                    ? 'bg-brand/30 text-white font-medium'
+                    ? 'bg-white/10 text-white font-semibold shadow-sm ring-1 ring-white/20'
                     : 'text-white/60 hover:text-white hover:bg-white/5',
                 ].join(' ')
               }

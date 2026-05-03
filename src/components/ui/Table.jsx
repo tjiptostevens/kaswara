@@ -24,11 +24,11 @@ export default function Table({
   const hasColumns = columns.length > 0
 
   return (
-    <div className="overflow-x-auto rounded-card border border-border" aria-live="polite">
+    <div className="overflow-x-auto glass-card rounded-card border-none" aria-live="polite">
       <table className="w-full text-sm" aria-busy={loading}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
-          <tr className="bg-warm border-b border-border">
+          <tr className="bg-brand/5 border-b border-brand/10">
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -40,7 +40,7 @@ export default function Table({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border bg-white">
+        <tbody className="divide-y divide-border/40 bg-white/30">
           {loading ? (
             <tr>
               <td colSpan={Math.max(columns.length, 1)} className="py-10 text-center text-stone">
@@ -79,7 +79,7 @@ export default function Table({
             </tr>
           ) : (
             data.map((row, idx) => (
-              <tr key={row?.[rowKey] ?? row.id ?? idx} className="hover:bg-warm/50 transition-colors">
+              <tr key={row?.[rowKey] ?? row.id ?? idx} className="hover:bg-white/40 transition-colors duration-150">
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-3 text-charcoal">
                     {col.render ? col.render(row) : row[col.key]}
