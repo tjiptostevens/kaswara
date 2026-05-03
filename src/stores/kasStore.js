@@ -14,7 +14,7 @@ const useKasStore = create((set, get) => ({
     set({ loading: true, error: null })
     let query = supabase
       .from('transaksi')
-      .select('*, kategori_transaksi(nama, tipe)')
+      .select('*, kategori_transaksi(nama, tipe), anggota_organisasi(nama_lengkap)')
       .eq('organisasi_id', organisasiId)
       .order('tanggal', { ascending: false })
 

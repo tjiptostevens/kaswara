@@ -12,7 +12,7 @@ import useUIStore from '../stores/uiStore'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 
 export default function RABPage() {
-  const { isBendahara, isKetua } = useAuth()
+  const { isBendahara, isKetua, canManageRAB } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const { rab, loading, addRAB, updateStatus } = useRAB()
 
@@ -54,7 +54,7 @@ export default function RABPage() {
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-[#0f3d32]">Rencana Anggaran Biaya</h2>
-          {isBendahara && (
+          {canManageRAB && (
             <Button
               variant="primary"
               size="md"
@@ -125,7 +125,7 @@ export default function RABPage() {
               </div>
             )}
             {/* Actions */}
-            {isBendahara && detail.status === 'draft' && (
+            {canManageRAB && detail.status === 'draft' && (
               <Button variant="accent" fullWidth onClick={() => handleSubmitRAB(detail.id)}>
                 Ajukan RAB
               </Button>

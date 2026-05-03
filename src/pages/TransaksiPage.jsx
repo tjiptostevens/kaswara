@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 
 export default function TransaksiPage() {
-  const { isBendahara, organisasi } = useAuth()
+  const { isBendahara, organisasi, profile } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const [modalOpen, setModalOpen] = useState(false)
   const [filters, setFilters] = useState({})
@@ -27,6 +27,7 @@ export default function TransaksiPage() {
     const { error } = await addTransaksi({
       ...data,
       organisasi_id: organisasi.id,
+      dibuat_oleh_anggota_id: profile?.id ?? null,
     })
     if (error) {
       showToast('Gagal menyimpan transaksi: ' + error.message, 'error')

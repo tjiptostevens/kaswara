@@ -41,6 +41,19 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
       ),
     },
     {
+      key: 'can_manage_rab',
+      label: 'Kelola RAB',
+      render: (row) => (
+        <span
+          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${
+            row.can_manage_rab ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
+          }`}
+        >
+          {row.can_manage_rab ? 'Ya' : 'Tidak'}
+        </span>
+      ),
+    },
+    {
       key: 'aktif',
       label: 'Status',
       render: (row) => (

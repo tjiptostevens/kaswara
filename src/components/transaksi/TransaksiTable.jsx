@@ -43,6 +43,13 @@ export default function TransaksiTable({ data = [], loading, onDelete, canDelete
         </span>
       ),
     },
+    {
+      key: 'dibuat_oleh',
+      label: 'Dibuat Oleh',
+      render: (row) => (
+        <span className="text-xs text-stone">{row.anggota_organisasi?.nama_lengkap || '—'}</span>
+      ),
+    },
     ...(canDelete
       ? [
           {
