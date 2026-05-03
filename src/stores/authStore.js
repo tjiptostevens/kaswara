@@ -1,10 +1,14 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 
+const ACTIVE_WORKSPACE_KEY = 'kaswara_active_workspace_id'
+
 const useAuthStore = create((set, get) => ({
   user: null,
-  profile: null,        // anggota_organisasi row
-  organisasi: null,     // organisasi row
+  profile: null,           // anggota_organisasi row for active workspace
+  organisasi: null,        // alias: active workspace's organisasi row (backward compat)
+  workspaces: [],          // all { membership, organisasi } for this user
+  activeWorkspace: null,   // organisasi row of currently active workspace
   loading: true,
   error: null,
 
@@ -16,36 +20,77 @@ const useAuthStore = create((set, get) => ({
     if (session?.user) {
       await get().fetchProfile(session.user)
     } else {
-      set({ user: null, profile: null, organisasi: null, loading: false })
+      set({ user: null, profile: null, organisasi: null, workspaces: [], activeWorkspace: null, loading: false })
     }
 
     supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         await get().fetchProfile(session.user)
       } else {
-        set({ user: null, profile: null, organisasi: null, loading: false })
+        set({ user: null, profile: null, organisasi: null, workspaces: [], activeWorkspace: null, loading: false })
       }
     })
   },
 
   fetchProfile: async (user) => {
     set({ user, loading: true })
-    const { data: profile } = await supabase
+
+    // Fetch ALL memberships for this user
+    const { data: memberships } = await supabase
       .from('anggota_organisasi')
       .select('*, organisasi(*)')
       .eq('user_id', user.id)
       .eq('aktif', true)
-      .single()
 
-    if (profile) {
-      set({
-        profile,
-        organisasi: profile.organisasi,
-        loading: false,
-      })
-    } else {
-      set({ profile: null, organisasi: null, loading: false })
+    if (!memberships || memberships.length === 0) {
+      set({ profile: null, organisasi: null, workspaces: [], activeWorkspace: null, loading: false })
+      return
     }
+
+    const workspaces = memberships.map((m) => m.organisasi)
+
+    // Determine which workspace to activate
+    const savedId = localStorage.getItem(ACTIVE_WORKSPACE_KEY)
+    const saved = savedId ? workspaces.find((w) => w.id === savedId) : null
+    // Prefer saved, then personal, then first
+    const personal = workspaces.find((w) => w.tipe === 'personal')
+    const activeWorkspace = saved || personal || workspaces[0]
+
+    const profile = memberships.find((m) => m.organisasi_id === activeWorkspace.id)
+
+    set({
+      profile,
+      organisasi: activeWorkspace,
+      workspaces,
+      activeWorkspace,
+      loading: false,
+    })
+  },
+
+  switchWorkspace: (orgId) => {
+    const { workspaces, user } = get()
+    const next = workspaces.find((w) => w.id === orgId)
+    if (!next) return
+
+    // Fetch fresh membership for this workspace from already-loaded data
+    // (we re-use what's in workspaces; profile comes from anggota_organisasi)
+    supabase
+      .from('anggota_organisasi')
+      .select('*, organisasi(*)')
+      .eq('user_id', user.id)
+      .eq('organisasi_id', orgId)
+      .eq('aktif', true)
+      .single()
+      .then(({ data: membership }) => {
+        if (membership) {
+          localStorage.setItem(ACTIVE_WORKSPACE_KEY, orgId)
+          set({
+            profile: membership,
+            organisasi: next,
+            activeWorkspace: next,
+          })
+        }
+      })
   },
 
   login: async (email, password) => {
@@ -59,8 +104,9 @@ const useAuthStore = create((set, get) => ({
   },
 
   logout: async () => {
+    localStorage.removeItem(ACTIVE_WORKSPACE_KEY)
     await supabase.auth.signOut()
-    set({ user: null, profile: null, organisasi: null })
+    set({ user: null, profile: null, organisasi: null, workspaces: [], activeWorkspace: null })
   },
 
   clearError: () => set({ error: null }),
