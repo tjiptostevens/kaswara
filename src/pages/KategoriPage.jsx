@@ -8,7 +8,7 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
-import { DEFAULT_KATEGORI } from '../constants/kategori'
+import { DEFAULT_KATEGORI, DEFAULT_KATEGORI_PERSONAL } from '../constants/kategori'
 
 const TIPE_LABELS = {
   pemasukan: 'Pemasukan',
@@ -23,7 +23,7 @@ const TIPE_BADGE_CLASS = {
 }
 
 export default function KategoriPage() {
-  const { activeWorkspace, isBendahara } = useAuth()
+  const { activeWorkspace, isBendahara, isPersonalWorkspace } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
 
   const [kategori, setKategori] = useState([])
@@ -49,7 +49,8 @@ export default function KategoriPage() {
 
   // Seed default kategori if workspace has none
   const handleSeedDefaults = async () => {
-    const rows = DEFAULT_KATEGORI.map((k) => ({
+    const defaults = isPersonalWorkspace ? DEFAULT_KATEGORI_PERSONAL : DEFAULT_KATEGORI
+    const rows = defaults.map((k) => ({
       ...k,
       organisasi_id: activeWorkspace.id,
     }))
