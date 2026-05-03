@@ -5,13 +5,15 @@ import Button from '../components/ui/Button'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
+import { Copy, Check } from 'lucide-react'
 
 export default function SettingsPage() {
-  const { organisasi, profile } = useAuth()
+  const { organisasi, profile, isPersonalWorkspace } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const [orgName, setOrgName] = useState(organisasi?.nama || '')
   const [orgAlamat, setOrgAlamat] = useState(organisasi?.alamat || '')
   const [saving, setSaving] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleSaveOrg = async (e) => {
     e.preventDefault()
@@ -26,6 +28,14 @@ export default function SettingsPage() {
     } else {
       showToast('Pengaturan berhasil disimpan!')
     }
+  }
+
+  const handleCopyKode = () => {
+    if (!organisasi?.id) return
+    navigator.clipboard.writeText(organisasi.id)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+    showToast('Kode organisasi disalin!')
   }
 
   return (
@@ -50,7 +60,7 @@ export default function SettingsPage() {
             <div>
               <p className="text-xs text-stone mb-1">Tipe Organisasi</p>
               <p className="text-sm font-medium text-charcoal">
-                {organisasi?.tipe === 'rt_rw' ? 'RT/RW' : 'Keluarga'}
+                {organisasi?.tipe === 'rt_rw' ? 'RT/RW' : organisasi?.tipe === 'personal' ? 'Personal' : 'Keluarga'}
               </p>
             </div>
             <Button type="submit" variant="primary" loading={saving}>
@@ -58,6 +68,32 @@ export default function SettingsPage() {
             </Button>
           </form>
         </div>
+
+        {/* Kode organisasi — hanya untuk workspace non-personal */}
+        {!isPersonalWorkspace && organisasi?.id && (
+          <div className="bg-white border border-border rounded-card p-5">
+            <h3 className="text-sm font-semibold text-[#0f3d32] mb-1">Kode Undangan Organisasi</h3>
+            <p className="text-xs text-stone mb-3">
+              Bagikan kode ini ke calon anggota agar mereka bisa bergabung melalui menu "Tambah Organisasi → Bergabung dengan Kode".
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-[#F8F7F3] border border-border rounded-input px-3 py-2 text-xs font-mono text-charcoal break-all select-all">
+                {organisasi.id}
+              </code>
+              <button
+                onClick={handleCopyKode}
+                className={`flex-shrink-0 p-2 rounded-input border transition-colors ${
+                  copied
+                    ? 'border-brand bg-brand-light text-brand'
+                    : 'border-border text-stone hover:text-brand hover:border-brand'
+                }`}
+                title="Salin kode"
+              >
+                {copied ? <Check size={15} /> : <Copy size={15} />}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Profile info */}
         {profile && (

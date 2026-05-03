@@ -172,7 +172,7 @@ function BergabungForm({ user, initialize, navigate }) {
     setError(null)
     setPreview(null)
     const trimmed = kode.trim()
-    if (!trimmed) { setError('Masukkan kode organisasi terlebih dahulu.'); return }
+    if (!trimmed) { setError('Masukkan UUID kode organisasi terlebih dahulu.'); return }
 
     setLoading(true)
     const { data, error: fetchErr } = await supabase

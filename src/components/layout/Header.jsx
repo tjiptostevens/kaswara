@@ -10,14 +10,12 @@ export default function Header({ title }) {
   const { profile } = useAuth()
   const toggleSidebar = useUIStore((s) => s.toggleSidebar)
   const notifikasi = useNotifikasiStore((s) => s.notifikasi)
-  const tandaiSemuaDibaca = useNotifikasiStore((s) => s.tandaiSemuaDibaca)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const unreadCount = notifikasi.filter((n) => !n.dibacaAt).length
 
   const handleBellClick = () => {
     setDropdownOpen((v) => !v)
-    if (!dropdownOpen) tandaiSemuaDibaca()
   }
 
   return (

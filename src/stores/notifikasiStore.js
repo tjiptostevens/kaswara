@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-const useNotifikasiStore = create((set, get) => ({
+const useNotifikasiStore = create((set) => ({
   notifikasi: [],
 
   tambahNotif: (pesan, tipe = 'info') => {
@@ -32,10 +32,6 @@ const useNotifikasiStore = create((set, get) => ({
   },
 
   hapusSemua: () => set({ notifikasi: [] }),
-
-  get unreadCount() {
-    return get().notifikasi.filter((n) => !n.dibacaAt).length
-  },
 }))
 
 export default useNotifikasiStore
