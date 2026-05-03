@@ -5,16 +5,17 @@ import FormRAB from '../components/rab/FormRAB'
 import RABStatusFlow from '../components/rab/RABStatusFlow'
 import ApprovalButtons from '../components/rab/ApprovalButtons'
 import { Modal, Button, Badge } from '../components/ui'
-import { Plus } from 'lucide-react'
+import { Plus, Printer, XCircle, RefreshCw } from 'lucide-react'
 import { useRAB } from '../hooks/useRAB'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
+import { generateRABPDF } from '../lib/pdfExport'
 
 export default function RABPage() {
-  const { isBendahara, isKetua, canManageRAB } = useAuth()
+  const { isBendahara, isKetua, canManageRAB, canApproveRAB, isPersonalWorkspace, activeWorkspace } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
-  const { rab, loading, addRAB, updateStatus } = useRAB()
+  const { rab, loading, addRAB, updateStatus, cancelRAB, amendRAB } = useRAB()
 
   const [addOpen, setAddOpen] = useState(false)
   const [detail, setDetail] = useState(null)
@@ -49,21 +50,63 @@ export default function RABPage() {
     }
   }
 
+  const handleCancel = async (id) => {
+    if (!window.confirm('Yakin ingin membatalkan RAB ini?')) return
+    const { error } = await cancelRAB(id)
+    if (error) {
+      showToast('Gagal membatalkan: ' + error.message, 'error')
+    } else {
+      showToast('RAB dibatalkan')
+      setDetail(null)
+    }
+  }
+
+  const handleAmend = async (row) => {
+    const { error } = await amendRAB(row)
+    if (error) {
+      showToast('Gagal membuat amandemen: ' + error.message, 'error')
+    } else {
+      showToast('RAB amandemen berhasil dibuat!')
+      setDetail(null)
+    }
+  }
+
+  const handlePrint = () => {
+    generateRABPDF(rab, activeWorkspace?.nama || 'Kaswara')
+  }
+
+  const handlePrintDetail = (row) => {
+    generateRABPDF([row], activeWorkspace?.nama || 'Kaswara')
+  }
+
+  // For personal workspace or org members with canApproveRAB, show approval buttons on diajukan
+  const canApprove = canApproveRAB
+
   return (
     <PageWrapper title="RAB">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-[#0f3d32]">Rencana Anggaran Biaya</h2>
-          {canManageRAB && (
+          <div className="flex gap-2">
             <Button
-              variant="primary"
+              variant="ghost"
               size="md"
-              icon={<Plus size={16} />}
-              onClick={() => setAddOpen(true)}
+              icon={<Printer size={16} />}
+              onClick={handlePrint}
             >
-              Buat RAB
+              Cetak
             </Button>
-          )}
+            {canManageRAB && (
+              <Button
+                variant="primary"
+                size="md"
+                icon={<Plus size={16} />}
+                onClick={() => setAddOpen(true)}
+              >
+                Buat RAB
+              </Button>
+            )}
+          </div>
         </div>
 
         <RABTable
@@ -106,10 +149,11 @@ export default function RABPage() {
             )}
             {detail.catatan_ketua && (
               <div className="bg-[#FAEEDA] rounded-input px-3 py-2 text-sm text-[#854F0B]">
-                <p className="font-medium text-xs mb-0.5">Catatan Ketua</p>
+                <p className="font-medium text-xs mb-0.5">Catatan</p>
                 {detail.catatan_ketua}
               </div>
             )}
+
             {/* Items */}
             {detail.rab_item?.length > 0 && (
               <div>
@@ -124,13 +168,79 @@ export default function RABPage() {
                 </div>
               </div>
             )}
+
+            {/* User History */}
+            <div className="bg-[#F8F7F3] rounded-input px-3 py-2 space-y-1 text-xs text-stone">
+              <p className="font-medium text-charcoal uppercase tracking-wide text-xs mb-1">Riwayat</p>
+              {detail.diajukan_oleh && (
+                <p>Dibuat/Diajukan oleh: <span className="text-charcoal">{detail.diajukan_oleh}</span></p>
+              )}
+              {detail.diajukan_at && (
+                <p>Diajukan pada: <span className="text-charcoal">{formatTanggalPendek(detail.diajukan_at)}</span></p>
+              )}
+              {detail.disetujui_at && (
+                <p>Disetujui pada: <span className="text-charcoal">{formatTanggalPendek(detail.disetujui_at)}</span></p>
+              )}
+              {detail.cancelled_at && (
+                <p>Dibatalkan pada: <span className="text-charcoal">{formatTanggalPendek(detail.cancelled_at)}</span></p>
+              )}
+              {detail.amended_at && (
+                <p>Diamandemen pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
+              )}
+              {detail.amended_from && (
+                <p className="text-[#5B3FA8]">Amandemen dari RAB sebelumnya</p>
+              )}
+            </div>
+
             {/* Actions */}
-            {canManageRAB && detail.status === 'draft' && (
-              <Button variant="accent" fullWidth onClick={() => handleSubmitRAB(detail.id)}>
-                Ajukan RAB
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Printer size={15} />}
+                onClick={() => handlePrintDetail(detail)}
+              >
+                Cetak
               </Button>
-            )}
-            {isKetua && detail.status === 'diajukan' && (
+              {canManageRAB && detail.status === 'draft' && (
+                <Button variant="accent" size="sm" onClick={() => handleSubmitRAB(detail.id)}>
+                  Ajukan RAB
+                </Button>
+              )}
+              {(canManageRAB || canApprove) && ['draft', 'diajukan'].includes(detail.status) && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  icon={<XCircle size={15} />}
+                  onClick={() => handleCancel(detail.id)}
+                >
+                  Batalkan
+                </Button>
+              )}
+              {canApprove && detail.status === 'cancelled' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<RefreshCw size={15} />}
+                  onClick={() => handleAmend(detail)}
+                >
+                  Amandemen
+                </Button>
+              )}
+              {!canApprove && canManageRAB && detail.status === 'cancelled' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<RefreshCw size={15} />}
+                  onClick={() => handleAmend(detail)}
+                >
+                  Amandemen
+                </Button>
+              )}
+            </div>
+
+            {/* Approval */}
+            {canApprove && detail.status === 'diajukan' && (
               <ApprovalButtons
                 rabId={detail.id}
                 onApprove={handleApproval}

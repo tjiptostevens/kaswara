@@ -14,6 +14,8 @@ export function useTransaksi(filters = {}) {
   const fetchKategori = useKasStore((s) => s.fetchKategori)
   const addTransaksi = useKasStore((s) => s.addTransaksi)
   const deleteTransaksi = useKasStore((s) => s.deleteTransaksi)
+  const updateTransaksiStatus = useKasStore((s) => s.updateTransaksiStatus)
+  const amendTransaksi = useKasStore((s) => s.amendTransaksi)
 
   useEffect(() => {
     if (activeWorkspace?.id) {
@@ -31,6 +33,8 @@ export function useTransaksi(filters = {}) {
     loading,
     addTransaksi,
     deleteTransaksi,
+    updateTransaksiStatus,
+    amendTransaksi,
     refetch: () => fetchTransaksi(activeWorkspace?.id, filters),
   }
 }

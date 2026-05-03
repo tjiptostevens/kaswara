@@ -1,5 +1,6 @@
 import React from 'react'
 import Table from '../ui/Table'
+import Badge from '../ui/Badge'
 import { formatRupiah, formatTanggalPendek } from '../../lib/formatters'
 
 /**
@@ -26,6 +27,11 @@ export default function RAPTable({ data = [], loading, onView }) {
       render: (row) => formatTanggalPendek(row.tanggal_realisasi),
     },
     { key: 'keterangan', label: 'Keterangan', render: (row) => row.keterangan || '—' },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row) => <Badge status={row.status || 'draft'} />,
+    },
     {
       key: 'foto',
       label: 'Bukti',
