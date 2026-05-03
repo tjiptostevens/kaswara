@@ -69,14 +69,28 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 ### Roadmap (v2.0)
 
 - [ ] Notifikasi iuran via email (Resend / Nodemailer)
-- [ ] Grafik statistik keuangan tahunan
+- [x] Grafik cashflow bulanan pada dashboard (6 bulan terakhir) ✓ — grafik tahunan (12 bulan + selektor tahun) masih pending
 - [ ] WhatsApp gateway untuk pengingat iuran
-- [ ] Approval workflow digital RAB (notifikasi real-time) via web notif
-- [ ] Multi-RT (untuk kelurahan Dengan menambahkan id RT) 
-- [ ] sambungan rab atau rap dengan transaksi supaya data tersimpan dan dashboard mendapat inputan data yang lengkap.
-- [ ] sambung dengan supabase storage untuk penyimpanan bukti nota transaksi atau rap.
-- [ ] update id menjadi nama anggota untuk kejelasan data.
-- [ ] cetak laporan dashboard serta detail transaksi berdasarkan range tanggal untuk organisasi maupun personal. 
+- [x] Approval workflow digital RAB (diajukan → disetujui/ditolak/dibatalkan/amandemen) ✓ — notifikasi real-time via web notif masih pending
+- [ ] Multi-RT (untuk kelurahan dengan menambahkan id RT)
+- [x] Skema sambungan RAB/RAP → transaksi (FK `rap_id` pada tabel transaksi) ✓ — otomatisasi insert transaksi saat RAP disetujui masih pending
+- [x] Supabase Storage untuk upload foto bukti RAP ✓
+- [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — RAP & RAB detail masih tampilkan UUID
+- [ ] Cetak laporan dengan filter range tanggal (organisasi & personal)
+
+### Roadmap (v3.0)
+
+- [ ] **PWA (Progressive Web App)** — service worker, installable, offline read cache
+- [ ] **Import massal CSV/Excel** — impor transaksi, anggota, dan iuran dari spreadsheet
+- [ ] **Export Excel/CSV** — ekspor data selain PDF ke format spreadsheet
+- [ ] **Halaman transparansi publik** — URL read-only untuk warga tanpa login
+- [ ] **Laporan tahunan otomatis** — generate & kirim ringkasan akhir tahun via email (Supabase cron)
+- [ ] **Manajemen aset komunitas** — inventaris barang RT/RW (meja, tenda, speaker, dll)
+- [ ] **Integrasi pembayaran digital** — link iuran via QRIS / Midtrans / Xendit
+- [ ] **Dark mode UI** — tema gelap via Tailwind `dark:` class
+- [ ] **Audit log** — tabel `riwayat_perubahan` untuk mencatat semua operasi CRUD
+- [ ] **Iuran fleksibel per golongan** — nominal iuran berbeda per anggota atau golongan warga
+- [ ] **2FA / OTP login** — lapisan keamanan tambahan via TOTP atau OTP SMS/email
 
 ---
 
