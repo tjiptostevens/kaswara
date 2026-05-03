@@ -71,10 +71,12 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 - [ ] Notifikasi iuran via email (Resend / Nodemailer)
 - [ ] Grafik statistik keuangan tahunan
 - [ ] WhatsApp gateway untuk pengingat iuran
-- [ ] Approval workflow digital RAB (notifikasi real-time)
-- [ ] Multi-RT dalam satu akun (untuk Kelurahan)
-- [ ] Aplikasi mobile (React Native / PWA)
-- [ ] Dark mode
+- [ ] Approval workflow digital RAB (notifikasi real-time) via web notif
+- [ ] Multi-RT (untuk kelurahan Dengan menambahkan id RT) 
+- [ ] sambungan rab atau rap dengan transaksi supaya data tersimpan dan dashboard mendapat inputan data yang lengkap.
+- [ ] sambung dengan supabase storage untuk penyimpanan bukti nota transaksi atau rap.
+- [ ] update id menjadi nama anggota untuk kejelasan data.
+- [ ] cetak laporan dashboard serta detail transaksi berdasarkan range tanggal untuk organisasi maupun personal. 
 
 ---
 
@@ -83,7 +85,7 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 | Layer | Teknologi | Keterangan |
 |---|---|---|
 | **Frontend** | React 18 + Vite | SPA, fast refresh |
-| **Styling** | Tailwind CSS v3.4 | Utility-first CSS |
+| **Styling** | Tailwind CSS v4.2 | Utility-first CSS | vanila css for custom styling
 | **State Management** | Zustand | Lightweight, no boilerplate |
 | **Routing** | React Router v6 | Client-side routing |
 | **Form** | React Hook Form + Zod | Validasi form & schema |
