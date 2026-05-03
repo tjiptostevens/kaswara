@@ -11,9 +11,9 @@ import { ROUTES } from '../../constants/routes'
  * should always have at least one workspace after logging in.
  */
 export default function ProtectedRoute({ children, requiredRoles }) {
-  const { isAuthenticated, loading, role, activeWorkspace } = useAuth()
+  const { isAuthenticated, loading, role } = useAuth()
 
-  if (loading) {
+  if (loading && !isAuthenticated) {
     return (
       <div className="flex h-screen items-center justify-center bg-warm">
         <div className="flex flex-col items-center gap-3 text-stone">

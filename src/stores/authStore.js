@@ -2,6 +2,16 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 
 const ACTIVE_WORKSPACE_KEY = 'kaswara_active_workspace_id'
+const PROFILE_REFRESH_EVENTS = new Set(['SIGNED_IN', 'USER_UPDATED'])
+
+const resetAuthState = {
+  user: null,
+  profile: null,
+  organisasi: null,
+  workspaces: [],
+  activeWorkspace: null,
+  loading: false,
+}
 
 const useAuthStore = create((set, get) => ({
   user: null,
@@ -9,31 +19,61 @@ const useAuthStore = create((set, get) => ({
   organisasi: null,        // alias: active workspace's organisasi row (backward compat)
   workspaces: [],          // all { membership, organisasi } for this user
   activeWorkspace: null,   // organisasi row of currently active workspace
+  initialized: false,
+  authSubscription: null,
   loading: true,
   error: null,
 
   setLoading: (loading) => set({ loading }),
 
   initialize: async () => {
-    set({ loading: true })
+    if (get().initialized) return
+    set({ initialized: true, loading: true })
+
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
       await get().fetchProfile(session.user)
     } else {
-      set({ user: null, profile: null, organisasi: null, workspaces: [], activeWorkspace: null, loading: false })
+      set(resetAuthState)
     }
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    const previousSubscription = get().authSubscription
+    if (previousSubscription) {
+      previousSubscription.unsubscribe()
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || !session?.user) {
+        set(resetAuthState)
+        return
+      }
+
+      if (!PROFILE_REFRESH_EVENTS.has(event)) {
+        return
+      }
+
+      if (
+        event === 'SIGNED_IN' &&
+        get().user?.id === session.user.id &&
+        get().profile &&
+        !get().loading
+      ) {
+        return
+      }
+
       if (session?.user) {
-        await get().fetchProfile(session.user)
-      } else {
-        set({ user: null, profile: null, organisasi: null, workspaces: [], activeWorkspace: null, loading: false })
+        await get().fetchProfile(session.user, { setLoading: false })
       }
     })
+
+    set({ authSubscription: subscription })
   },
 
-  fetchProfile: async (user) => {
-    set({ user, loading: true })
+  fetchProfile: async (user, options = {}) => {
+    const { setLoading = true } = options
+    set(setLoading ? { user, loading: true } : { user })
 
     // Fetch ALL memberships for this user
     const { data: memberships } = await supabase
