@@ -85,9 +85,8 @@ const useKasStore = create((set, get) => ({
     if (markErr) return { error: markErr }
 
     // Create new draft with amended_from
-    const { dibuat_oleh, dibuat_oleh_anggota_id, created_at, id, status,
-            submitted_by, submitted_at, cancelled_by, cancelled_at,
-            amended_by: _ab, amended_at: _aa, amended_from: _af,
+    const { id, status, submitted_by, submitted_at, cancelled_by, cancelled_at,
+            amended_by, amended_at, amended_from,
             kategori_transaksi, anggota_organisasi, ...rest } = original
     const { data: result, error } = await supabase
       .from('transaksi')
@@ -95,7 +94,6 @@ const useKasStore = create((set, get) => ({
         ...rest,
         status: 'draft',
         dibuat_oleh: userId,
-        dibuat_oleh_anggota_id: dibuat_oleh_anggota_id ?? null,
         amended_from: original.id,
       })
       .select()

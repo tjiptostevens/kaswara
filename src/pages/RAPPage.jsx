@@ -14,7 +14,7 @@ import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { generateRAPPDF } from '../lib/pdfExport'
 
 export default function RAPPage() {
-  const { activeWorkspace, isBendahara, canApproveRAB, user } = useAuth()
+  const { activeWorkspace, isBendahara, canApprove: canApprove, user } = useAuth()
   const organisasi = activeWorkspace
   const showToast = useUIStore((s) => s.showToast)
   const { rab } = useRAB()
@@ -276,12 +276,12 @@ export default function RAPPage() {
                   Ajukan
                 </Button>
               )}
-              {canApproveRAB && detail.status === 'submitted' && (
+              {canApprove && detail.status === 'submitted' && (
                 <Button variant="primary" size="sm" icon={<CheckCircle2 size={15} />} onClick={() => handleApprove(detail.id)}>
                   Setujui
                 </Button>
               )}
-              {(isBendahara || canApproveRAB) && ['draft', 'submitted'].includes(detail.status) && (
+              {(isBendahara || canApprove) && ['draft', 'submitted'].includes(detail.status) && (
                 <Button variant="danger" size="sm" icon={<XCircle size={15} />} onClick={() => handleCancel(detail.id)}>
                   Batalkan
                 </Button>

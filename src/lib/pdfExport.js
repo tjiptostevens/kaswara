@@ -2,6 +2,8 @@ import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { formatRupiah, formatPeriode, formatTanggalPendek } from './formatters'
 
+const PAGE_BREAK_THRESHOLD = 270
+
 /**
  * Export elemen DOM ke PDF menggunakan html2canvas
  * @param {HTMLElement} element
@@ -143,7 +145,7 @@ export function generateLaporanPDF(data, periode, namaOrganisasi) {
     pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(9)
     data.transaksi.forEach((t) => {
-      if (y > 270) { pdf.addPage(); y = 20 }
+      if (y > PAGE_BREAK_THRESHOLD) { pdf.addPage(); y = 20 }
       pdf.setTextColor(60, 60, 58)
       pdf.text(t.tanggal || '', 14, y)
       const keterangan = (t.keterangan || '').substring(0, 40)
@@ -190,7 +192,7 @@ export function generateTransaksiPDF(transaksi, namaOrganisasi) {
   pdf.setFontSize(9)
 
   transaksi.forEach((t) => {
-    if (y > 270) { pdf.addPage(); y = 20 }
+    if (y > PAGE_BREAK_THRESHOLD) { pdf.addPage(); y = 20 }
     pdf.setTextColor(60, 60, 58)
     pdf.text(t.tanggal ? formatTanggalPendek(t.tanggal) : '—', 14, y)
     const ket = (t.keterangan || '—').substring(0, 32)
@@ -253,7 +255,7 @@ export function generateRABPDF(rabList, namaOrganisasi) {
 
       pdf.setTextColor(60, 60, 58)
       rab.rab_item.forEach((item) => {
-        if (y > 270) { pdf.addPage(); y = 20 }
+        if (y > PAGE_BREAK_THRESHOLD) { pdf.addPage(); y = 20 }
         pdf.text((item.nama_item || '').substring(0, 35), 18, y)
         pdf.text(`${item.volume} ${item.satuan}`, 85, y)
         pdf.text(formatRupiah(item.harga_satuan), 105, y)
@@ -305,7 +307,7 @@ export function generateRAPPDF(rapList, namaOrganisasi) {
   pdf.setFontSize(9)
 
   rapList.forEach((rap) => {
-    if (y > 270) { pdf.addPage(); y = 20 }
+    if (y > PAGE_BREAK_THRESHOLD) { pdf.addPage(); y = 20 }
     pdf.setTextColor(60, 60, 58)
     pdf.text((rap.nama_item || '—').substring(0, 35), 14, y)
     pdf.text(rap.tanggal_realisasi ? formatTanggalPendek(rap.tanggal_realisasi) : '—', 80, y)

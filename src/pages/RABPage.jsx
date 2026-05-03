@@ -217,17 +217,7 @@ export default function RABPage() {
                   Batalkan
                 </Button>
               )}
-              {canApprove && detail.status === 'cancelled' && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={<RefreshCw size={15} />}
-                  onClick={() => handleAmend(detail)}
-                >
-                  Amandemen
-                </Button>
-              )}
-              {!canApprove && canManageRAB && detail.status === 'cancelled' && (
+              {(canApprove || canManageRAB) && detail.status === 'cancelled' && (
                 <Button
                   variant="primary"
                   size="sm"
