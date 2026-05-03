@@ -11,7 +11,7 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 
 export default function RAPPage() {
-  const { activeWorkspace, isBendahara } = useAuth()
+  const { activeWorkspace, isBendahara, user } = useAuth()
   const organisasi = activeWorkspace
   const showToast = useUIStore((s) => s.showToast)
   const { rab } = useRAB()
@@ -36,19 +36,44 @@ export default function RAPPage() {
 
   useEffect(() => { fetchRAP() }, [organisasi?.id])
 
-  const handleAdd = async (data) => {
+  const handleAdd = async (data, files = []) => {
     const { data: result, error } = await supabase
       .from('rap')
-      .insert({ ...data, organisasi_id: organisasi.id })
+      .insert({ ...data, organisasi_id: organisasi.id, dibuat_oleh: user?.id })
       .select()
       .single()
     if (error) {
       showToast('Gagal menyimpan RAP: ' + error.message, 'error')
-    } else {
-      showToast('RAP berhasil disimpan!')
-      setAddOpen(false)
-      fetchRAP()
+      return
     }
+
+    if (files.length > 0) {
+      const failedUploads = []
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const path = `${result.id}/${crypto.randomUUID()}_${file.name}`
+        const { error: uploadError } = await supabase.storage
+          .from('rap-foto')
+          .upload(path, file)
+        if (uploadError) {
+          failedUploads.push(file.name)
+          continue
+        }
+        const { error: fotoError } = await supabase
+          .from('rap_foto')
+          .insert({ rap_id: result.id, storage_path: path, nama_file: file.name })
+        if (fotoError) {
+          failedUploads.push(file.name)
+        }
+      }
+      if (failedUploads.length > 0) {
+        showToast(`Beberapa foto gagal diunggah: ${failedUploads.join(', ')}`, 'error')
+      }
+    }
+
+    showToast('RAP berhasil disimpan!')
+    setAddOpen(false)
+    fetchRAP()
   }
 
   return (
@@ -67,7 +92,7 @@ export default function RAPPage() {
             </Button>
           )}
         </div>
-        <RAPTable data={rap} loading={loading} />
+        <RAPTable data={rap} loading={loading} onView={(row) => setDetail(row)} />
       </div>
 
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Tambah Realisasi (RAP)">

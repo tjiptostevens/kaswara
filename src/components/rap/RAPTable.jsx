@@ -6,8 +6,9 @@ import { formatRupiah, formatTanggalPendek } from '../../lib/formatters'
  * @param {object} props
  * @param {Array} props.data
  * @param {boolean} props.loading
+ * @param {(row: object) => void} [props.onView]
  */
-export default function RAPTable({ data = [], loading }) {
+export default function RAPTable({ data = [], loading, onView }) {
   const columns = [
     { key: 'nama_item', label: 'Item Realisasi' },
     {
@@ -34,6 +35,18 @@ export default function RAPTable({ data = [], loading }) {
         ) : (
           <span className="text-xs text-stone">—</span>
         ),
+    },
+    {
+      key: 'actions',
+      label: '',
+      render: (row) => (
+        <button
+          onClick={() => onView?.(row)}
+          className="text-xs text-brand hover:underline"
+        >
+          Detail
+        </button>
+      ),
     },
   ]
 
