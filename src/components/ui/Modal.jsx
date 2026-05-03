@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 /**
@@ -60,20 +61,20 @@ export default function Modal({
     if (closeOnBackdrop) onClose?.()
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50"
       aria-hidden={!open}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-md transition-opacity duration-300"
+        className="fixed inset-0 bg-black/30 backdrop-blur-md transition-opacity duration-300"
         onClick={handleBackdropClick}
       />
       {/* Panel */}
       <div
         ref={panelRef}
-        className={`relative w-full ${widths[size]} max-h-[90vh] overflow-hidden glass-card !bg-white/80 rounded-modal shadow-2xl animate-fade-in`}
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] sm:w-full ${widths[size]} max-h-[90vh] overflow-hidden glass-card !bg-white/80 rounded-modal shadow-2xl animate-fade-in flex flex-col`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
@@ -107,6 +108,7 @@ export default function Modal({
         {/* Body */}
         <div className="px-5 py-4 overflow-y-auto max-h-[calc(90vh-72px)]">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
