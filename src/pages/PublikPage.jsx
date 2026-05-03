@@ -110,28 +110,43 @@ function MiniChart({ transaksi }) {
 // ─── Main PublikPage ──────────────────────────────────────────────────────────
 
 export default function PublikPage() {
-  const { orgId } = useParams()
+  const { handle } = useParams()
   const [org, setOrg] = useState(null)
   const [transaksi, setTransaksi] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!orgId) return
+    if (!handle) return
     loadData()
-  }, [orgId])
+  }, [handle])
 
   const loadData = async () => {
     setLoading(true)
     setError(null)
 
-    // Fetch organisasi — only works if publik_aktif = true (RLS enforces this)
-    const { data: orgData, error: orgErr } = await supabase
+    // Fetch organisasi by UUID first, then fallback ke alias slug.
+    const byIdResult = await supabase
       .from('organisasi')
       .select('id, nama, alamat, tipe')
-      .eq('id', orgId)
+      .eq('id', handle)
       .eq('publik_aktif', true)
-      .single()
+      .maybeSingle()
+
+    let orgData = byIdResult.data
+    let orgErr = byIdResult.error
+
+    if (!orgData && !orgErr) {
+      const bySlugResult = await supabase
+        .from('organisasi')
+        .select('id, nama, alamat, tipe')
+        .eq('publik_slug', handle)
+        .eq('publik_aktif', true)
+        .maybeSingle()
+
+      orgData = bySlugResult.data
+      orgErr = bySlugResult.error
+    }
 
     if (orgErr || !orgData) {
       setError('Halaman publik tidak ditemukan atau belum diaktifkan oleh pengurus organisasi.')
@@ -145,7 +160,7 @@ export default function PublikPage() {
     const { data: txData, error: txErr } = await supabase
       .from('transaksi')
       .select('id, tanggal, tipe, jumlah, keterangan, kategori_transaksi(nama)')
-      .eq('organisasi_id', orgId)
+      .eq('organisasi_id', orgData.id)
       .eq('status', 'submitted')
       .order('tanggal', { ascending: false })
       .limit(100)
@@ -271,9 +286,8 @@ export default function PublikPage() {
                     return (
                       <div key={t.id} className="flex items-center gap-3 px-4 py-3">
                         <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isMasuk ? 'bg-[#E1F5EE]' : 'bg-[#FCEBEB]'
-                          }`}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isMasuk ? 'bg-[#E1F5EE]' : 'bg-[#FCEBEB]'
+                            }`}
                         >
                           {isMasuk
                             ? <TrendingUp size={13} className="text-success" />
@@ -291,9 +305,8 @@ export default function PublikPage() {
                           </p>
                         </div>
                         <p
-                          className={`text-sm font-mono font-semibold flex-shrink-0 ${
-                            isMasuk ? 'text-success' : 'text-danger'
-                          }`}
+                          className={`text-sm font-mono font-semibold flex-shrink-0 ${isMasuk ? 'text-success' : 'text-danger'
+                            }`}
                         >
                           {isMasuk ? '+' : '-'}{formatRupiah(t.jumlah)}
                         </p>

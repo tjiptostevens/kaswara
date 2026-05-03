@@ -13,20 +13,37 @@ export default function SettingsPage() {
   const showToast = useUIStore((s) => s.showToast)
   const [orgName, setOrgName] = useState(organisasi?.nama || '')
   const [orgAlamat, setOrgAlamat] = useState(organisasi?.alamat || '')
+  const [publikSlugInput, setPublikSlugInput] = useState(organisasi?.publik_slug || '')
+  const [publikSlugSaved, setPublikSlugSaved] = useState(organisasi?.publik_slug || '')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [copiedPublik, setCopiedPublik] = useState(false)
+  const [copiedPublikOriginal, setCopiedPublikOriginal] = useState(false)
+  const [copiedPublikUnik, setCopiedPublikUnik] = useState(false)
   const [publikAktif, setPublikAktif] = useState(organisasi?.publik_aktif ?? false)
   const [savingPublik, setSavingPublik] = useState(false)
+  const [savingPublikSlug, setSavingPublikSlug] = useState(false)
 
   useEffect(() => {
     setOrgName(organisasi?.nama || '')
     setOrgAlamat(organisasi?.alamat || '')
+    setPublikSlugInput(organisasi?.publik_slug || '')
+    setPublikSlugSaved(organisasi?.publik_slug || '')
     setPublikAktif(organisasi?.publik_aktif ?? false)
   }, [organisasi])
 
   const canManage = isBendahara || isKetua
-  const publikUrl = organisasi?.id ? `${window.location.origin}${getPublikUrl(organisasi.id)}` : ''
+  const publikUrlOriginal = organisasi?.id ? `${window.location.origin}${getPublikUrl(organisasi.id)}` : ''
+  const publikUrlUnik = publikSlugSaved ? `${window.location.origin}${getPublikUrl(publikSlugSaved)}` : ''
+
+  const normalizePublikSlug = (value) => {
+    return (value || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[\s_]+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
 
   const handleSaveOrg = async (e) => {
     e.preventDefault()
@@ -67,11 +84,44 @@ export default function SettingsPage() {
     }
   }
 
-  const handleCopyPublikUrl = () => {
-    if (!publikUrl) return
-    navigator.clipboard.writeText(publikUrl)
-    setCopiedPublik(true)
-    setTimeout(() => setCopiedPublik(false), 2000)
+  const handleSavePublikSlug = async () => {
+    if (!organisasi?.id || !canManage) return
+
+    const slug = normalizePublikSlug(publikSlugInput)
+    const isUuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slug)
+    if (slug && isUuidLike) {
+      showToast('Alias tidak boleh berformat UUID.', 'error')
+      return
+    }
+
+    setSavingPublikSlug(true)
+
+    const { error } = await supabase
+      .from('organisasi')
+      .update({ publik_slug: slug || null })
+      .eq('id', organisasi.id)
+
+    setSavingPublikSlug(false)
+
+    if (error) {
+      if (error.code === '23505') {
+        showToast('Alias sudah digunakan organisasi lain. Coba alias lain.', 'error')
+      } else {
+        showToast('Gagal menyimpan alias: ' + error.message, 'error')
+      }
+      return
+    }
+
+    setPublikSlugInput(slug)
+    setPublikSlugSaved(slug)
+    showToast(slug ? 'Alias link publik berhasil disimpan!' : 'Alias link publik dihapus.')
+  }
+
+  const handleCopyPublikUrl = (url, setCopiedState) => {
+    if (!url) return
+    navigator.clipboard.writeText(url)
+    setCopiedState(true)
+    setTimeout(() => setCopiedState(false), 2000)
     showToast('Link publik disalin!')
   }
 
@@ -120,8 +170,8 @@ export default function SettingsPage() {
               <button
                 onClick={handleCopyKode}
                 className={`flex-shrink-0 p-2 rounded-input border transition-colors ${copied
-                    ? 'border-brand bg-brand-light text-brand'
-                    : 'border-border text-stone hover:text-brand hover:border-brand'
+                  ? 'border-brand bg-brand-light text-brand'
+                  : 'border-border text-stone hover:text-brand hover:border-brand'
                   }`}
                 title="Salin kode"
               >
@@ -162,32 +212,90 @@ export default function SettingsPage() {
 
             {/* Link publik (hanya tampil jika aktif) */}
             {publikAktif && (
-              <div className="space-y-2">
-                <p className="text-xs text-stone font-medium">Link halaman publik:</p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-[#F8F7F3] border border-border rounded-input px-3 py-2 text-xs font-mono text-charcoal break-all">
-                    {publikUrl}
-                  </code>
-                  <button
-                    onClick={handleCopyPublikUrl}
-                    className={`flex-shrink-0 p-2 rounded-input border transition-colors ${copiedPublik
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-stone font-medium mb-2">Link original (UUID):</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-[#F8F7F3] border border-border rounded-input px-3 py-2 text-xs font-mono text-charcoal break-all">
+                      {publikUrlOriginal}
+                    </code>
+                    <button
+                      onClick={() => handleCopyPublikUrl(publikUrlOriginal, setCopiedPublikOriginal)}
+                      className={`flex-shrink-0 p-2 rounded-input border transition-colors ${copiedPublikOriginal
                         ? 'border-brand bg-brand-light text-brand'
                         : 'border-border text-stone hover:text-brand hover:border-brand'
-                      }`}
-                    title="Salin link"
-                  >
-                    {copiedPublik ? <Check size={15} /> : <Copy size={15} />}
-                  </button>
-                  <a
-                    href={publikUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0 p-2 rounded-input border border-border text-stone hover:text-brand hover:border-brand transition-colors"
-                    title="Buka halaman publik"
-                  >
-                    <ExternalLink size={15} />
-                  </a>
+                        }`}
+                      title="Salin link original"
+                    >
+                      {copiedPublikOriginal ? <Check size={15} /> : <Copy size={15} />}
+                    </button>
+                    <a
+                      href={publikUrlOriginal}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 p-2 rounded-input border border-border text-stone hover:text-brand hover:border-brand transition-colors"
+                      title="Buka link original"
+                    >
+                      <ExternalLink size={15} />
+                    </a>
+                  </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Input
+                    label="Alias Link Unik"
+                    value={publikSlugInput}
+                    onChange={(e) => setPublikSlugInput(e.target.value)}
+                    placeholder="contoh: rt-05-mekarsari"
+                    disabled={!canManage || savingPublikSlug}
+                    hint="Gunakan huruf kecil, angka, dan tanda minus (-). Kosongkan untuk menonaktifkan link unik."
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleSavePublikSlug}
+                      loading={savingPublikSlug}
+                      disabled={!canManage}
+                    >
+                      Simpan alias
+                    </Button>
+                  </div>
+                </div>
+
+                {publikUrlUnik ? (
+                  <div>
+                    <p className="text-xs text-stone font-medium mb-2">Link unik (alias):</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 bg-[#F8F7F3] border border-border rounded-input px-3 py-2 text-xs font-mono text-charcoal break-all">
+                        {publikUrlUnik}
+                      </code>
+                      <button
+                        onClick={() => handleCopyPublikUrl(publikUrlUnik, setCopiedPublikUnik)}
+                        className={`flex-shrink-0 p-2 rounded-input border transition-colors ${copiedPublikUnik
+                          ? 'border-brand bg-brand-light text-brand'
+                          : 'border-border text-stone hover:text-brand hover:border-brand'
+                          }`}
+                        title="Salin link unik"
+                      >
+                        {copiedPublikUnik ? <Check size={15} /> : <Copy size={15} />}
+                      </button>
+                      <a
+                        href={publikUrlUnik}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 p-2 rounded-input border border-border text-stone hover:text-brand hover:border-brand transition-colors"
+                        title="Buka link unik"
+                      >
+                        <ExternalLink size={15} />
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-stone">
+                    Link unik belum diatur. Isi alias lalu klik "Simpan alias" untuk membuat link publik tambahan.
+                  </p>
+                )}
               </div>
             )}
           </div>

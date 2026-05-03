@@ -11,10 +11,10 @@ export const ROUTES = {
   LAPORAN: '/laporan',
   SETTINGS: '/settings',
   KATEGORI: '/kategori',
-  PUBLIK: '/publik/:orgId',
+  PUBLIK: '/publik/:handle',
 }
 
 /** Helper: buat URL halaman publik dari orgId atau slug */
-export function getPublikUrl(orgId) {
-  return `/publik/${orgId}`
+export function getPublikUrl(handle) {
+  return `/publik/${handle}`
 }
