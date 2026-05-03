@@ -2,22 +2,13 @@ import React from 'react'
 import Badge from '../ui/Badge'
 import { ArrowRight } from 'lucide-react'
 
-const FLOW = ['draft', 'diajukan', 'disetujui', 'selesai']
-const TERMINAL_LABELS = { cancelled: 'Dibatalkan', amended: 'Diubah', ditolak: 'Ditolak' }
+const FLOW = ['draft', 'submitted', 'cancelled', 'amended']
 
 /**
  * @param {object} props
  * @param {string} props.status
  */
-export default function RABStatusFlow({ status }) {
-  if (TERMINAL_LABELS[status]) {
-    return (
-      <div className="flex items-center gap-2">
-        <Badge status={status} label={TERMINAL_LABELS[status]} />
-      </div>
-    )
-  }
-
+export default function TransaksiStatusFlow({ status }) {
   const currentIdx = FLOW.indexOf(status)
 
   return (
@@ -26,7 +17,7 @@ export default function RABStatusFlow({ status }) {
         <React.Fragment key={step}>
           <Badge
             status={idx <= currentIdx ? step : 'draft'}
-            label={step.charAt(0).toUpperCase() + step.slice(1)}
+            label={step === 'draft' ? 'Draft' : step === 'submitted' ? 'Diajukan' : step === 'cancelled' ? 'Dibatalkan' : 'Diubah'}
           />
           {idx < FLOW.length - 1 && (
             <ArrowRight size={12} className="text-stone flex-shrink-0" />

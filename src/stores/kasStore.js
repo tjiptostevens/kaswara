@@ -22,6 +22,7 @@ const useKasStore = create((set, get) => ({
     if (filters.kategoriId) query = query.eq('kategori_id', filters.kategoriId)
     if (filters.dari) query = query.gte('tanggal', filters.dari)
     if (filters.sampai) query = query.lte('tanggal', filters.sampai)
+    if (filters.status) query = query.eq('status', filters.status)
 
     const { data, error } = await query
     if (error) {
@@ -33,10 +34,11 @@ const useKasStore = create((set, get) => ({
   },
 
   hitungSaldo: (transaksi) => {
-    const totalPemasukan = transaksi
+    const active = transaksi.filter((t) => t.status !== 'cancelled' && t.status !== 'amended')
+    const totalPemasukan = active
       .filter((t) => t.tipe === 'pemasukan')
       .reduce((sum, t) => sum + Number(t.jumlah), 0)
-    const totalPengeluaran = transaksi
+    const totalPengeluaran = active
       .filter((t) => t.tipe === 'pengeluaran')
       .reduce((sum, t) => sum + Number(t.jumlah), 0)
     set({
@@ -49,11 +51,55 @@ const useKasStore = create((set, get) => ({
   addTransaksi: async (data) => {
     const { data: result, error } = await supabase
       .from('transaksi')
-      .insert(data)
+      .insert({ ...data, status: 'draft' })
       .select()
       .single()
     if (error) return { error }
     set((state) => ({ transaksi: [result, ...state.transaksi] }))
+    return { data: result, error: null }
+  },
+
+  updateTransaksiStatus: async (id, status, userId, organisasiId) => {
+    const now = new Date().toISOString()
+    const updates = { status }
+    if (status === 'submitted') {
+      updates.submitted_by = userId
+      updates.submitted_at = now
+    } else if (status === 'cancelled') {
+      updates.cancelled_by = userId
+      updates.cancelled_at = now
+    }
+    const { error } = await supabase.from('transaksi').update(updates).eq('id', id)
+    if (error) return { error }
+    if (organisasiId) await get().fetchTransaksi(organisasiId)
+    return { error: null }
+  },
+
+  amendTransaksi: async (original, userId, organisasiId) => {
+    const now = new Date().toISOString()
+    // Mark original as amended
+    const { error: markErr } = await supabase
+      .from('transaksi')
+      .update({ status: 'amended', amended_by: userId, amended_at: now })
+      .eq('id', original.id)
+    if (markErr) return { error: markErr }
+
+    // Create new draft with amended_from
+    const { id, status, submitted_by, submitted_at, cancelled_by, cancelled_at,
+            amended_by, amended_at, amended_from,
+            kategori_transaksi, anggota_organisasi, ...rest } = original
+    const { data: result, error } = await supabase
+      .from('transaksi')
+      .insert({
+        ...rest,
+        status: 'draft',
+        dibuat_oleh: userId,
+        amended_from: original.id,
+      })
+      .select()
+      .single()
+    if (error) return { error }
+    if (organisasiId) await get().fetchTransaksi(organisasiId)
     return { data: result, error: null }
   },
 

@@ -48,15 +48,72 @@ export function useRAB() {
   }
 
   const updateStatus = async (id, status, catatanKetua = null) => {
+    const now = new Date().toISOString()
     const updates = { status }
     if (catatanKetua) updates.catatan_ketua = catatanKetua
+    if (status === 'diajukan') updates.diajukan_at = now
+    if (status === 'disetujui') {
+      updates.disetujui_at = now
+      updates.disetujui_oleh = user?.id
+    }
     const { error } = await supabase.from('rab').update(updates).eq('id', id)
     if (error) return { error }
     await fetchRAB()
     return { error: null }
   }
 
+  const cancelRAB = async (id) => {
+    const now = new Date().toISOString()
+    const { error } = await supabase
+      .from('rab')
+      .update({ status: 'cancelled', cancelled_by: user?.id, cancelled_at: now })
+      .eq('id', id)
+    if (error) return { error }
+    await fetchRAB()
+    return { error: null }
+  }
+
+  const amendRAB = async (original) => {
+    const now = new Date().toISOString()
+    // Mark original as amended
+    const { error: markErr } = await supabase
+      .from('rab')
+      .update({ status: 'amended', amended_by: user?.id, amended_at: now })
+      .eq('id', original.id)
+    if (markErr) return { error: markErr }
+
+    // Create new draft RAB
+    const { data: newRAB, error: insertErr } = await supabase
+      .from('rab')
+      .insert({
+        organisasi_id: activeWorkspace.id,
+        nama_kegiatan: original.nama_kegiatan,
+        deskripsi: original.deskripsi,
+        total_anggaran: original.total_anggaran,
+        tanggal_kegiatan: original.tanggal_kegiatan,
+        tanggal_pengajuan: new Date().toISOString().split('T')[0],
+        status: 'draft',
+        diajukan_oleh: user?.id,
+        amended_from: original.id,
+      })
+      .select()
+      .single()
+    if (insertErr) return { error: insertErr }
+
+    // Copy items
+    if (original.rab_item?.length) {
+      const newItems = original.rab_item.map(({ id: _id, rab_id: _rid, ...item }) => ({
+        ...item,
+        rab_id: newRAB.id,
+      }))
+      await supabase.from('rab_item').insert(newItems)
+    }
+
+    await fetchRAB()
+    return { data: newRAB, error: null }
+  }
+
   useEffect(() => { fetchRAB() }, [activeWorkspace?.id])
 
-  return { rab, loading, error, addRAB, updateStatus, refetch: fetchRAB }
+  return { rab, loading, error, addRAB, updateStatus, cancelRAB, amendRAB, refetch: fetchRAB }
 }
