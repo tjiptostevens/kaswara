@@ -72,8 +72,6 @@ const useAuthStore = create((set, get) => ({
     const next = workspaces.find((w) => w.id === orgId)
     if (!next) return
 
-    // Fetch fresh membership for this workspace from already-loaded data
-    // (we re-use what's in workspaces; profile comes from anggota_organisasi)
     supabase
       .from('anggota_organisasi')
       .select('*, organisasi(*)')
@@ -81,15 +79,14 @@ const useAuthStore = create((set, get) => ({
       .eq('organisasi_id', orgId)
       .eq('aktif', true)
       .single()
-      .then(({ data: membership }) => {
-        if (membership) {
-          localStorage.setItem(ACTIVE_WORKSPACE_KEY, orgId)
-          set({
-            profile: membership,
-            organisasi: next,
-            activeWorkspace: next,
-          })
-        }
+      .then(({ data: membership, error }) => {
+        if (error || !membership) return
+        localStorage.setItem(ACTIVE_WORKSPACE_KEY, orgId)
+        set({
+          profile: membership,
+          organisasi: next,
+          activeWorkspace: next,
+        })
       })
   },
 

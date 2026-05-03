@@ -91,7 +91,10 @@ export default function KategoriPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus kategori ini? Transaksi yang menggunakan kategori ini tidak akan terhapus.')) return
+    const confirmMsg =
+      'Yakin ingin menghapus kategori ini? ' +
+      'Transaksi yang menggunakan kategori ini tidak akan terhapus.'
+    if (!window.confirm(confirmMsg)) return
     const { error } = await supabase.from('kategori_transaksi').delete().eq('id', id)
     if (error) {
       showToast('Gagal menghapus: ' + error.message, 'error')

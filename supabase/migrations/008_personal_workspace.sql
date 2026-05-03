@@ -34,11 +34,11 @@ begin
   end if;
 
   insert into organisasi (nama, tipe, created_by)
-  values (coalesce(nullif(trim(display_name), ''), 'Personal'), 'personal', uid)
+  values (coalesce(nullif(trim(display_name), ''), 'Pribadi'), 'personal', uid)
   returning id into org_id;
 
   insert into anggota_organisasi (user_id, organisasi_id, role, nama_lengkap, aktif)
-  values (uid, org_id, 'bendahara', coalesce(nullif(trim(display_name), ''), 'Personal'), true);
+  values (uid, org_id, 'bendahara', coalesce(nullif(trim(display_name), ''), 'Pribadi'), true);
 end;
 $$;
 
