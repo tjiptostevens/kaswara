@@ -85,6 +85,17 @@ export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
         </select>
         {errors.role && <p className="text-xs text-danger">{errors.role.message}</p>}
       </div>
+      <div className="flex flex-col gap-1">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-border text-brand focus:ring-brand/40 focus:ring-2"
+            {...register('can_manage_rab')}
+          />
+          <span className="text-sm text-charcoal">Izinkan kelola RAB</span>
+        </label>
+        <p className="text-xs text-stone ml-6">Anggota dapat membuat dan mengajukan Rencana Anggaran Biaya</p>
+      </div>
       <div className="flex gap-3 pt-1">
         {onCancel && (
           <Button type="button" variant="ghost" fullWidth onClick={onCancel}>

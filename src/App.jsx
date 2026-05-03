@@ -54,7 +54,7 @@ export default function App() {
         <Route
           path={ROUTES.ANGGOTA}
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['bendahara', 'ketua']}>
               <AnggotaPage />
             </ProtectedRoute>
           }

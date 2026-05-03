@@ -21,6 +21,7 @@ export function useAuth() {
   const isAnggota = role === 'anggota'
   const isPersonalWorkspace = activeWorkspace?.tipe === 'personal'
   const isAdmin = isBendahara
+  const canManageRAB = isBendahara || isPersonalWorkspace || profile?.can_manage_rab === true
 
   return {
     user,
@@ -42,5 +43,6 @@ export function useAuth() {
     isAnggota,
     isPersonalWorkspace,
     isAdmin,
+    canManageRAB,
   }
 }

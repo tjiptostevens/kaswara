@@ -9,6 +9,7 @@ export const anggotaSchema = z.object({
     required_error: 'Role wajib dipilih',
   }),
   aktif: z.boolean().default(true),
+  can_manage_rab: z.boolean().default(false),
 })
 
 // Schema untuk edit — email tidak bisa diubah setelah undangan dikirim
