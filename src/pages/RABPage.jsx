@@ -172,8 +172,10 @@ export default function RABPage() {
             {/* User History */}
             <div className="bg-[#F8F7F3] rounded-input px-3 py-2 space-y-1 text-xs text-stone">
               <p className="font-medium text-charcoal uppercase tracking-wide text-xs mb-1">Riwayat</p>
-              {detail.diajukan_oleh && (
-                <p>Dibuat/Diajukan oleh: <span className="text-charcoal">{detail.diajukan_oleh}</span></p>
+              {(detail.anggota_organisasi?.nama_lengkap || detail.diajukan_oleh) && (
+                <p>Dibuat/Diajukan oleh: <span className="text-charcoal">
+                  {detail.anggota_organisasi?.nama_lengkap || detail.diajukan_oleh}
+                </span></p>
               )}
               {detail.diajukan_at && (
                 <p>Diajukan pada: <span className="text-charcoal">{formatTanggalPendek(detail.diajukan_at)}</span></p>

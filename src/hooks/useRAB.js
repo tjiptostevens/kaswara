@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
 
 export function useRAB() {
-  const { activeWorkspace, user } = useAuth()
+  const { activeWorkspace, user, profile } = useAuth()
   const [rab, setRab] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -14,7 +14,7 @@ export function useRAB() {
     setError(null)
     const { data, error } = await supabase
       .from('rab')
-      .select('*, rab_item(*)')
+      .select('*, rab_item(*), anggota_organisasi!dibuat_oleh_anggota_id(nama_lengkap)')
       .eq('organisasi_id', activeWorkspace.id)
       .order('created_at', { ascending: false })
     setLoading(false)
@@ -30,7 +30,14 @@ export function useRAB() {
     )
     const { data: result, error } = await supabase
       .from('rab')
-      .insert({ ...rabData, organisasi_id: activeWorkspace.id, status: 'draft', diajukan_oleh: user?.id, total_anggaran })
+      .insert({
+        ...rabData,
+        organisasi_id: activeWorkspace.id,
+        status: 'draft',
+        diajukan_oleh: user?.id,
+        dibuat_oleh_anggota_id: profile?.id ?? null,
+        total_anggaran,
+      })
       .select()
       .single()
     if (error) return { error }

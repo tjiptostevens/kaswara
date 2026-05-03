@@ -1,20 +1,32 @@
-import React, { useRef } from 'react'
+import React, { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import StatGrid from '../components/dashboard/StatGrid'
 import TransaksiTable from '../components/transaksi/TransaksiTable'
+import FilterTransaksi from '../components/transaksi/FilterTransaksi'
 import { Button } from '../components/ui'
 import { FileDown } from 'lucide-react'
 import { useTransaksi } from '../hooks/useTransaksi'
 import { useAuth } from '../hooks/useAuth'
 import { generateLaporanPDF } from '../lib/pdfExport'
-import { formatPeriode } from '../lib/formatters'
+import { formatTanggal } from '../lib/formatters'
 
 export default function LaporanPage() {
   const { organisasi, isBendahara } = useAuth()
-  const { transaksi, saldo, totalPemasukan, totalPengeluaran, loading } = useTransaksi()
-  const reportRef = useRef(null)
+  const [filters, setFilters] = useState({})
+  const { transaksi, kategori, saldo, totalPemasukan, totalPengeluaran, loading } = useTransaksi(filters)
 
-  const periode = formatPeriode(new Date())
+  const handleFilterChange = (key, value) => {
+    setFilters((f) => ({ ...f, [key]: value || undefined }))
+  }
+
+  const periodeLabel = () => {
+    if (filters.dari && filters.sampai) {
+      return `${formatTanggal(filters.dari)} – ${formatTanggal(filters.sampai)}`
+    }
+    if (filters.dari) return `Mulai ${formatTanggal(filters.dari)}`
+    if (filters.sampai) return `Sampai ${formatTanggal(filters.sampai)}`
+    return 'Semua periode'
+  }
 
   const handleExport = () => {
     generateLaporanPDF(
@@ -29,18 +41,18 @@ export default function LaporanPage() {
           jumlah: t.jumlah,
         })),
       },
-      periode,
+      periodeLabel(),
       organisasi?.nama || 'Kaswara'
     )
   }
 
   return (
     <PageWrapper title="Laporan">
-      <div className="space-y-6" ref={reportRef}>
+      <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-[#0f3d32]">Laporan Keuangan</h2>
-            <p className="text-sm text-stone">{periode}</p>
+            <p className="text-sm text-stone">{periodeLabel()}</p>
           </div>
           {isBendahara && (
             <Button
@@ -54,11 +66,17 @@ export default function LaporanPage() {
           )}
         </div>
 
+        <FilterTransaksi
+          filters={filters}
+          onChange={handleFilterChange}
+          kategori={kategori}
+        />
+
         <StatGrid
           saldo={saldo}
           totalPemasukan={totalPemasukan}
           totalPengeluaran={totalPengeluaran}
-          periode={periode}
+          periode={periodeLabel()}
         />
 
         <div>

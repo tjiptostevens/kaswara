@@ -45,7 +45,17 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { email, nama_lengkap, nomor_anggota, no_hp, role, organisasi_id, aktif = true } = body
+    const {
+      email,
+      nama_lengkap,
+      nomor_anggota,
+      no_hp,
+      role,
+      organisasi_id,
+      aktif = true,
+      can_manage_rab = false,
+      can_approve_rab = false,
+    } = body
 
     if (!email || !nama_lengkap || !role || !organisasi_id) {
       return new Response(JSON.stringify({ error: 'Field email, nama_lengkap, role, dan organisasi_id wajib diisi' }), {
@@ -101,6 +111,8 @@ serve(async (req) => {
         email,
         no_hp: no_hp || null,
         aktif,
+        can_manage_rab,
+        can_approve_rab,
       })
       .select()
       .single()

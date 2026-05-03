@@ -22,7 +22,7 @@ export function useTransaksi(filters = {}) {
       fetchTransaksi(activeWorkspace.id, filters)
       fetchKategori(activeWorkspace.id)
     }
-  }, [activeWorkspace?.id])
+  }, [activeWorkspace?.id, JSON.stringify(filters)])
 
   return {
     transaksi,

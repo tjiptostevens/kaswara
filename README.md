@@ -91,6 +91,7 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 - [ ] **Audit log** — tabel `riwayat_perubahan` untuk mencatat semua operasi CRUD
 - [ ] **Iuran fleksibel per golongan** — nominal iuran berbeda per anggota atau golongan warga
 - [ ] **2FA / OTP login** — lapisan keamanan tambahan via TOTP atau OTP SMS/email
+- [ ] **Core Tax (Pajak & Retribusi)** — modul inti perpajakan: tracking tagihan PBB (Pajak Bumi dan Bangunan) per warga, retribusi kebersihan/keamanan, kalkulasi otomatis iuran pajak berdasarkan luas tanah/bangunan, laporan realisasi setoran PBB ke kelurahan, dan notifikasi jatuh tempo pajak
 
 ---
 
