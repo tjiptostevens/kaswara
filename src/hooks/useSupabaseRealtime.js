@@ -8,24 +8,24 @@ import { useAuth } from './useAuth'
  * and refresh the store whenever an INSERT/UPDATE/DELETE happens.
  */
 export function useSupabaseRealtime() {
-  const { organisasi } = useAuth()
+  const { activeWorkspace } = useAuth()
   const fetchTransaksi = useKasStore((s) => s.fetchTransaksi)
 
   useEffect(() => {
-    if (!organisasi?.id) return
+    if (!activeWorkspace?.id) return
 
     const channel = supabase
-      .channel(`transaksi:${organisasi.id}`)
+      .channel(`transaksi:${activeWorkspace.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'transaksi',
-          filter: `organisasi_id=eq.${organisasi.id}`,
+          filter: `organisasi_id=eq.${activeWorkspace.id}`,
         },
         () => {
-          fetchTransaksi(organisasi.id)
+          fetchTransaksi(activeWorkspace.id)
         }
       )
       .subscribe()
@@ -33,5 +33,5 @@ export function useSupabaseRealtime() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [organisasi?.id])
+  }, [activeWorkspace?.id])
 }

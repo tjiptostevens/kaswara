@@ -11,7 +11,8 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 
 export default function RAPPage() {
-  const { organisasi, isBendahara } = useAuth()
+  const { activeWorkspace, isBendahara } = useAuth()
+  const organisasi = activeWorkspace
   const showToast = useUIStore((s) => s.showToast)
   const { rab } = useRAB()
   const [rap, setRap] = useState([])
