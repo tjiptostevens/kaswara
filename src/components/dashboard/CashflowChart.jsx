@@ -35,8 +35,10 @@ export default function CashflowChart({ transaksi = [] }) {
     const sorted = Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
 
     if (mode === 'tahunan') {
-      // Build all 12 months for selected year (fill missing months with zeros)
-      return Array.from({ length: 12 }, (_, i) => {
+      // Build months for selected year, capped at current month for current year
+      const nowMonth = new Date().getMonth() // 0-based
+      const maxMonth = tahun === THIS_YEAR ? nowMonth : 11
+      return Array.from({ length: maxMonth + 1 }, (_, i) => {
         const m = String(i + 1).padStart(2, '0')
         const key = `${tahun}-${m}`
         const data = map[key] || { pemasukan: 0, pengeluaran: 0 }

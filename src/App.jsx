@@ -7,6 +7,9 @@ import useAuthStore from './stores/authStore'
 import LoginPage from './pages/auth/LoginPage'
 import SetupOrganisasiPage from './pages/auth/SetupOrganisasiPage'
 
+// Public page (no auth required)
+import PublikPage from './pages/PublikPage'
+
 // Protected pages
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import DashboardPage from './pages/DashboardPage'
@@ -33,6 +36,7 @@ export default function App() {
         {/* Public routes */}
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path={ROUTES.SETUP} element={<SetupOrganisasiPage />} />
+        <Route path={ROUTES.PUBLIK} element={<PublikPage />} />
 
         {/* Protected routes */}
         <Route

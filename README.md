@@ -77,13 +77,13 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 - [x] Supabase Storage untuk upload foto bukti RAP ✓
 - [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — RAP & RAB detail masih tampilkan UUID
 - [ ] Cetak laporan dengan filter range tanggal (organisasi & personal)
+- [ ] **Halaman transparansi publik** — URL read-only untuk warga tanpa login (`/publik/:orgId`), toggle aktif/nonaktif dari Pengaturan
 
 ### Roadmap (v3.0)
 
 - [ ] **PWA (Progressive Web App)** — service worker, installable, offline read cache
 - [ ] **Import massal CSV/Excel** — impor transaksi, anggota, dan iuran dari spreadsheet
 - [ ] **Export Excel/CSV** — ekspor data selain PDF ke format spreadsheet
-- [ ] **Halaman transparansi publik** — URL read-only untuk warga tanpa login
 - [ ] **Laporan tahunan otomatis** — generate & kirim ringkasan akhir tahun via email (Supabase cron)
 - [ ] **Manajemen aset komunitas** — inventaris barang RT/RW (meja, tenda, speaker, dll)
 - [ ] **Integrasi pembayaran digital** — link iuran via QRIS / Midtrans / Xendit

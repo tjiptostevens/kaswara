@@ -155,11 +155,13 @@ export default function RAPPage() {
           .eq('rab_id', rapRow.rab_id)
           .neq('id', rapRow.id)
 
-        // Only count non-cancelled, non-amended records; all must be 'approved'
+        // Consider all RAPs for this RAB (including the just-approved one)
+        // Exclude cancelled/amended; if remaining active siblings are all approved → selesai
         const activeRap = (sibling || []).filter(
           (r) => r.status !== 'cancelled' && r.status !== 'amended'
         )
-        const allDone = activeRap.length > 0 && activeRap.every((r) => r.status === 'approved')
+        // allDone: either no other active siblings exist, or all are approved
+        const allDone = activeRap.every((r) => r.status === 'approved')
         if (allDone) {
           await supabase.from('rab').update({ status: 'selesai' }).eq('id', rapRow.rab_id)
         }
