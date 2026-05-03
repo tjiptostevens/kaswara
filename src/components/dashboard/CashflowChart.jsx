@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { formatRupiahShort } from '../../lib/formatters'
 
 const CHART_H = 160
@@ -7,14 +7,21 @@ const CHART_PAD_RIGHT = 12
 const CHART_PAD_TOP = 12
 const CHART_PAD_BOTTOM = 36
 
+const THIS_YEAR = new Date().getFullYear()
+const YEAR_OPTIONS = [THIS_YEAR, THIS_YEAR - 1, THIS_YEAR - 2]
+
 /**
- * Simple SVG bar chart showing monthly pemasukan vs pengeluaran
+ * SVG bar chart showing monthly pemasukan vs pengeluaran
  * with a polyline for cumulative saldo.
+ * Supports two modes: '6bulan' (last 6 months) and 'tahunan' (full year).
  *
  * @param {object} props
  * @param {Array} props.transaksi  - raw transaksi array from useTransaksi
  */
 export default function CashflowChart({ transaksi = [] }) {
+  const [mode, setMode] = useState('6bulan')
+  const [tahun, setTahun] = useState(THIS_YEAR)
+
   const months = useMemo(() => {
     const map = {}
     transaksi.forEach((t) => {
@@ -25,17 +32,30 @@ export default function CashflowChart({ transaksi = [] }) {
       else map[key].pengeluaran += Number(t.jumlah)
     })
 
-    return Object.entries(map)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-6)
-      .map(([key, data]) => {
-        const [year, month] = key.split('-')
-        const label = new Date(Number(year), Number(month) - 1, 1).toLocaleDateString('id-ID', {
-          month: 'short',
-        })
+    const sorted = Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
+
+    if (mode === 'tahunan') {
+      // Build months for selected year, capped at current month for current year
+      const nowMonth = new Date().getMonth() // 0-based
+      const maxMonth = tahun === THIS_YEAR ? nowMonth : 11
+      return Array.from({ length: maxMonth + 1 }, (_, i) => {
+        const m = String(i + 1).padStart(2, '0')
+        const key = `${tahun}-${m}`
+        const data = map[key] || { pemasukan: 0, pengeluaran: 0 }
+        const label = new Date(tahun, i, 1).toLocaleDateString('id-ID', { month: 'short' })
         return { key, label, ...data }
       })
-  }, [transaksi])
+    }
+
+    // 6-bulan mode: last 6 months with data
+    return sorted.slice(-6).map(([key, data]) => {
+      const [year, month] = key.split('-')
+      const label = new Date(Number(year), Number(month) - 1, 1).toLocaleDateString('id-ID', {
+        month: 'short',
+      })
+      return { key, label, ...data }
+    })
+  }, [transaksi, mode, tahun])
 
   // Cumulative saldo per month
   const withSaldo = useMemo(() => {
@@ -46,10 +66,15 @@ export default function CashflowChart({ transaksi = [] }) {
     })
   }, [months])
 
-  if (months.length === 0) {
+  const hasAnyData = months.some((m) => m.pemasukan > 0 || m.pengeluaran > 0)
+
+  if (!hasAnyData) {
     return (
       <div className="bg-white border border-border rounded-card p-4">
-        <p className="text-sm font-semibold text-[#0f3d32] mb-3">Cashflow</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-[#0f3d32]">Cashflow</p>
+          <ModeControls mode={mode} setMode={setMode} tahun={tahun} setTahun={setTahun} />
+        </div>
         <p className="text-sm text-stone text-center py-8">Belum ada data transaksi</p>
       </div>
     )
@@ -87,19 +112,22 @@ export default function CashflowChart({ transaksi = [] }) {
     <div className="bg-white border border-border rounded-card p-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-[#0f3d32]">Cashflow</p>
-        <div className="flex items-center gap-4 text-xs text-stone">
-          <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#1a6b5a] inline-block" />
-            Pemasukan
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444] inline-block" />
-            Pengeluaran
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-6 h-0.5 bg-[#e8a020] inline-block" />
-            Saldo
-          </span>
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          <div className="flex items-center gap-4 text-xs text-stone">
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm bg-[#1a6b5a] inline-block" />
+              Pemasukan
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444] inline-block" />
+              Pengeluaran
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-6 h-0.5 bg-[#e8a020] inline-block" />
+              Saldo
+            </span>
+          </div>
+          <ModeControls mode={mode} setMode={setMode} tahun={tahun} setTahun={setTahun} />
         </div>
       </div>
 
@@ -207,6 +235,39 @@ export default function CashflowChart({ transaksi = [] }) {
           )
         })}
       </svg>
+    </div>
+  )
+}
+
+function ModeControls({ mode, setMode, tahun, setTahun }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex rounded-input border border-border overflow-hidden text-xs">
+        {['6bulan', 'tahunan'].map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={`px-2.5 py-1 transition-colors ${
+              mode === m
+                ? 'bg-brand text-white'
+                : 'bg-white text-stone hover:text-charcoal'
+            }`}
+          >
+            {m === '6bulan' ? '6 Bulan' : 'Tahunan'}
+          </button>
+        ))}
+      </div>
+      {mode === 'tahunan' && (
+        <select
+          value={tahun}
+          onChange={(e) => setTahun(Number(e.target.value))}
+          className="rounded-input border border-border bg-white px-2 py-1 text-xs text-charcoal focus:outline-none focus:ring-1 focus:ring-brand/40"
+        >
+          {YEAR_OPTIONS.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      )}
     </div>
   )
 }

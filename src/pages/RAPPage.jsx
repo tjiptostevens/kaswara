@@ -10,13 +10,15 @@ import { supabase } from '../lib/supabase'
 import { useRAB } from '../hooks/useRAB'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
+import useKasStore from '../stores/kasStore'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { generateRAPPDF } from '../lib/pdfExport'
 
 export default function RAPPage() {
-  const { activeWorkspace, isBendahara, canApprove: canApprove, user } = useAuth()
+  const { activeWorkspace, isBendahara, canApproveRAB: canApprove, user, profile } = useAuth()
   const organisasi = activeWorkspace
   const showToast = useUIStore((s) => s.showToast)
+  const fetchTransaksi = useKasStore((s) => s.fetchTransaksi)
   const { rab } = useRAB()
   const [rap, setRap] = useState([])
   const [loading, setLoading] = useState(false)
@@ -31,7 +33,7 @@ export default function RAPPage() {
     setLoading(true)
     const { data, error } = await supabase
       .from('rap')
-      .select('*, rap_foto(*), rab(nama_kegiatan)')
+      .select('*, rap_foto(*), rab(nama_kegiatan), anggota_organisasi!dibuat_oleh_anggota_id(nama_lengkap)')
       .eq('organisasi_id', organisasi.id)
       .order('created_at', { ascending: false })
     setLoading(false)
@@ -43,7 +45,13 @@ export default function RAPPage() {
   const handleAdd = async (data, files = []) => {
     const { data: result, error } = await supabase
       .from('rap')
-      .insert({ ...data, organisasi_id: organisasi.id, dibuat_oleh: user?.id, status: 'draft' })
+      .insert({
+        ...data,
+        organisasi_id: organisasi.id,
+        dibuat_oleh: user?.id,
+        dibuat_oleh_anggota_id: profile?.id ?? null,
+        status: 'draft',
+      })
       .select()
       .single()
     if (error) {
@@ -108,10 +116,64 @@ export default function RAPPage() {
     else { showToast('RAP berhasil diajukan!'); setDetail(null) }
   }
 
-  const handleApprove = async (id) => {
-    const { error } = await updateRAPStatus(id, 'approved')
-    if (error) showToast('Gagal menyetujui: ' + error.message, 'error')
-    else { showToast('RAP disetujui!'); setDetail(null) }
+  const handleApprove = async (rapRow) => {
+    // 1. Mark RAP as approved
+    const { error: approveErr } = await updateRAPStatus(rapRow.id, 'approved')
+    if (approveErr) { showToast('Gagal menyetujui: ' + approveErr.message, 'error'); return }
+
+    // 2. Auto-create transaksi pengeluaran
+    const keteranganTransaksi = rapRow.rab?.nama_kegiatan
+      ? `${rapRow.nama_item} — RAP ${rapRow.rab.nama_kegiatan}`
+      : rapRow.nama_item
+
+    const { data: transaksiData, error: txErr } = await supabase
+      .from('transaksi')
+      .insert({
+        organisasi_id: organisasi.id,
+        tipe: 'pengeluaran',
+        jumlah: rapRow.jumlah_realisasi,
+        keterangan: keteranganTransaksi,
+        tanggal: rapRow.tanggal_realisasi,
+        rap_id: rapRow.id,
+        dibuat_oleh: user?.id,
+        status: 'submitted',
+      })
+      .select()
+      .single()
+
+    if (txErr) {
+      showToast('RAP disetujui, tapi gagal buat transaksi: ' + txErr.message, 'error')
+    } else {
+      // 3. Link transaksi back to RAP
+      await supabase.from('rap').update({ transaksi_id: transaksiData.id }).eq('id', rapRow.id)
+
+      // 4. Check if all RAP for this RAB are now approved → mark RAB as selesai
+      if (rapRow.rab_id) {
+        const { data: sibling } = await supabase
+          .from('rap')
+          .select('id, status')
+          .eq('rab_id', rapRow.rab_id)
+          .neq('id', rapRow.id)
+
+        // Consider all RAPs for this RAB (including the just-approved one)
+        // Exclude cancelled/amended; if remaining active siblings are all approved → selesai
+        const activeRap = (sibling || []).filter(
+          (r) => r.status !== 'cancelled' && r.status !== 'amended'
+        )
+        // allDone: either no other active siblings exist, or all are approved
+        const allDone = activeRap.every((r) => r.status === 'approved')
+        if (allDone) {
+          await supabase.from('rab').update({ status: 'selesai' }).eq('id', rapRow.rab_id)
+        }
+      }
+
+      // 5. Refresh kasStore so dashboard saldo updates
+      fetchTransaksi(organisasi.id)
+
+      showToast('RAP disetujui! Transaksi pengeluaran otomatis dibuat.')
+    }
+
+    setDetail(null)
   }
 
   const handleCancel = async (id) => {
@@ -122,12 +184,9 @@ export default function RAPPage() {
   }
 
   const handleAmend = async (original) => {
-    const now = new Date().toISOString()
-    // Mark original as amended
     const { error: markErr } = await updateRAPStatus(original.id, 'amended')
     if (markErr) { showToast('Gagal: ' + markErr.message, 'error'); return }
 
-    // Create new draft
     const { data: newRAP, error: insertErr } = await supabase
       .from('rap')
       .insert({
@@ -138,6 +197,7 @@ export default function RAPPage() {
         keterangan: original.keterangan,
         tanggal_realisasi: original.tanggal_realisasi,
         dibuat_oleh: user?.id,
+        dibuat_oleh_anggota_id: profile?.id ?? null,
         status: 'draft',
         amended_from: original.id,
       })
@@ -241,8 +301,10 @@ export default function RAPPage() {
             {/* User History */}
             <div className="bg-[#F8F7F3] rounded-input px-3 py-2 space-y-1 text-xs text-stone">
               <p className="font-medium text-charcoal uppercase tracking-wide text-xs mb-1">Riwayat</p>
-              {detail.dibuat_oleh && (
-                <p>Dibuat oleh ID: <span className="text-charcoal">{detail.dibuat_oleh}</span></p>
+              {(detail.anggota_organisasi?.nama_lengkap || detail.dibuat_oleh) && (
+                <p>Dibuat oleh: <span className="text-charcoal">
+                  {detail.anggota_organisasi?.nama_lengkap || detail.dibuat_oleh}
+                </span></p>
               )}
               {detail.submitted_at && (
                 <p>Diajukan pada: <span className="text-charcoal">{formatTanggalPendek(detail.submitted_at)}</span></p>
@@ -258,6 +320,9 @@ export default function RAPPage() {
               )}
               {detail.amended_from && (
                 <p className="text-[#5B3FA8]">Amandemen dari RAP sebelumnya</p>
+              )}
+              {detail.transaksi_id && (
+                <p className="text-success">✓ Transaksi pengeluaran otomatis dibuat</p>
               )}
             </div>
 
@@ -277,7 +342,7 @@ export default function RAPPage() {
                 </Button>
               )}
               {canApprove && detail.status === 'submitted' && (
-                <Button variant="primary" size="sm" icon={<CheckCircle2 size={15} />} onClick={() => handleApprove(detail.id)}>
+                <Button variant="primary" size="sm" icon={<CheckCircle2 size={15} />} onClick={() => handleApprove(detail)}>
                   Setujui
                 </Button>
               )}
@@ -307,3 +372,4 @@ export default function RAPPage() {
     </PageWrapper>
   )
 }
+
