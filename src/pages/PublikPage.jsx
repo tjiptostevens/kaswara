@@ -125,22 +125,31 @@ export default function PublikPage() {
     setLoading(true)
     setError(null)
 
-    // Fetch organisasi by UUID first, then fallback ke alias slug.
-    const byIdResult = await supabase
-      .from('organisasi')
-      .select('id, nama, alamat, tipe')
-      .eq('id', handle)
-      .eq('publik_aktif', true)
-      .maybeSingle()
+    const normalizedHandle = (handle || '').trim()
+    const slugHandle = normalizedHandle.toLowerCase()
+    const isUuidHandle = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalizedHandle)
 
-    let orgData = byIdResult.data
-    let orgErr = byIdResult.error
+    let orgData = null
+    let orgErr = null
+
+    // Query by UUID hanya jika handle valid UUID, untuk menghindari error cast uuid.
+    if (isUuidHandle) {
+      const byIdResult = await supabase
+        .from('organisasi')
+        .select('id, nama, alamat, tipe')
+        .eq('id', normalizedHandle)
+        .eq('publik_aktif', true)
+        .maybeSingle()
+
+      orgData = byIdResult.data
+      orgErr = byIdResult.error
+    }
 
     if (!orgData && !orgErr) {
       const bySlugResult = await supabase
         .from('organisasi')
         .select('id, nama, alamat, tipe')
-        .eq('publik_slug', handle)
+        .eq('publik_slug', slugHandle)
         .eq('publik_aktif', true)
         .maybeSingle()
 
