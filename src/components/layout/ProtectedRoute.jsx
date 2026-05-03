@@ -7,9 +7,11 @@ import { ROUTES } from '../../constants/routes'
 /**
  * Wraps routes that require authentication.
  * Redirects to /login if not authenticated.
+ * Personal workspace is created automatically on sign-up, so users
+ * should always have at least one workspace after logging in.
  */
 export default function ProtectedRoute({ children, requiredRoles }) {
-  const { isAuthenticated, loading, role, organisasi } = useAuth()
+  const { isAuthenticated, loading, role, activeWorkspace } = useAuth()
 
   if (loading) {
     return (
@@ -24,10 +26,6 @@ export default function ProtectedRoute({ children, requiredRoles }) {
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />
-  }
-
-  if (!organisasi) {
-    return <Navigate to={ROUTES.SETUP} replace />
   }
 
   if (requiredRoles && !requiredRoles.includes(role)) {

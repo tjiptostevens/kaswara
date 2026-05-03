@@ -10,4 +10,5 @@ export const ROUTES = {
   RAP: '/rap',
   LAPORAN: '/laporan',
   SETTINGS: '/settings',
+  KATEGORI: '/kategori',
 }

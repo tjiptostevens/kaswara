@@ -9,11 +9,7 @@ import Input from '../../components/ui/Input'
 export default function SetupOrganisasiPage() {
   const { user, initialize } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({
-    nama: '',
-    tipe: 'rt_rw',
-    alamat: '',
-  })
+  const [form, setForm] = useState({ nama: '', tipe: 'rt_rw', alamat: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -60,9 +56,9 @@ export default function SetupOrganisasiPage() {
     <div className="min-h-screen bg-warm flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-card border border-border p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#0f3d32] mb-1">Setup Organisasi</h2>
+          <h2 className="text-lg font-semibold text-[#0f3d32] mb-1">Buat Organisasi Baru</h2>
           <p className="text-sm text-stone mb-6">
-            Lengkapi informasi organisasi kas Anda untuk memulai.
+            Buat organisasi kas (RT/RW, keluarga, dll.) dan undang anggota untuk bergabung.
           </p>
 
           {error && (
@@ -116,9 +112,19 @@ export default function SetupOrganisasiPage() {
               onChange={(e) => handleChange('alamat', e.target.value)}
             />
             <Button type="submit" variant="primary" fullWidth loading={loading}>
-              Mulai gunakan Kaswara
+              Buat Organisasi
             </Button>
           </form>
+
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.DASHBOARD)}
+              className="text-sm text-stone hover:text-charcoal underline"
+            >
+              Lewati, gunakan mode personal saja
+            </button>
+          </div>
         </div>
       </div>
     </div>

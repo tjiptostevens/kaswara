@@ -3,7 +3,7 @@ import useAnggotaStore from '../stores/anggotaStore'
 import { useAuth } from './useAuth'
 
 export function useAnggota() {
-  const { organisasi } = useAuth()
+  const { activeWorkspace } = useAuth()
   const anggota = useAnggotaStore((s) => s.anggota)
   const loading = useAnggotaStore((s) => s.loading)
   const fetchAnggota = useAnggotaStore((s) => s.fetchAnggota)
@@ -12,10 +12,10 @@ export function useAnggota() {
   const deleteAnggota = useAnggotaStore((s) => s.deleteAnggota)
 
   useEffect(() => {
-    if (organisasi?.id) {
-      fetchAnggota(organisasi.id)
+    if (activeWorkspace?.id) {
+      fetchAnggota(activeWorkspace.id)
     }
-  }, [organisasi?.id])
+  }, [activeWorkspace?.id])
 
   return {
     anggota,
@@ -23,6 +23,6 @@ export function useAnggota() {
     addAnggota,
     updateAnggota,
     deleteAnggota,
-    refetch: () => fetchAnggota(organisasi?.id),
+    refetch: () => fetchAnggota(activeWorkspace?.id),
   }
 }

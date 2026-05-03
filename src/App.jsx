@@ -18,6 +18,7 @@ import RAPPage from './pages/RAPPage'
 import LaporanPage from './pages/LaporanPage'
 import KelargaPage from './pages/KelargaPage'
 import SettingsPage from './pages/SettingsPage'
+import KategoriPage from './pages/KategoriPage'
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -103,6 +104,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.KATEGORI}
+          element={
+            <ProtectedRoute>
+              <KategoriPage />
             </ProtectedRoute>
           }
         />

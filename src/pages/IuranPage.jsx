@@ -9,7 +9,8 @@ import useUIStore from '../stores/uiStore'
 import { formatRupiah, formatPeriode } from '../lib/formatters'
 
 export default function IuranPage() {
-  const { organisasi, isBendahara } = useAuth()
+  const { activeWorkspace, isBendahara } = useAuth()
+  const organisasi = activeWorkspace
   const showToast = useUIStore((s) => s.showToast)
   const [iuran, setIuran] = useState([])
   const [loading, setLoading] = useState(false)
