@@ -1,4 +1,4 @@
-# Kaswara — Kas Warga Indonesia
+# Kaswara — Kas Warga Negara
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-18.x-61DAFB?logo=react" />
@@ -37,11 +37,12 @@
 
 ## Tentang Proyek
 
-**Kaswara** (*Kas Warga Indonesia*) adalah aplikasi web open source yang dirancang untuk membantu pengurus RT/RW dan keluarga mengelola keuangan kas secara digital, transparan, dan akuntabel.
+**Kaswara** (_Kas Warga Negara_) adalah aplikasi web open source yang dirancang untuk membantu pengurus RT/RW dan keluarga mengelola keuangan kas secara digital, transparan, dan akuntabel.
 
 Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunakan buku tulis atau spreadsheet yang rawan hilang dan sulit dibagikan ke warga. Kaswara hadir sebagai solusi digital yang bisa diakses dari mana saja, gratis, dan mudah dikontribusikan oleh komunitas.
 
 **Target pengguna:**
+
 - Bendahara & Pengurus RT/RW
 - Ketua RT/RW (untuk persetujuan RAB)
 - Warga (untuk melihat laporan transparansi)
@@ -53,18 +54,18 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 
 ### Fitur Utama (v1.0)
 
-| Fitur | Deskripsi | Role |
-|---|---|---|
-| **Dashboard Ringkasan** | Saldo terkini, total pemasukan/pengeluaran bulan ini | Semua |
-| **Pemasukan & Pengeluaran** | Input transaksi kas harian dengan kategori | Bendahara |
-| **Manajemen Anggota** | Data warga/anggota, status iuran, histori pembayaran | Bendahara |
-| **Iuran Rutin** | Pencatatan iuran per periode (bulanan/tahunan) per anggota | Bendahara |
-| **RAB (Rencana Anggaran Biaya)** | Pengajuan anggaran kegiatan, alur persetujuan Ketua | Bendahara/Ketua |
-| **RAP (Realisasi Anggaran Pengeluaran)** | Pencatatan realisasi RAB + upload bukti foto struk/kwitansi | Bendahara |
-| **Kategori Transaksi** | Pengelompokan transaksi (kebersihan, keamanan, sosial, dll) | Admin |
-| **Multi-role** | Bendahara, Ketua, Anggota (view only) | Admin |
-| **Laporan PDF** | Export laporan bulanan/tahunan ke PDF | Bendahara |
-| **Mode Keluarga** | Toggle mode: RT/RW atau Keluarga | Admin |
+| Fitur                                    | Deskripsi                                                   | Role            |
+| ---------------------------------------- | ----------------------------------------------------------- | --------------- |
+| **Dashboard Ringkasan**                  | Saldo terkini, total pemasukan/pengeluaran bulan ini        | Semua           |
+| **Pemasukan & Pengeluaran**              | Input transaksi kas harian dengan kategori                  | Bendahara       |
+| **Manajemen Anggota**                    | Data warga/anggota, status iuran, histori pembayaran        | Bendahara       |
+| **Iuran Rutin**                          | Pencatatan iuran per periode (bulanan/tahunan) per anggota  | Bendahara       |
+| **RAB (Rencana Anggaran Biaya)**         | Pengajuan anggaran kegiatan, alur persetujuan Ketua         | Bendahara/Ketua |
+| **RAP (Realisasi Anggaran Pengeluaran)** | Pencatatan realisasi RAB + upload bukti foto struk/kwitansi | Bendahara       |
+| **Kategori Transaksi**                   | Pengelompokan transaksi (kebersihan, keamanan, sosial, dll) | Admin           |
+| **Multi-role**                           | Bendahara, Ketua, Anggota (view only)                       | Admin           |
+| **Laporan PDF**                          | Export laporan bulanan/tahunan ke PDF                       | Bendahara       |
+| **Mode Keluarga**                        | Toggle mode: RT/RW atau Keluarga                            | Admin           |
 
 ### Roadmap (v2.0)
 
@@ -97,20 +98,20 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 
 ## Tech Stack
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Frontend** | React 18 + Vite | SPA, fast refresh |
-| **Styling** | Tailwind CSS v4.2 | Utility-first CSS | vanila css for custom styling
-| **State Management** | Zustand | Lightweight, no boilerplate |
-| **Routing** | React Router v6 | Client-side routing |
-| **Form** | React Hook Form + Zod | Validasi form & schema |
-| **Database** | Supabase (PostgreSQL) | Relasional, gratis s.d. 500MB |
-| **Auth** | Supabase Auth | Email/password + Magic Link |
-| **Storage** | Supabase Storage | Upload foto bukti (max 50MB/file) |
-| **Realtime** | Supabase Realtime | Saldo update otomatis |
-| **PDF Export** | jsPDF + html2canvas | Generate laporan PDF di browser |
-| **Hosting** | Vercel / Netlify | Deploy dari GitHub, gratis |
-| **Icons** | Lucide React | Konsisten, tree-shakeable |
+| Layer                | Teknologi             | Keterangan                        |
+| -------------------- | --------------------- | --------------------------------- | ----------------------------- |
+| **Frontend**         | React 18 + Vite       | SPA, fast refresh                 |
+| **Styling**          | Tailwind CSS v4.2     | Utility-first CSS                 | vanila css for custom styling |
+| **State Management** | Zustand               | Lightweight, no boilerplate       |
+| **Routing**          | React Router v6       | Client-side routing               |
+| **Form**             | React Hook Form + Zod | Validasi form & schema            |
+| **Database**         | Supabase (PostgreSQL) | Relasional, gratis s.d. 500MB     |
+| **Auth**             | Supabase Auth         | Email/password + Magic Link       |
+| **Storage**          | Supabase Storage      | Upload foto bukti (max 50MB/file) |
+| **Realtime**         | Supabase Realtime     | Saldo update otomatis             |
+| **PDF Export**       | jsPDF + html2canvas   | Generate laporan PDF di browser   |
+| **Hosting**          | Vercel / Netlify      | Deploy dari GitHub, gratis        |
+| **Icons**            | Lucide React          | Konsisten, tree-shakeable         |
 
 ---
 
@@ -120,13 +121,13 @@ Panduan identitas visual Kaswara untuk penggunaan yang konsisten di semua platfo
 
 ### Nama & Makna
 
-| | |
-|---|---|
-| **Nama** | Kaswara |
-| **Kepanjangan** | Kas Warga Indonesia |
-| **Makna tambahan** | Dalam kosakata Sansekerta/Jawa, *wara* berarti *kabar baik* — Kaswara secara tidak langsung bermakna *"kabar baik tentang kas warga"* |
-| **Tagline** | *Kas Warga Indonesia* |
-| **Penulisan** | Selalu ditulis **Kaswara** (kapital di awal), bukan KASWARA atau kaswara |
+|                    |                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Nama**           | Kaswara                                                                                                                               |
+| **Kepanjangan**    | Kas Warga Negara                                                                                                                      |
+| **Makna tambahan** | Dalam kosakata Sansekerta/Jawa, _wara_ berarti _kabar baik_ — Kaswara secara tidak langsung bermakna _"kabar baik tentang kas warga"_ |
+| **Tagline**        | _Kas Warga Negara_                                                                                                                    |
+| **Penulisan**      | Selalu ditulis **Kaswara** (kapital di awal), bukan KASWARA atau kaswara                                                              |
 
 ---
 
@@ -141,7 +142,7 @@ Logomark Kaswara terdiri dari empat kotak persegi dalam susunan 2×2, terinspira
 │                                                             │
 │   ┌──────────────────┐    kaswara                          │
 │   │   [■ Gold] [  ]  │    ─────────────────────────        │
-│   │   [  ]    [  ]   │    Kas Warga Indonesia              │
+│   │   [  ]    [  ]   │    Kas Warga Negara              │
 │   └──────────────────┘                                     │
 │    Logomark              Wordmark + Tagline                 │
 │                                                             │
@@ -150,12 +151,12 @@ Logomark Kaswara terdiri dari empat kotak persegi dalam susunan 2×2, terinspira
 
 #### Variasi Logo
 
-| Variasi | Penggunaan |
-|---|---|
-| **Horizontal (default)** | Header aplikasi, README, dokumentasi |
-| **Stacked (ikon di atas)** | Splash screen, kartu nama, print |
-| **Ikon saja** | Favicon, app icon mobile, avatar GitHub org |
-| **Reversed (bg gelap)** | Footer gelap, banner hero gelap |
+| Variasi                    | Penggunaan                                  |
+| -------------------------- | ------------------------------------------- |
+| **Horizontal (default)**   | Header aplikasi, README, dokumentasi        |
+| **Stacked (ikon di atas)** | Splash screen, kartu nama, print            |
+| **Ikon saja**              | Favicon, app icon mobile, avatar GitHub org |
+| **Reversed (bg gelap)**    | Footer gelap, banner hero gelap             |
 
 #### Zona Aman (Clear Space)
 
@@ -175,35 +176,35 @@ Selalu berikan ruang kosong minimal setara dengan tinggi huruf kapital "K" di se
 
 #### Palet Utama
 
-| Nama | HEX | Penggunaan |
-|---|---|---|
+| Nama             | HEX       | Penggunaan                                         |
+| ---------------- | --------- | -------------------------------------------------- |
 | **Forest Green** | `#1a6b5a` | Warna brand utama, tombol primary, highlight, link |
-| **Deep Forest** | `#0f3d32` | Heading, teks pada background terang, dark mode bg |
-| **Mint Surface** | `#e8f5f1` | Background ringan, card tint, hover state |
+| **Deep Forest**  | `#0f3d32` | Heading, teks pada background terang, dark mode bg |
+| **Mint Surface** | `#e8f5f1` | Background ringan, card tint, hover state          |
 
 #### Palet Aksen
 
-| Nama | HEX | Penggunaan |
-|---|---|---|
+| Nama           | HEX       | Penggunaan                                          |
+| -------------- | --------- | --------------------------------------------------- |
 | **Amber Gold** | `#e8a020` | Aksen, tombol CTA penting, ikon kas, kotak logomark |
-| **Gold Tint** | `#faeeda` | Background badge gold, hover accent surface |
+| **Gold Tint**  | `#faeeda` | Background badge gold, hover accent surface         |
 
 #### Palet Semantik
 
-| Nama | HEX | Penggunaan |
-|---|---|---|
-| **Danger Red** | `#e24b4a` | Error, hapus, pengeluaran, status belum bayar |
-| **Success Teal** | `#1D9E75` | Sukses, lunas, data tersimpan |
-| **Info Blue** | `#185FA5` | Informasi, status disetujui, tautan |
+| Nama             | HEX       | Penggunaan                                    |
+| ---------------- | --------- | --------------------------------------------- |
+| **Danger Red**   | `#e24b4a` | Error, hapus, pengeluaran, status belum bayar |
+| **Success Teal** | `#1D9E75` | Sukses, lunas, data tersimpan                 |
+| **Info Blue**    | `#185FA5` | Informasi, status disetujui, tautan           |
 
 #### Palet Netral
 
-| Nama | HEX | Penggunaan |
-|---|---|---|
-| **Warm White** | `#f8f7f3` | Background halaman utama |
-| **Charcoal** | `#3d3d3a` | Body text utama |
-| **Stone Gray** | `#9b9b95` | Teks muted, label input, placeholder |
-| **Border Light** | `#e5e4de` | Garis border, divider |
+| Nama             | HEX       | Penggunaan                           |
+| ---------------- | --------- | ------------------------------------ |
+| **Warm White**   | `#f8f7f3` | Background halaman utama             |
+| **Charcoal**     | `#3d3d3a` | Body text utama                      |
+| **Stone Gray**   | `#9b9b95` | Teks muted, label input, placeholder |
+| **Border Light** | `#e5e4de` | Garis border, divider                |
 
 #### Aturan Penggunaan Warna
 
@@ -226,14 +227,14 @@ Google Fonts: https://fonts.google.com/specimen/Plus+Jakarta+Sans
 Fallback: system-ui, -apple-system, sans-serif
 ```
 
-| Style | Weight | Size | Penggunaan |
-|---|---|---|---|
-| Display | 700 | 28–36px | Judul halaman, hero text |
-| Heading H1 | 700 | 24px | Judul section utama |
-| Heading H2 | 600 | 20px | Subjudul section |
-| Subheading | 500 | 15–16px | Label, caption penting |
-| Body UI | 400 | 14–15px | Konten umum antarmuka |
-| Label | 500 | 11–12px | Badge, tag, input label |
+| Style      | Weight | Size    | Penggunaan               |
+| ---------- | ------ | ------- | ------------------------ |
+| Display    | 700    | 28–36px | Judul halaman, hero text |
+| Heading H1 | 700    | 24px    | Judul section utama      |
+| Heading H2 | 600    | 20px    | Subjudul section         |
+| Subheading | 500    | 15–16px | Label, caption penting   |
+| Body UI    | 400    | 14–15px | Konten umum antarmuka    |
+| Label      | 500    | 11–12px | Badge, tag, input label  |
 
 #### Font Sekunder — Lora
 
@@ -244,11 +245,11 @@ Google Fonts: https://fonts.google.com/specimen/Lora
 Fallback: Georgia, serif
 ```
 
-| Style | Weight | Penggunaan |
-|---|---|---|
-| Regular | 400 | Body panjang, deskripsi paragraph |
-| Italic | 400i | Kutipan, penekanan ringan |
-| SemiBold | 600 | Pull quote, highlight teks editorial |
+| Style    | Weight | Penggunaan                           |
+| -------- | ------ | ------------------------------------ |
+| Regular  | 400    | Body panjang, deskripsi paragraph    |
+| Italic   | 400i   | Kutipan, penekanan ringan            |
+| SemiBold | 600    | Pull quote, highlight teks editorial |
 
 #### Font Monospace
 
@@ -280,7 +281,7 @@ theme: {
 
 ```css
 /* src/index.css */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -288,15 +289,15 @@ theme: {
 
 @layer base {
   :root {
-    --color-brand:        #1a6b5a;
-    --color-brand-dark:   #0f3d32;
-    --color-brand-light:  #e8f5f1;
-    --color-accent:       #e8a020;
+    --color-brand: #1a6b5a;
+    --color-brand-dark: #0f3d32;
+    --color-brand-light: #e8f5f1;
+    --color-accent: #e8a020;
     --color-accent-light: #faeeda;
   }
 
   html {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
     color: #3d3d3a;
     background-color: #f8f7f3;
   }
@@ -311,29 +312,29 @@ Kaswara menggunakan **Lucide React** sebagai library ikon utama dengan stroke we
 
 #### Ikon Utama Aplikasi
 
-| Konteks | Ikon Lucide |
-|---|---|
+| Konteks             | Ikon Lucide       |
+| ------------------- | ----------------- |
 | Dashboard / Beranda | `LayoutDashboard` |
-| Pemasukan | `TrendingUp` |
-| Pengeluaran | `TrendingDown` |
-| Transaksi | `ArrowLeftRight` |
-| Anggota / Warga | `Users` |
-| Iuran | `Wallet` |
-| RAB (Pengajuan) | `FileText` |
-| RAP (Realisasi) | `Receipt` |
-| Foto / Bukti | `Camera` |
-| Laporan | `BarChart2` |
-| Pengaturan | `Settings2` |
-| Notifikasi | `Bell` |
-| Logout | `LogOut` |
+| Pemasukan           | `TrendingUp`      |
+| Pengeluaran         | `TrendingDown`    |
+| Transaksi           | `ArrowLeftRight`  |
+| Anggota / Warga     | `Users`           |
+| Iuran               | `Wallet`          |
+| RAB (Pengajuan)     | `FileText`        |
+| RAP (Realisasi)     | `Receipt`         |
+| Foto / Bukti        | `Camera`          |
+| Laporan             | `BarChart2`       |
+| Pengaturan          | `Settings2`       |
+| Notifikasi          | `Bell`            |
+| Logout              | `LogOut`          |
 
 #### Ukuran Ikon
 
-| Konteks | Ukuran |
-|---|---|
-| Dalam tombol | 16px |
-| Label navigasi sidebar | 18px |
-| Kartu dashboard | 20px |
+| Konteks                 | Ukuran  |
+| ----------------------- | ------- |
+| Dalam tombol            | 16px    |
+| Label navigasi sidebar  | 18px    |
+| Kartu dashboard         | 20px    |
 | Hero / ilustrasi kosong | 32–48px |
 
 ---
@@ -400,10 +401,10 @@ Kaswara berbicara dengan nada yang **hangat, langsung, dan jelas** — seperti s
 
 #### Gunakan
 
-- Kalimat aktif: *"Simpan transaksi"* bukan *"Transaksi akan disimpan"*
-- Bahasa familiar warga: *"iuran"*, *"kas"*, *"warga"*, *"pengurus"*
-- Konfirmasi yang menenangkan: *"Berhasil disimpan!"*
-- Pesan error yang membantu: *"Nominal tidak boleh kosong"*
+- Kalimat aktif: _"Simpan transaksi"_ bukan _"Transaksi akan disimpan"_
+- Bahasa familiar warga: _"iuran"_, _"kas"_, _"warga"_, _"pengurus"_
+- Konfirmasi yang menenangkan: _"Berhasil disimpan!"_
+- Pesan error yang membantu: _"Nominal tidak boleh kosong"_
 - Bahasa Indonesia yang baik, bukan campur-campur
 
 #### Hindari
@@ -416,15 +417,15 @@ Kaswara berbicara dengan nada yang **hangat, langsung, dan jelas** — seperti s
 
 #### Contoh Penulisan UI
 
-| Konteks | Hindari | Gunakan |
-|---|---|---|
-| Tombol simpan | Save Transaction | Simpan transaksi |
-| Pesan sukses | Record created successfully | Data berhasil disimpan |
-| Pesan error | Field validation failed | Mohon isi semua kolom yang wajib |
-| Label status | Paid | Lunas |
-| Konfirmasi hapus | Are you sure? | Yakin ingin menghapus data ini? |
-| Empty state | No data found | Belum ada transaksi bulan ini |
-| Loading | Loading... | Memuat data... |
+| Konteks          | Hindari                     | Gunakan                          |
+| ---------------- | --------------------------- | -------------------------------- |
+| Tombol simpan    | Save Transaction            | Simpan transaksi                 |
+| Pesan sukses     | Record created successfully | Data berhasil disimpan           |
+| Pesan error      | Field validation failed     | Mohon isi semua kolom yang wajib |
+| Label status     | Paid                        | Lunas                            |
+| Konfirmasi hapus | Are you sure?               | Yakin ingin menghapus data ini?  |
+| Empty state      | No data found               | Belum ada transaksi bulan ini    |
+| Loading          | Loading...                  | Memuat data...                   |
 
 ---
 
@@ -931,12 +932,12 @@ Buka [http://localhost:5173](http://localhost:5173)
 
 ```javascript
 // src/lib/supabase.js
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 ```
 
 ---
@@ -1033,7 +1034,7 @@ Lihat file [LICENSE](./LICENSE) untuk detail lengkap.
 <p align="center">
   Dibangun dengan ❤️ untuk komunitas RT/RW Indonesia.
   <br/><br/>
-  <strong>Kaswara</strong> — <em>Kas Warga Indonesia</em>
+  <strong>Kaswara</strong> — <em>Kas Warga Negara</em>
   <br/><br/>
   <a href="https://github.com/username/kaswara/issues">Laporkan Bug</a> ·
   <a href="https://github.com/username/kaswara/discussions">Diskusi</a> ·

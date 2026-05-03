@@ -153,7 +153,7 @@ export default function Sidebar() {
               <p className="text-white font-bold text-[15px] leading-none">
                 kas<span className="text-accent">wara</span>
               </p>
-              <p className="text-white/40 text-[10px] mt-0.5">Kas Warga Indonesia</p>
+              <p className="text-white/40 text-[10px] mt-0.5">Kas Warga Negara</p>
             </div>
           </div>
           <button

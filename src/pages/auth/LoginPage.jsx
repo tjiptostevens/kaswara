@@ -48,7 +48,7 @@ export default function LoginPage() {
             <p className="text-[22px] font-bold text-brand leading-none">
               kas<span className="text-accent">wara</span>
             </p>
-            <p className="text-[11px] text-stone mt-0.5">Kas Warga Indonesia</p>
+            <p className="text-[11px] text-stone mt-0.5">Kas Warga Negara</p>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-stone mt-6">
-          © {new Date().getFullYear()} Kaswara · Kas Warga Indonesia
+          © {new Date().getFullYear()} Kaswara · Kas Warga Negara
         </p>
       </div>
     </div>

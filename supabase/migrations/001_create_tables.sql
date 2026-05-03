@@ -1,5 +1,5 @@
 -- 001_create_tables.sql
--- Kaswara — Kas Warga Indonesia
+-- Kaswara — Kas Warga Negara
 -- Initial schema: create all tables and views
 
 create extension if not exists "uuid-ossp";

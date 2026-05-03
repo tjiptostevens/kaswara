@@ -337,7 +337,7 @@ export default function PublikPage() {
               >
                 Kaswara
               </a>{' '}
-              — Kas Warga Indonesia
+              — Kas Warga Negara
             </p>
           </>
         )}

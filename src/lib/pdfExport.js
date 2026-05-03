@@ -79,7 +79,7 @@ function addPDFFooter(pdf) {
     pdf.setFontSize(8)
     pdf.setTextColor(155, 155, 149)
     pdf.text(
-      `Dicetak oleh Kaswara — Kas Warga Indonesia • Halaman ${i} dari ${pageCount}`,
+      `Dicetak oleh Kaswara — Kas Warga Negara • Halaman ${i} dari ${pageCount}`,
       pdf.internal.pageSize.getWidth() / 2,
       pdf.internal.pageSize.getHeight() - 10,
       { align: 'center' }
