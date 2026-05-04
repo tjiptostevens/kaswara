@@ -41,11 +41,10 @@ function SekaliIuranPanel({ kategori, iuranList, anggotaList }) {
             <div
               key={a.id}
               title={paid ? `${a.nama_lengkap} — Lunas` : `${a.nama_lengkap} — Belum bayar`}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${
-                paid
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${paid
                   ? 'bg-[#E1F5EE] border-[#B2EAD3] text-[#0F6E56]'
                   : 'bg-[#FCEBEB] border-[#F7CACA] text-[#A32D2D]'
-              }`}
+                }`}
             >
               {paid ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
               {a.nama_lengkap}
@@ -78,7 +77,7 @@ export default function IuranPage() {
     if (!activeWorkspace?.id) return
     supabase
       .from('anggota_organisasi')
-      .select('id, nama_lengkap, nomor_anggota')
+      .select('id, nama_lengkap, nomor_anggota, email, no_hp')
       .eq('organisasi_id', activeWorkspace.id)
       .eq('aktif', true)
       .order('nama_lengkap')

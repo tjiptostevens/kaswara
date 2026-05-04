@@ -4,7 +4,7 @@ import { useAuth } from './useAuth'
 import { formatPeriode } from '../lib/formatters'
 
 export function useIuran() {
-  const { activeWorkspace, user } = useAuth()
+  const { activeWorkspace, user, profile } = useAuth()
   const [iuran, setIuran] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -65,6 +65,7 @@ export function useIuran() {
         keterangan: keteranganTx,
         tanggal: today,
         dibuat_oleh: user?.id,
+        dibuat_oleh_anggota_id: profile?.id ?? null,
         status: 'submitted',
       })
       .select()

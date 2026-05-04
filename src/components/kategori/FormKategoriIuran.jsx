@@ -13,14 +13,7 @@ const FREKUENSI_OPTIONS = Object.entries(FREKUENSI_LABEL).map(([value, label]) =
 }))
 
 const TIPE_OPTIONS = [
-  {
-    value: 'sukarela',
-    label: 'Sukarela',
-    desc: 'Bersifat sukarela, tidak diwajibkan',
-    icon: Gift,
-    color: 'text-stone',
-    activeBg: 'bg-[#F1EFE8] border-[#C5C4BE] text-charcoal',
-  },
+
   {
     value: 'sekali',
     label: 'Satu Kali',
@@ -36,6 +29,13 @@ const TIPE_OPTIONS = [
     icon: RefreshCw,
     color: 'text-[#185FA5]',
     activeBg: 'bg-[#E6F1FB] border-[#CDE3F7] text-[#185FA5]',
+  }, {
+    value: 'sukarela',
+    label: 'Sukarela',
+    desc: 'Bersifat sukarela, tidak diwajibkan',
+    icon: Gift,
+    color: 'text-stone',
+    activeBg: 'bg-[#F1EFE8] border-[#C5C4BE] text-charcoal',
   },
 ]
 
@@ -99,11 +99,10 @@ export default function FormKategoriIuran({ defaultValues, onSubmit, onCancel })
           {TIPE_OPTIONS.map(({ value, label, desc, icon: Icon, activeBg }) => (
             <label
               key={value}
-              className={`flex flex-col items-center gap-1 border rounded-input p-2.5 text-center cursor-pointer transition-colors ${
-                tipe === value
+              className={`flex flex-col items-center gap-1 border rounded-input p-2.5 text-center cursor-pointer transition-colors ${tipe === value
                   ? `${activeBg} font-medium`
                   : 'border-border text-stone hover:bg-warm'
-              }`}
+                }`}
             >
               <input type="radio" value={value} className="sr-only" {...register('tipe')} />
               <Icon size={16} />
