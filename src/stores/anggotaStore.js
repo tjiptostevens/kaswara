@@ -28,7 +28,7 @@ const useAnggotaStore = create((set) => ({
     if (error) return { error }
     if (result?.error) return { error: { message: result.error } }
     set((state) => ({ anggota: [...state.anggota, result.data] }))
-    return { data: result.data, error: null }
+    return { data: result.data, existingUser: result.existing_user === true, error: null }
   },
 
   updateAnggota: async (id, updates) => {
@@ -48,7 +48,7 @@ const useAnggotaStore = create((set) => ({
   deleteAnggota: async (id) => {
     const { error } = await supabase
       .from('anggota_organisasi')
-      .update({ aktif: false })
+      .delete()
       .eq('id', id)
     if (error) return { error }
     set((state) => ({

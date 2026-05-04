@@ -57,7 +57,7 @@ export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
           />
           <div className="flex items-start gap-2 bg-[#E1F5EE] text-[#0F6E56] rounded-input px-3 py-2 text-xs">
             <Mail size={13} className="mt-0.5 flex-shrink-0" />
-            <span>Undangan akan dikirim ke email ini. Anggota menetapkan passwordnya sendiri saat menerima link undangan.</span>
+            <span>Jika email sudah terdaftar di Kaswara, anggota akan langsung ditambahkan tanpa undangan. Jika belum, undangan akan dikirim ke email ini untuk menetapkan password.</span>
           </div>
         </>
       )}

@@ -18,11 +18,11 @@ export default function AnggotaPage() {
   const [editing, setEditing] = useState(null)
 
   const handleAdd = async (data) => {
-    const { error } = await addAnggota({ ...data, organisasi_id: organisasi.id })
+    const { error, existingUser } = await addAnggota({ ...data, organisasi_id: organisasi.id })
     if (error) {
       showToast('Gagal menambah anggota: ' + error.message, 'error')
     } else {
-      showToast('Undangan berhasil dikirim ke email anggota!')
+      showToast(existingUser ? 'Anggota berhasil ditambahkan ke organisasi' : 'Undangan berhasil dikirim ke email anggota!')
       setModalOpen(false)
     }
   }
@@ -38,12 +38,12 @@ export default function AnggotaPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menonaktifkan anggota ini?')) return
+    if (!window.confirm('Yakin ingin mengeluarkan anggota ini dari organisasi? Tindakan ini tidak dapat dibatalkan.')) return
     const { error } = await deleteAnggota(id)
     if (error) {
       showToast('Gagal: ' + error.message, 'error')
     } else {
-      showToast('Anggota berhasil dinonaktifkan')
+      showToast('Anggota berhasil dikeluarkan dari organisasi')
     }
   }
 

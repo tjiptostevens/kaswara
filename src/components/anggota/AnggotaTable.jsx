@@ -1,5 +1,5 @@
 import React from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, UserMinus } from 'lucide-react'
 import Table from '../ui/Table'
 import { ROLE_LABELS } from '../../constants/roles'
 
@@ -93,9 +93,9 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
               <button
                 onClick={() => onDelete(row.id)}
                 className="text-stone hover:text-danger transition-colors p-1"
-                aria-label="Hapus anggota"
+                aria-label="Keluarkan dari organisasi"
               >
-                <Trash2 size={15} />
+                <UserMinus size={15} />
               </button>
             </div>
           ),
