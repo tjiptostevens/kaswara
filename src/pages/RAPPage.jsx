@@ -64,10 +64,11 @@ export default function RAPPage() {
       const failedUploads = []
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        const path = `${result.id}/${crypto.randomUUID()}_${file.name}`
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const path = `${result.id}/${crypto.randomUUID()}_${sanitizedName}`
         const { error: uploadError } = await supabase.storage
           .from('rap-foto')
-          .upload(path, file)
+          .upload(path, file, { contentType: file.type })
         if (uploadError) { failedUploads.push(file.name); continue }
         const { error: fotoError } = await supabase
           .from('rap_foto')
@@ -97,8 +98,11 @@ export default function RAPPage() {
     // Upload any new photos
     if (files.length > 0) {
       for (const file of files) {
-        const path = `${detail.id}/${crypto.randomUUID()}_${file.name}`
-        const { error: uploadError } = await supabase.storage.from('rap-foto').upload(path, file)
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const path = `${detail.id}/${crypto.randomUUID()}_${sanitizedName}`
+        const { error: uploadError } = await supabase.storage
+          .from('rap-foto')
+          .upload(path, file, { contentType: file.type })
         if (!uploadError) {
           await supabase.from('rap_foto').insert({ rap_id: detail.id, storage_path: path, nama_file: file.name })
         }
@@ -215,12 +219,12 @@ export default function RAPPage() {
   // Build defaultValues for the edit form
   const editDefaults = detail
     ? {
-        rab_id: detail.rab_id || '',
-        nama_item: detail.nama_item,
-        jumlah_realisasi: Number(detail.jumlah_realisasi),
-        keterangan: detail.keterangan || '',
-        tanggal_realisasi: detail.tanggal_realisasi,
-      }
+      rab_id: detail.rab_id || '',
+      nama_item: detail.nama_item,
+      jumlah_realisasi: Number(detail.jumlah_realisasi),
+      keterangan: detail.keterangan || '',
+      tanggal_realisasi: detail.tanggal_realisasi,
+    }
     : undefined
 
   return (
