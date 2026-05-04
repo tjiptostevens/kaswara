@@ -120,8 +120,8 @@ function WajibIuranPanel({ kategori, iuranList, anggotaList }) {
                       key={a.id}
                       title={isPaid ? `${a.nama_lengkap} — Lunas` : `${a.nama_lengkap} — Belum bayar`}
                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${isPaid
-                          ? 'bg-[#E1F5EE] border-[#B2EAD3] text-[#0F6E56]'
-                          : 'bg-[#FCEBEB] border-[#F7CACA] text-[#A32D2D]'
+                        ? 'bg-[#E1F5EE] border-[#B2EAD3] text-[#0F6E56]'
+                        : 'bg-[#FCEBEB] border-[#F7CACA] text-[#A32D2D]'
                         }`}
                     >
                       {isPaid ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
@@ -172,6 +172,40 @@ export default function IuranPage() {
       .order('nama')
       .then(({ data }) => setKategoriList(data || []))
   }, [activeWorkspace?.id])
+
+  useEffect(() => {
+    if (!activeWorkspace?.id) return
+
+    const iuranChannel = supabase
+      .channel(`iuran_rutin:${activeWorkspace.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'iuran_rutin',
+          filter: `organisasi_id=eq.${activeWorkspace.id}`,
+        },
+        () => {
+          fetchIuran()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(iuranChannel)
+    }
+  }, [activeWorkspace?.id])
+
+  useEffect(() => {
+    if (!detail?.id) return
+    const latest = iuran.find((row) => row.id === detail.id)
+    if (!latest) {
+      setDetail(null)
+      return
+    }
+    setDetail(latest)
+  }, [iuran])
 
   const handleAdd = async (data) => {
     const { error } = await addIuran(data)

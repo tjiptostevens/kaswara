@@ -84,8 +84,38 @@ const useKasStore = create((set, get) => ({
       updates.cancelled_by = userId
       updates.cancelled_at = now
     }
-    const { error } = await supabase.from('transaksi').update(updates).eq('id', id)
+    const { data: updatedTransaksi, error } = await supabase
+      .from('transaksi')
+      .update(updates)
+      .eq('id', id)
+      .select('id, rap_id')
+      .single()
     if (error) return { error }
+
+    if (status === 'cancelled') {
+      if (updatedTransaksi?.rap_id) {
+        const { error: rapSyncErr } = await supabase
+          .from('rap')
+          .update({
+            status: 'cancelled',
+            cancelled_by: userId,
+            cancelled_at: now,
+          })
+          .eq('id', updatedTransaksi.rap_id)
+        if (rapSyncErr) return { error: rapSyncErr }
+      }
+
+      const { error: iuranSyncErr } = await supabase
+        .from('iuran_rutin')
+        .update({
+          status: 'cancelled',
+          cancelled_by: userId,
+          cancelled_at: now,
+        })
+        .eq('transaksi_id', id)
+      if (iuranSyncErr) return { error: iuranSyncErr }
+    }
+
     if (organisasiId) await get().fetchTransaksi(organisasiId)
     return { error: null }
   },
@@ -101,8 +131,8 @@ const useKasStore = create((set, get) => ({
 
     // Create new draft with amended_from
     const { id, status, submitted_by, submitted_at, cancelled_by, cancelled_at,
-            amended_by, amended_at, amended_from,
-            kategori_transaksi, anggota_organisasi, ...rest } = original
+      amended_by, amended_at, amended_from,
+      kategori_transaksi, anggota_organisasi, ...rest } = original
     const { data: result, error } = await supabase
       .from('transaksi')
       .insert({
