@@ -140,6 +140,24 @@ const useAuthStore = create((set, get) => ({
     return { error: null }
   },
 
+  signup: async (email, password) => {
+    set({ error: null, loading: true })
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          full_name: email.split('@')[0]
+        }
+      }
+    })
+    if (error) {
+      set({ error: error.message, loading: false })
+      return { error }
+    }
+    return { error: null }
+  },
+
   logout: async () => {
     localStorage.removeItem(ACTIVE_WORKSPACE_KEY)
     await supabase.auth.signOut()

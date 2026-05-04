@@ -6,8 +6,8 @@ import { ROUTES } from '../../constants/routes'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 
-export default function LoginPage() {
-  const { login, isAuthenticated, loading, error, clearError } = useAuth()
+export default function SignupPage() {
+  const { signup, isAuthenticated, loading, error, clearError } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -21,7 +21,7 @@ export default function LoginPage() {
     e.preventDefault()
     clearError()
     setSubmitting(true)
-    await login(email, password)
+    await signup(email, password)
     setSubmitting(false)
   }
 
@@ -54,9 +54,9 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="glass-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#0f3d32] mb-1">Masuk ke akun</h2>
+          <h2 className="text-lg font-semibold text-[#0f3d32] mb-1">Daftar akun baru</h2>
           <p className="text-sm text-stone mb-6">
-            Kelola keuangan kas RT/RW dengan mudah dan transparan.
+            Mulai kelola keuangan kas RT/RW dengan mudah.
           </p>
 
           {error && (
@@ -92,11 +92,12 @@ export default function LoginPage() {
               }
             />
             <Button type="submit" variant="primary" fullWidth loading={submitting}>
-              Masuk
+              Daftar
             </Button>
           </form>
+
           <p className="text-sm text-stone mt-6 text-center">
-            Belum punya akun? <Link to={ROUTES.SIGNUP} className="text-brand font-medium hover:underline">Daftar di sini</Link>
+            Sudah punya akun? <Link to={ROUTES.LOGIN} className="text-brand font-medium hover:underline">Masuk di sini</Link>
           </p>
         </div>
 

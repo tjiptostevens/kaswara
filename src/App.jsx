@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/layout/ErrorBoundary'
 
 // Auth pages (no layout)
 import LoginPage from './pages/auth/LoginPage'
+import SignupPage from './pages/auth/SignupPage'
 import SetupOrganisasiPage from './pages/auth/SetupOrganisasiPage'
 import ToastProvider from './components/ui/ToastProvider'
 
@@ -25,6 +26,7 @@ import KelargaPage from './pages/KelargaPage'
 import SettingsPage from './pages/SettingsPage'
 import KategoriPage from './pages/KategoriPage'
 import KategoriIuranPage from './pages/KategoriIuranPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -40,6 +42,7 @@ export default function App() {
         <Routes>
           {/* Public routes */}
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+          <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
           <Route path={ROUTES.SETUP} element={<SetupOrganisasiPage />} />
           <Route path={ROUTES.PUBLIK} element={<PublikPage />} />
 
@@ -132,6 +135,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          
+          {/* 404 Route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

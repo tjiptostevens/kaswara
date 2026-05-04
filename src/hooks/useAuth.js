@@ -10,6 +10,7 @@ export function useAuth() {
   const error = useAuthStore((s) => s.error)
   const initialize = useAuthStore((s) => s.initialize)
   const login = useAuthStore((s) => s.login)
+  const signup = useAuthStore((s) => s.signup)
   const logout = useAuthStore((s) => s.logout)
   const clearError = useAuthStore((s) => s.clearError)
   const switchWorkspace = useAuthStore((s) => s.switchWorkspace)
@@ -34,6 +35,7 @@ export function useAuth() {
     error,
     initialize,
     login,
+    signup,
     logout,
     clearError,
     switchWorkspace,
