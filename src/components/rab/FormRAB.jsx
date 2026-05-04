@@ -6,7 +6,7 @@ import { Input, Button } from '../ui'
 import { Plus, Trash2 } from 'lucide-react'
 import { getTodayString, formatRupiah } from '../../lib/formatters'
 
-export default function FormRAB({ onSubmit, onCancel }) {
+export default function FormRAB({ onSubmit, onCancel, defaultValues }) {
   const {
     register,
     handleSubmit,
@@ -15,7 +15,7 @@ export default function FormRAB({ onSubmit, onCancel }) {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(rabSchema),
-    defaultValues: {
+    defaultValues: defaultValues || {
       tanggal_pengajuan: getTodayString(),
       items: [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
     },
@@ -142,7 +142,7 @@ export default function FormRAB({ onSubmit, onCancel }) {
           </Button>
         )}
         <Button type="submit" variant="primary" fullWidth loading={isSubmitting}>
-          Simpan RAB
+          {defaultValues ? 'Simpan perubahan' : 'Simpan RAB'}
         </Button>
       </div>
     </form>

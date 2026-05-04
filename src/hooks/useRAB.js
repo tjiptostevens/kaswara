@@ -22,6 +22,32 @@ export function useRAB() {
     setRab(data || [])
   }
 
+  const updateRAB = async (id, data) => {
+    const { items, ...rabData } = data
+    const total_anggaran = (items || []).reduce(
+      (sum, item) => sum + (Number(item.volume) || 0) * (Number(item.harga_satuan) || 0),
+      0
+    )
+    const { error } = await supabase
+      .from('rab')
+      .update({ ...rabData, total_anggaran })
+      .eq('id', id)
+    if (error) return { error }
+
+    // Replace items: delete old ones, insert updated ones
+    await supabase.from('rab_item').delete().eq('rab_id', id)
+    if (items?.length) {
+      const itemsWithRabId = items.map((item) => ({
+        ...item,
+        rab_id: id,
+        subtotal: Number(item.volume) * Number(item.harga_satuan),
+      }))
+      await supabase.from('rab_item').insert(itemsWithRabId)
+    }
+    await fetchRAB()
+    return { error: null }
+  }
+
   const addRAB = async (data) => {
     const { items, ...rabData } = data
     const total_anggaran = (items || []).reduce(
@@ -122,5 +148,5 @@ export function useRAB() {
 
   useEffect(() => { fetchRAB() }, [activeWorkspace?.id])
 
-  return { rab, loading, error, addRAB, updateStatus, cancelRAB, amendRAB, refetch: fetchRAB }
+  return { rab, loading, error, addRAB, updateRAB, updateStatus, cancelRAB, amendRAB, refetch: fetchRAB }
 }

@@ -10,8 +10,9 @@ import { getTodayString } from '../../lib/formatters'
  * @param {Array} props.kategori
  * @param {(data: object) => Promise<void>} props.onSubmit
  * @param {() => void} props.onCancel
+ * @param {object} [props.defaultValues] - Pre-populated values for edit mode
  */
-export default function FormTransaksi({ kategori = [], onSubmit, onCancel }) {
+export default function FormTransaksi({ kategori = [], onSubmit, onCancel, defaultValues }) {
   const {
     register,
     handleSubmit,
@@ -20,7 +21,7 @@ export default function FormTransaksi({ kategori = [], onSubmit, onCancel }) {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(transaksiSchema),
-    defaultValues: { tanggal: getTodayString(), tipe: 'pemasukan' },
+    defaultValues: defaultValues || { tanggal: getTodayString(), tipe: 'pemasukan' },
   })
 
   const tipe = watch('tipe')
@@ -119,7 +120,7 @@ export default function FormTransaksi({ kategori = [], onSubmit, onCancel }) {
           </Button>
         )}
         <Button type="submit" variant="primary" fullWidth loading={isSubmitting}>
-          Simpan transaksi
+          {defaultValues ? 'Simpan perubahan' : 'Simpan transaksi'}
         </Button>
       </div>
     </form>

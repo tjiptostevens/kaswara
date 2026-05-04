@@ -11,15 +11,16 @@ import { Camera, X } from 'lucide-react'
  * @param {Array} props.rabList - list of approved RAB
  * @param {(data: object, files: File[]) => Promise<void>} props.onSubmit
  * @param {() => void} props.onCancel
+ * @param {object} [props.defaultValues] - Pre-populated values for edit mode
  */
-export default function FormRAP({ rabList = [], onSubmit, onCancel }) {
+export default function FormRAP({ rabList = [], onSubmit, onCancel, defaultValues }) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(rapSchema),
-    defaultValues: { tanggal_realisasi: getTodayString() },
+    defaultValues: defaultValues || { tanggal_realisasi: getTodayString() },
   })
 
   // Each entry: { file: File, url: string }

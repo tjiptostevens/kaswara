@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, ArrowLeftRight, Users, Wallet,
   FileText, Receipt, BarChart2, Settings2, LogOut, X, Home,
-  Tag, ChevronDown, Check, Building2, User,
+  Tag, ChevronDown, Check, Building2, User, ListChecks,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
@@ -17,6 +17,7 @@ const orgNavItems = [
   { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
   { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
   { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
+  { to: ROUTES.KATEGORI_IURAN, icon: ListChecks, label: 'Kategori Iuran' },
   { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
   { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
   { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },

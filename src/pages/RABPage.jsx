@@ -5,19 +5,20 @@ import FormRAB from '../components/rab/FormRAB'
 import RABStatusFlow from '../components/rab/RABStatusFlow'
 import ApprovalButtons from '../components/rab/ApprovalButtons'
 import { Modal, Button, Badge } from '../components/ui'
-import { Plus, Printer, XCircle, RefreshCw } from 'lucide-react'
+import { Plus, Printer, XCircle, RefreshCw, Pencil } from 'lucide-react'
 import { useRAB } from '../hooks/useRAB'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
-import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
+import { formatRupiah, formatTanggalPendek, getTodayString } from '../lib/formatters'
 import { generateRABPDF } from '../lib/pdfExport'
 
 export default function RABPage() {
   const { isBendahara, isKetua, canManageRAB, canApproveRAB, isPersonalWorkspace, activeWorkspace } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
-  const { rab, loading, addRAB, updateStatus, cancelRAB, amendRAB } = useRAB()
+  const { rab, loading, addRAB, updateRAB, updateStatus, cancelRAB, amendRAB } = useRAB()
 
   const [addOpen, setAddOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const [detail, setDetail] = useState(null)
 
   const handleAdd = async (data) => {
@@ -27,6 +28,17 @@ export default function RABPage() {
     } else {
       showToast('RAB berhasil disimpan!')
       setAddOpen(false)
+    }
+  }
+
+  const handleEdit = async (data) => {
+    const { error } = await updateRAB(detail.id, data)
+    if (error) {
+      showToast('Gagal memperbarui RAB: ' + error.message, 'error')
+    } else {
+      showToast('RAB berhasil diperbarui!')
+      setEditOpen(false)
+      setDetail(null)
     }
   }
 
@@ -79,8 +91,23 @@ export default function RABPage() {
     generateRABPDF([row], activeWorkspace?.nama || 'Kaswara')
   }
 
-  // For personal workspace or org members with canApproveRAB, show approval buttons on diajukan
   const canApprove = canApproveRAB
+
+  // Build defaultValues for RAB edit form
+  const editDefaults = detail
+    ? {
+        nama_kegiatan: detail.nama_kegiatan,
+        deskripsi: detail.deskripsi || '',
+        tanggal_kegiatan: detail.tanggal_kegiatan,
+        tanggal_pengajuan: detail.tanggal_pengajuan || getTodayString(),
+        items: detail.rab_item?.map(({ nama_item, volume, satuan, harga_satuan }) => ({
+          nama_item,
+          volume: Number(volume),
+          satuan,
+          harga_satuan: Number(harga_satuan),
+        })) || [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
+      }
+    : undefined
 
   return (
     <PageWrapper title="RAB">
@@ -121,9 +148,20 @@ export default function RABPage() {
         <FormRAB onSubmit={handleAdd} onCancel={() => setAddOpen(false)} />
       </Modal>
 
+      {/* Edit RAB Modal */}
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit RAB" size="lg">
+        {detail && (
+          <FormRAB
+            defaultValues={editDefaults}
+            onSubmit={handleEdit}
+            onCancel={() => setEditOpen(false)}
+          />
+        )}
+      </Modal>
+
       {/* Detail Modal */}
       <Modal
-        open={!!detail}
+        open={!!detail && !editOpen}
         onClose={() => setDetail(null)}
         title={detail?.nama_kegiatan || 'Detail RAB'}
         size="lg"
@@ -169,7 +207,7 @@ export default function RABPage() {
               </div>
             )}
 
-            {/* User History */}
+            {/* History */}
             <div className="bg-[#F8F7F3] rounded-input px-3 py-2 space-y-1 text-xs text-stone">
               <p className="font-medium text-charcoal uppercase tracking-wide text-xs mb-1">Riwayat</p>
               {(detail.anggota_organisasi?.nama_lengkap || detail.diajukan_oleh) && (
@@ -204,6 +242,16 @@ export default function RABPage() {
               >
                 Cetak
               </Button>
+              {canManageRAB && detail.status === 'draft' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={<Pencil size={15} />}
+                  onClick={() => setEditOpen(true)}
+                >
+                  Edit
+                </Button>
+              )}
               {canManageRAB && detail.status === 'draft' && (
                 <Button variant="accent" size="sm" onClick={() => handleSubmitRAB(detail.id)}>
                   Ajukan RAB
@@ -245,3 +293,4 @@ export default function RABPage() {
     </PageWrapper>
   )
 }
+
