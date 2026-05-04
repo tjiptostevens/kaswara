@@ -9,29 +9,67 @@ import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
 import { ROUTES } from '../../constants/routes'
 
-// Nav items shown in ORGANISASI workspace
-const orgNavItems = [
-  { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-  { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
-  { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
-  { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
-  { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
-  { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
-  { to: ROUTES.KATEGORI_IURAN, icon: ListChecks, label: 'Kategori Iuran' },
-  { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
-  { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
-  { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },
+// Nav groups shown in ORGANISASI workspace
+const orgNavGroups = [
+  {
+    items: [
+      { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
+    ],
+  },
+  {
+    label: 'Master',
+    items: [
+      { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
+      { to: ROUTES.KATEGORI_IURAN, icon: ListChecks, label: 'Kategori Iuran' },
+      { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
+      { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
+    ],
+  },
+  {
+    label: 'Transaksi',
+    items: [
+      { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
+      { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
+      { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
+      { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
+    ],
+  },
+  {
+    label: 'Laporan',
+    items: [
+      { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },
+    ],
+  },
 ]
 
-// Nav items shown in PERSONAL workspace
-const personalNavItems = [
-  { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-  { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
-  { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
-  { to: ROUTES.KELUARGA, icon: Home, label: 'Data Keluarga' },
-  { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
-  { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
-  { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },
+// Nav groups shown in PERSONAL workspace
+const personalNavGroups = [
+  {
+    items: [
+      { to: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
+    ],
+  },
+  {
+    label: 'Master',
+    items: [
+      { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
+      { to: ROUTES.KELUARGA, icon: Home, label: 'Data Keluarga' },
+    ],
+  },
+  {
+    label: 'Transaksi',
+    items: [
+      { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
+      { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
+      { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
+    ],
+  },
+  {
+    label: 'Laporan',
+    items: [
+      { to: ROUTES.LAPORAN, icon: BarChart2, label: 'Laporan' },
+    ],
+  },
 ]
 
 function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
@@ -117,9 +155,10 @@ export default function Sidebar() {
 
   const canManageAnggota = isBendahara || isKetua
 
-  const navItems = (isPersonalWorkspace ? personalNavItems : orgNavItems).filter(
-    (item) => item.to !== ROUTES.ANGGOTA || canManageAnggota
-  )
+  const navGroups = (isPersonalWorkspace ? personalNavGroups : orgNavGroups).map((group) => ({
+    ...group,
+    items: group.items.filter((item) => item.to !== ROUTES.ANGGOTA || canManageAnggota),
+  })).filter((group) => group.items.length > 0)
 
   return (
     <>
@@ -174,23 +213,32 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 scrollbar-thin">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === ROUTES.DASHBOARD}
-              className={({ isActive }) =>
-                [
-                  'flex items-center gap-3 px-5 py-2.5 text-sm transition-all duration-200 rounded-lg mx-2 my-0.5',
-                  isActive
-                    ? 'bg-white/10 text-white font-semibold shadow-sm ring-1 ring-white/20'
-                    : 'text-white/60 hover:text-white hover:bg-white/5',
-                ].join(' ')
-              }
-            >
-              <Icon size={18} strokeWidth={1.5} />
-              {label}
-            </NavLink>
+          {navGroups.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-1' : ''}>
+              {group.label && (
+                <p className="px-5 pt-3 pb-1 text-[10px] uppercase tracking-widest text-white/30 font-semibold">
+                  {group.label}
+                </p>
+              )}
+              {group.items.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === ROUTES.DASHBOARD}
+                  className={({ isActive }) =>
+                    [
+                      'flex items-center gap-3 px-5 py-2.5 text-sm transition-all duration-200 rounded-lg mx-2 my-0.5',
+                      isActive
+                        ? 'bg-white/10 text-white font-semibold shadow-sm ring-1 ring-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/5',
+                    ].join(' ')
+                  }
+                >
+                  <Icon size={18} strokeWidth={1.5} />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 
