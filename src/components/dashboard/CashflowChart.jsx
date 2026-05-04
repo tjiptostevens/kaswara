@@ -24,13 +24,15 @@ export default function CashflowChart({ transaksi = [] }) {
 
   const months = useMemo(() => {
     const map = {}
-    transaksi.forEach((t) => {
-      const key = t.tanggal?.substring(0, 7) // YYYY-MM
-      if (!key) return
-      if (!map[key]) map[key] = { pemasukan: 0, pengeluaran: 0 }
-      if (t.tipe === 'pemasukan') map[key].pemasukan += Number(t.jumlah)
-      else map[key].pengeluaran += Number(t.jumlah)
-    })
+    transaksi
+      .filter((t) => t.status === 'submitted')
+      .forEach((t) => {
+        const key = t.tanggal?.substring(0, 7) // YYYY-MM
+        if (!key) return
+        if (!map[key]) map[key] = { pemasukan: 0, pengeluaran: 0 }
+        if (t.tipe === 'pemasukan') map[key].pemasukan += Number(t.jumlah)
+        else map[key].pengeluaran += Number(t.jumlah)
+      })
 
     const sorted = Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
 
