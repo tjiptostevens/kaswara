@@ -59,6 +59,21 @@ const useKasStore = create((set, get) => ({
     return { data: result, error: null }
   },
 
+  updateTransaksi: async (id, data) => {
+    const { data: result, error } = await supabase
+      .from('transaksi')
+      .update(data)
+      .eq('id', id)
+      .select('*, kategori_transaksi(nama, tipe), anggota_organisasi(nama_lengkap)')
+      .single()
+    if (error) return { error }
+    set((state) => ({
+      transaksi: state.transaksi.map((t) => (t.id === id ? result : t)),
+    }))
+    get().hitungSaldo(get().transaksi)
+    return { data: result, error: null }
+  },
+
   updateTransaksiStatus: async (id, status, userId, organisasiId) => {
     const now = new Date().toISOString()
     const updates = { status }

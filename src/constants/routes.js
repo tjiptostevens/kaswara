@@ -11,6 +11,7 @@ export const ROUTES = {
   LAPORAN: '/laporan',
   SETTINGS: '/settings',
   KATEGORI: '/kategori',
+  KATEGORI_IURAN: '/kategori-iuran',
   PUBLIK: '/publik/:handle',
 }
 

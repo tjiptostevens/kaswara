@@ -280,6 +280,55 @@ export function generateRABPDF(rabList, namaOrganisasi) {
 }
 
 /**
+ * Generate daftar iuran sebagai PDF
+ * @param {Array} iuranList
+ * @param {string} namaOrganisasi
+ */
+export function generateIuranPDF(iuranList, namaOrganisasi) {
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const pageWidth = pdf.internal.pageSize.getWidth()
+  const now = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+  let y = addPDFHeader(pdf, 'DAFTAR IURAN', `Dicetak: ${now}`, namaOrganisasi)
+
+  // Header row
+  pdf.setFontSize(9)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setTextColor(120, 120, 115)
+  pdf.text('Anggota', 14, y)
+  pdf.text('Periode', 65, y)
+  pdf.text('Kategori', 98, y)
+  pdf.text('Status', 138, y)
+  pdf.text('Jumlah', pageWidth - 14, y, { align: 'right' })
+  y += 2
+  pdf.setDrawColor(229, 228, 222)
+  pdf.line(14, y, pageWidth - 14, y)
+  y += 5
+
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(9)
+
+  iuranList.forEach((row) => {
+    if (y > PAGE_BREAK_THRESHOLD) { pdf.addPage(); y = 20 }
+    pdf.setTextColor(60, 60, 58)
+    const nama = (row.anggota_organisasi?.nama_lengkap || '—').substring(0, 22)
+    pdf.text(nama, 14, y)
+    pdf.text(row.periode ? formatPeriode(row.periode) : '—', 65, y)
+    const kat = (row.kategori_iuran?.nama || '—').substring(0, 18)
+    pdf.text(kat, 98, y)
+    pdf.setTextColor(90, 90, 85)
+    const statusLabels = { draft: 'Draft', diajukan: 'Diajukan', cancelled: 'Dibatalkan', amended: 'Diubah' }
+    pdf.text(statusLabels[row.status] || row.status || '—', 138, y)
+    pdf.setTextColor(26, 107, 90)
+    pdf.text(formatRupiah(row.jumlah || 0), pageWidth - 14, y, { align: 'right' })
+    pdf.setTextColor(60, 60, 58)
+    y += 6
+  })
+
+  addPDFFooter(pdf)
+  pdf.save(`iuran-${Date.now()}.pdf`)
+}
+
+/**
  * Generate daftar RAP sebagai PDF
  * @param {Array} rapList
  * @param {string} namaOrganisasi

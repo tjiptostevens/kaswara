@@ -5,8 +5,9 @@ import TransaksiStatusFlow from '../components/transaksi/TransaksiStatusFlow'
 import FormTransaksi from '../components/transaksi/FormTransaksi'
 import FilterTransaksi from '../components/transaksi/FilterTransaksi'
 import { Modal, Button, Badge } from '../components/ui'
-import { Plus, Printer, Send, XCircle, RefreshCw } from 'lucide-react'
+import { Plus, Printer, Send, XCircle, RefreshCw, Pencil } from 'lucide-react'
 import { useTransaksi } from '../hooks/useTransaksi'
+import useKasStore from '../stores/kasStore'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
@@ -15,7 +16,9 @@ import { generateTransaksiPDF } from '../lib/pdfExport'
 export default function TransaksiPage() {
   const { isBendahara, organisasi, profile, user, activeWorkspace } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
+  const updateTransaksi = useKasStore((s) => s.updateTransaksi)
   const [modalOpen, setModalOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const [detail, setDetail] = useState(null)
   const [filters, setFilters] = useState({})
 
@@ -42,6 +45,17 @@ export default function TransaksiPage() {
     }
   }
 
+  const handleEdit = async (data) => {
+    const { error, data: updated } = await updateTransaksi(detail.id, data)
+    if (error) {
+      showToast('Gagal memperbarui transaksi: ' + error.message, 'error')
+    } else {
+      showToast('Transaksi berhasil diperbarui!')
+      setEditOpen(false)
+      setDetail(updated)
+    }
+  }
+
   const handleSubmit = async (id) => {
     const { error } = await updateTransaksiStatus(id, 'submitted', user?.id, organisasi?.id)
     if (error) {
@@ -64,7 +78,7 @@ export default function TransaksiPage() {
   }
 
   const handleAmend = async (row) => {
-    const { error, data } = await amendTransaksi(row, user?.id, organisasi?.id)
+    const { error } = await amendTransaksi(row, user?.id, organisasi?.id)
     if (error) {
       showToast('Gagal mengubah: ' + error.message, 'error')
     } else {
@@ -90,6 +104,17 @@ export default function TransaksiPage() {
   const handlePrintDetail = (row) => {
     generateTransaksiPDF([row], activeWorkspace?.nama || 'Kaswara')
   }
+
+  // Build defaultValues for edit form from the selected detail row
+  const editDefaults = detail
+    ? {
+        tipe: detail.tipe,
+        jumlah: Number(detail.jumlah),
+        kategori_id: detail.kategori_id || '',
+        keterangan: detail.keterangan || '',
+        tanggal: detail.tanggal,
+      }
+    : undefined
 
   return (
     <PageWrapper title="Transaksi">
@@ -146,9 +171,25 @@ export default function TransaksiPage() {
         />
       </Modal>
 
+      {/* Edit Modal */}
+      <Modal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Edit Transaksi"
+      >
+        {detail && (
+          <FormTransaksi
+            kategori={kategori}
+            defaultValues={editDefaults}
+            onSubmit={handleEdit}
+            onCancel={() => setEditOpen(false)}
+          />
+        )}
+      </Modal>
+
       {/* Detail Modal */}
       <Modal
-        open={!!detail}
+        open={!!detail && !editOpen}
         onClose={() => setDetail(null)}
         title="Detail Transaksi"
         size="lg"
@@ -184,7 +225,7 @@ export default function TransaksiPage() {
               )}
             </div>
 
-            {/* User History */}
+            {/* History */}
             <div className="bg-brand-light/50 border border-brand/5 rounded-input px-4 py-3 space-y-1 text-xs text-stone">
               <p className="font-bold text-brand-dark uppercase tracking-widest text-[9px] mb-2 opacity-60">Riwayat Transaksi</p>
               {detail.dibuat_oleh && (
@@ -214,6 +255,16 @@ export default function TransaksiPage() {
               >
                 Cetak
               </Button>
+              {isBendahara && detail.status === 'draft' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={<Pencil size={15} />}
+                  onClick={() => setEditOpen(true)}
+                >
+                  Edit
+                </Button>
+              )}
               {isBendahara && detail.status === 'draft' && (
                 <Button
                   variant="accent"
@@ -260,3 +311,4 @@ export default function TransaksiPage() {
     </PageWrapper>
   )
 }
+
