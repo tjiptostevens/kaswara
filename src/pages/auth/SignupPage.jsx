@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { Navigate, Link } from 'react-router-dom'
+import { Navigate, Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { ROUTES } from '../../constants/routes'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import useUIStore from '../../stores/uiStore'
 
 export default function SignupPage() {
   const { signup, isAuthenticated, loading, error, clearError } = useAuth()
@@ -12,6 +13,9 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  const navigate = useNavigate()
+  const showToast = useUIStore((s) => s.showToast)
 
   if (!loading && isAuthenticated) {
     return <Navigate to={ROUTES.DASHBOARD} replace />
@@ -21,8 +25,13 @@ export default function SignupPage() {
     e.preventDefault()
     clearError()
     setSubmitting(true)
-    await signup(email, password)
+    const result = await signup(email, password)
     setSubmitting(false)
+
+    if (!result?.error) {
+      showToast('Pendaftaran berhasil! Silakan masuk.')
+      navigate(ROUTES.LOGIN)
+    }
   }
 
   return (
