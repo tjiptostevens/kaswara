@@ -97,9 +97,10 @@ serve(async (req) => {
     }
 
     // Cek apakah email sudah terdaftar di Kaswara
+    // GoTrue admin API uses `search` (not `email`) for filtering; we then do an exact match.
     let existingUserId: string | null = null;
     const searchRes = await fetch(
-      `${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(email)}&page=1&per_page=1`,
+      `${supabaseUrl}/auth/v1/admin/users?search=${encodeURIComponent(email)}&page=1&per_page=50`,
       {
         headers: {
           Authorization: `Bearer ${serviceRoleKey}`,
@@ -109,8 +110,12 @@ serve(async (req) => {
     );
     if (searchRes.ok) {
       const searchData = await searchRes.json();
-      if (Array.isArray(searchData.users) && searchData.users.length > 0) {
-        existingUserId = searchData.users[0].id;
+      const users: any[] = Array.isArray(searchData.users)
+        ? searchData.users
+        : [];
+      const match = users.find((u) => u.email === email);
+      if (match) {
+        existingUserId = match.id;
       }
     }
 
@@ -156,13 +161,45 @@ serve(async (req) => {
         });
 
       if (inviteError) {
-        return new Response(JSON.stringify({ error: inviteError.message }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+        // Fallback: jika gagal karena email sudah terdaftar, coba cari lagi dengan pencarian lebih luas
+        const alreadyExists =
+          inviteError.message.toLowerCase().includes("already") ||
+          inviteError.message.toLowerCase().includes("registered") ||
+          inviteError.message.toLowerCase().includes("exist");
 
-      newUserId = inviteData.user.id;
+        if (alreadyExists) {
+          // Cari user berdasarkan email dengan page yang lebih besar
+          const fallbackRes = await fetch(
+            `${supabaseUrl}/auth/v1/admin/users?page=1&per_page=1000`,
+            {
+              headers: {
+                Authorization: `Bearer ${serviceRoleKey}`,
+                apikey: serviceRoleKey,
+              },
+            },
+          );
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            const fallbackUsers: any[] = Array.isArray(fallbackData.users)
+              ? fallbackData.users
+              : [];
+            const match = fallbackUsers.find((u) => u.email === email);
+            if (match) {
+              newUserId = match.id;
+              existingUser = true;
+            }
+          }
+        }
+
+        if (!existingUser) {
+          return new Response(JSON.stringify({ error: inviteError.message }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else {
+        newUserId = inviteData.user.id;
+      }
     }
 
     // Insert record anggota

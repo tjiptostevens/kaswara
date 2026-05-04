@@ -85,14 +85,14 @@ export default function KategoriIuranPage() {
         <KategoriTipeBadge tipe={row.tipe} frekuensi={row.frekuensi} />
       ),
     },
-    {
-      key: 'frekuensi',
-      label: 'Frekuensi',
-      render: (row) =>
-        row.tipe === 'wajib' && row.frekuensi
-          ? <span className="text-sm text-charcoal">{FREKUENSI_LABEL[row.frekuensi] || row.frekuensi}</span>
-          : <span className="text-stone text-xs">—</span>,
-    },
+    // {
+    //   key: 'frekuensi',
+    //   label: 'Frekuensi',
+    //   render: (row) =>
+    //     row.tipe === 'wajib' && row.frekuensi
+    //       ? <span className="text-sm text-charcoal">{FREKUENSI_LABEL[row.frekuensi] || row.frekuensi}</span>
+    //       : <span className="text-stone text-xs">—</span>,
+    // },
     {
       key: 'nominal_default',
       label: 'Nominal Default',
@@ -108,29 +108,29 @@ export default function KategoriIuranPage() {
     },
     ...(isBendahara
       ? [
-          {
-            key: 'actions',
-            label: '',
-            render: (row) => (
-              <div className="flex gap-1 justify-end">
-                <button
-                  onClick={() => setEditing(row)}
-                  className="text-stone hover:text-brand transition-colors p-1"
-                  aria-label="Edit"
-                >
-                  <Pencil size={15} />
-                </button>
-                <button
-                  onClick={() => handleDelete(row.id)}
-                  className="text-stone hover:text-danger transition-colors p-1"
-                  aria-label="Hapus"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            ),
-          },
-        ]
+        {
+          key: 'actions',
+          label: '',
+          render: (row) => (
+            <div className="flex gap-1 justify-end">
+              <button
+                onClick={() => setEditing(row)}
+                className="text-stone hover:text-brand transition-colors p-1"
+                aria-label="Edit"
+              >
+                <Pencil size={15} />
+              </button>
+              <button
+                onClick={() => handleDelete(row.id)}
+                className="text-stone hover:text-danger transition-colors p-1"
+                aria-label="Hapus"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ),
+        },
+      ]
       : []),
   ]
 

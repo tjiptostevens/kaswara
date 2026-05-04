@@ -14,9 +14,114 @@ import useKasStore from '../stores/kasStore'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { generateRAPPDF } from '../lib/pdfExport'
 
+const MAX_IMAGE_DIMENSION = 1600
+const TARGET_IMAGE_SIZE_BYTES = 450 * 1024
+const START_JPEG_QUALITY = 0.82
+const MIN_JPEG_QUALITY = 0.55
+
+const sanitizeFileName = (name = '') => name.replace(/[^a-zA-Z0-9._-]/g, '_')
+
+const formatUploadTimestamp = (date = new Date()) => {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+const readImageFile = (file) =>
+  new Promise((resolve, reject) => {
+    const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      resolve(img)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Failed to read image'))
+    }
+    img.src = objectUrl
+  })
+
+const canvasToBlob = (canvas, mimeType, quality) =>
+  new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob)
+      else reject(new Error('Failed to convert canvas to blob'))
+    }, mimeType, quality)
+  })
+
+const optimizeImageForUpload = async (file, uploaderName) => {
+  const fallback = { file, displayName: file.name, uploadName: sanitizeFileName(file.name) }
+  if (!file?.type?.startsWith('image/')) return fallback
+
+  try {
+    const image = await readImageFile(file)
+    const ratio = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height))
+    const width = Math.max(1, Math.round(image.width * ratio))
+    const height = Math.max(1, Math.round(image.height * ratio))
+
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return fallback
+    ctx.drawImage(image, 0, 0, width, height)
+
+    const safeUploaderName = (uploaderName || 'Unknown user').slice(0, 48)
+    const timeCode = formatUploadTimestamp(new Date())
+    const line1 = `Uploaded by: ${safeUploaderName}`
+    const line2 = `Time: ${timeCode}`
+    const fontSize = Math.max(13, Math.min(22, Math.round(width * 0.022)))
+    const lineGap = Math.round(fontSize * 0.35)
+    const horizontalPadding = Math.round(fontSize * 0.7)
+    const verticalPadding = Math.round(fontSize * 0.55)
+
+    ctx.font = `600 ${fontSize}px sans-serif`
+    const textWidth = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width)
+    const boxWidth = Math.ceil(textWidth + horizontalPadding * 2)
+    const boxHeight = Math.ceil(fontSize * 2 + lineGap + verticalPadding * 2)
+    const boxX = Math.max(8, width - boxWidth - 10)
+    const boxY = Math.max(8, height - boxHeight - 10)
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.52)'
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight)
+    ctx.fillStyle = '#ffffff'
+    ctx.textBaseline = 'top'
+    ctx.fillText(line1, boxX + horizontalPadding, boxY + verticalPadding)
+    ctx.fillText(line2, boxX + horizontalPadding, boxY + verticalPadding + fontSize + lineGap)
+
+    const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
+    let quality = START_JPEG_QUALITY
+    let blob = await canvasToBlob(canvas, outputType, quality)
+
+    if (outputType === 'image/jpeg') {
+      while (blob.size > TARGET_IMAGE_SIZE_BYTES && quality > MIN_JPEG_QUALITY) {
+        quality = Math.max(MIN_JPEG_QUALITY, quality - 0.07)
+        blob = await canvasToBlob(canvas, outputType, quality)
+      }
+    }
+
+    const baseName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ''))
+    const extension = outputType === 'image/png' ? '.png' : '.jpg'
+    const optimizedName = `${baseName}${extension}`
+    const optimizedFile = new File([blob], optimizedName, {
+      type: outputType,
+      lastModified: Date.now(),
+    })
+
+    return {
+      file: optimizedFile,
+      displayName: file.name,
+      uploadName: sanitizeFileName(optimizedName),
+    }
+  } catch {
+    return fallback
+  }
+}
+
 export default function RAPPage() {
   const { activeWorkspace, isBendahara, canApproveRAB: canApprove, user, profile } = useAuth()
   const organisasi = activeWorkspace
+  const uploaderDisplayName = profile?.nama_lengkap || user?.email || 'Unknown user'
   const showToast = useUIStore((s) => s.showToast)
   const fetchTransaksi = useKasStore((s) => s.fetchTransaksi)
   const { rab } = useRAB()
@@ -64,16 +169,16 @@ export default function RAPPage() {
       const failedUploads = []
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-        const path = `${result.id}/${crypto.randomUUID()}_${sanitizedName}`
+        const prepared = await optimizeImageForUpload(file, uploaderDisplayName)
+        const path = `${result.id}/${crypto.randomUUID()}_${prepared.uploadName}`
         const { error: uploadError } = await supabase.storage
           .from('rap-foto')
-          .upload(path, file, { contentType: file.type })
-        if (uploadError) { failedUploads.push(file.name); continue }
+          .upload(path, prepared.file, { contentType: prepared.file.type })
+        if (uploadError) { failedUploads.push(prepared.displayName); continue }
         const { error: fotoError } = await supabase
           .from('rap_foto')
-          .insert({ rap_id: result.id, storage_path: path, nama_file: file.name })
-        if (fotoError) { failedUploads.push(file.name) }
+          .insert({ rap_id: result.id, storage_path: path, nama_file: prepared.displayName })
+        if (fotoError) { failedUploads.push(prepared.displayName) }
       }
       if (failedUploads.length > 0) {
         showToast(`Beberapa foto gagal diunggah: ${failedUploads.join(', ')}`, 'error')
@@ -98,13 +203,17 @@ export default function RAPPage() {
     // Upload any new photos
     if (files.length > 0) {
       for (const file of files) {
-        const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-        const path = `${detail.id}/${crypto.randomUUID()}_${sanitizedName}`
+        const prepared = await optimizeImageForUpload(file, uploaderDisplayName)
+        const path = `${detail.id}/${crypto.randomUUID()}_${prepared.uploadName}`
         const { error: uploadError } = await supabase.storage
           .from('rap-foto')
-          .upload(path, file, { contentType: file.type })
+          .upload(path, prepared.file, { contentType: prepared.file.type })
         if (!uploadError) {
-          await supabase.from('rap_foto').insert({ rap_id: detail.id, storage_path: path, nama_file: file.name })
+          await supabase.from('rap_foto').insert({
+            rap_id: detail.id,
+            storage_path: path,
+            nama_file: prepared.displayName,
+          })
         }
       }
     }
