@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import IuranTable, { KategoriTipeBadge, FREKUENSI_LABEL } from '../components/iuran/IuranTable'
 import IuranStatusFlow from '../components/iuran/IuranStatusFlow'
@@ -16,8 +16,14 @@ import { generateIuranPDF } from '../lib/pdfExport'
  * Shows which members have/haven't paid a one-time (sekali) iuran.
  */
 function SekaliIuranPanel({ kategori, iuranList, anggotaList }) {
-  const rows = iuranList.filter((i) => i.kategori_iuran_id === kategori.id)
-  const paidIds = new Set(rows.filter((i) => i.status === 'diajukan').map((i) => i.anggota_id))
+  const rows = useMemo(
+    () => iuranList.filter((i) => i.kategori_iuran_id === kategori.id),
+    [iuranList, kategori.id]
+  )
+  const paidIds = useMemo(
+    () => new Set(rows.filter((i) => i.status === 'diajukan').map((i) => i.anggota_id)),
+    [rows]
+  )
 
   return (
     <div className="glass-card p-4 space-y-3">

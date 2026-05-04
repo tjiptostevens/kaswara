@@ -49,7 +49,7 @@ export default function FormIuran({
     if (!defaultValues && selectedKategori?.nominal_default) {
       setValue('jumlah', Number(selectedKategori.nominal_default), { shouldValidate: false })
     }
-  }, [selectedKategoriId])
+  }, [selectedKategoriId, selectedKategori, defaultValues, setValue])
 
   const handleFormSubmit = (data) => {
     // Convert YYYY-MM → YYYY-MM-01 for storage as date

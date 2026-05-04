@@ -13,7 +13,7 @@ export function useIuran() {
     setLoading(true)
     const { data, error } = await supabase
       .from('iuran_rutin')
-      .select('*, anggota_organisasi(nama_lengkap, nomor_anggota), kategori_iuran(nama, nominal_default)')
+      .select('*, anggota_organisasi(nama_lengkap, nomor_anggota), kategori_iuran(nama, nominal_default, tipe, frekuensi)')
       .eq('organisasi_id', activeWorkspace.id)
       .order('periode', { ascending: false })
     setLoading(false)

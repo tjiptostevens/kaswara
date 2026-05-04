@@ -69,7 +69,10 @@ export default function RAPPage() {
           .from('rap-foto')
           .upload(path, file)
         if (uploadError) { failedUploads.push(file.name); continue }
-        await supabase.from('rap_foto').insert({ rap_id: result.id, storage_path: path, nama_file: file.name })
+        const { error: fotoError } = await supabase
+          .from('rap_foto')
+          .insert({ rap_id: result.id, storage_path: path, nama_file: file.name })
+        if (fotoError) { failedUploads.push(file.name) }
       }
       if (failedUploads.length > 0) {
         showToast(`Beberapa foto gagal diunggah: ${failedUploads.join(', ')}`, 'error')
