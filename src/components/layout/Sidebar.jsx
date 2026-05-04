@@ -22,7 +22,7 @@ const orgNavGroups = [
       { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
       { to: ROUTES.KATEGORI_IURAN, icon: ListChecks, label: 'Kategori Iuran' },
       { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
-      { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
+      // { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
     ],
   },
   {

@@ -4,7 +4,7 @@ import IuranTable, { KategoriTipeBadge, FREKUENSI_LABEL } from '../components/iu
 import IuranStatusFlow from '../components/iuran/IuranStatusFlow'
 import FormIuran from '../components/iuran/FormIuran'
 import { Modal, Button, Badge } from '../components/ui'
-import { Plus, Printer, Send, XCircle, RefreshCw, Pencil, CheckCircle2, Star, Users } from 'lucide-react'
+import { Plus, Printer, Send, XCircle, RefreshCw, Pencil, CheckCircle2, Star, Users, RefreshCcw } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useIuran } from '../hooks/useIuran'
 import { useAuth } from '../hooks/useAuth'
@@ -42,8 +42,8 @@ function SekaliIuranPanel({ kategori, iuranList, anggotaList }) {
               key={a.id}
               title={paid ? `${a.nama_lengkap} — Lunas` : `${a.nama_lengkap} — Belum bayar`}
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${paid
-                  ? 'bg-[#E1F5EE] border-[#B2EAD3] text-[#0F6E56]'
-                  : 'bg-[#FCEBEB] border-[#F7CACA] text-[#A32D2D]'
+                ? 'bg-[#E1F5EE] border-[#B2EAD3] text-[#0F6E56]'
+                : 'bg-[#FCEBEB] border-[#F7CACA] text-[#A32D2D]'
                 }`}
             >
               {paid ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
@@ -54,6 +54,88 @@ function SekaliIuranPanel({ kategori, iuranList, anggotaList }) {
         {anggotaList.length === 0 && (
           <p className="text-xs text-stone">Belum ada anggota</p>
         )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Shows per-period payment status for a recurring (wajib) iuran category.
+ */
+function WajibIuranPanel({ kategori, iuranList, anggotaList }) {
+  const rows = useMemo(
+    () => iuranList.filter((i) => i.kategori_iuran_id === kategori.id),
+    [iuranList, kategori.id]
+  )
+
+  // Distinct sorted periods (newest first)
+  const periods = useMemo(() => {
+    const set = new Set(rows.map((i) => i.periode))
+    return Array.from(set).sort((a, b) => new Date(b) - new Date(a))
+  }, [rows])
+
+  // Map: periode -> Set of paid (diajukan) anggota_id
+  const paidByPeriod = useMemo(() => {
+    const map = {}
+    for (const p of periods) {
+      map[p] = new Set(
+        rows.filter((i) => i.periode === p && i.status === 'diajukan').map((i) => i.anggota_id)
+      )
+    }
+    return map
+  }, [rows, periods])
+
+  const totalAnggota = anggotaList.length
+
+  return (
+    <div className="glass-card p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <RefreshCcw size={13} className="text-info" />
+        <span className="font-semibold text-charcoal text-sm">{kategori.nama}</span>
+        <KategoriTipeBadge tipe={kategori.tipe} frekuensi={kategori.frekuensi} />
+      </div>
+
+      {periods.length === 0 && (
+        <p className="text-xs text-stone">Belum ada data iuran untuk kategori ini.</p>
+      )}
+
+      <div className="space-y-3">
+        {periods.map((periode) => {
+          const paid = paidByPeriod[periode]
+          return (
+            <div key={periode} className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-info">
+                  {new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(new Date(periode))}
+                </span>
+                <span className="text-[10px] text-stone">
+                  {paid.size}/{totalAnggota} lunas
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {anggotaList.map((a) => {
+                  const isPaid = paid.has(a.id)
+                  return (
+                    <div
+                      key={a.id}
+                      title={isPaid ? `${a.nama_lengkap} — Lunas` : `${a.nama_lengkap} — Belum bayar`}
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${isPaid
+                          ? 'bg-[#E1F5EE] border-[#B2EAD3] text-[#0F6E56]'
+                          : 'bg-[#FCEBEB] border-[#F7CACA] text-[#A32D2D]'
+                        }`}
+                    >
+                      {isPaid ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
+                      {a.nama_lengkap}
+                    </div>
+                  )
+                })}
+                {totalAnggota === 0 && (
+                  <p className="text-xs text-stone">Belum ada anggota</p>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -152,6 +234,7 @@ export default function IuranPage() {
   }
 
   const sekaliKategori = kategoriList.filter((k) => k.tipe === 'sekali')
+  const wajibKategori = kategoriList.filter((k) => k.tipe === 'wajib')
 
   return (
     <PageWrapper title="Iuran">
@@ -186,6 +269,26 @@ export default function IuranPage() {
             </div>
             {sekaliKategori.map((kat) => (
               <SekaliIuranPanel
+                key={kat.id}
+                kategori={kat}
+                iuranList={iuran}
+                anggotaList={anggotaList}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Recurring (wajib) iuran summary panels */}
+        {wajibKategori.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Users size={14} className="text-stone" />
+              <p className="text-xs font-medium text-stone uppercase tracking-wide">
+                Status Iuran Wajib
+              </p>
+            </div>
+            {wajibKategori.map((kat) => (
+              <WajibIuranPanel
                 key={kat.id}
                 kategori={kat}
                 iuranList={iuran}
