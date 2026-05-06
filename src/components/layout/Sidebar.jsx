@@ -181,14 +181,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-5 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
-                <rect x="4" y="4" width="8" height="8" rx="2" fill="#e8a020" />
-                <rect x="16" y="4" width="8" height="8" rx="2" fill="rgba(255,255,255,0.5)" />
-                <rect x="4" y="16" width="8" height="8" rx="2" fill="rgba(255,255,255,0.5)" />
-                <rect x="16" y="16" width="8" height="8" rx="2" fill="rgba(255,255,255,0.25)" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="Kaswara logo" className="w-9 h-9 rounded-lg shrink-0" />
             <div>
               <p className="text-white font-bold text-[15px] leading-none">
                 kas<span className="text-accent">wara</span>

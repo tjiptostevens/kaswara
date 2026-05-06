@@ -45,14 +45,7 @@ export default function SignupPage() {
       <div className="w-full max-w-sm relative z-10 animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center">
-            <svg viewBox="0 0 28 28" fill="none" width="24" height="24">
-              <rect x="4" y="4" width="8" height="8" rx="2" fill="#e8a020" />
-              <rect x="16" y="4" width="8" height="8" rx="2" fill="rgba(255,255,255,0.5)" />
-              <rect x="4" y="16" width="8" height="8" rx="2" fill="rgba(255,255,255,0.5)" />
-              <rect x="16" y="16" width="8" height="8" rx="2" fill="rgba(255,255,255,0.25)" />
-            </svg>
-          </div>
+          <img src="/logo.png" alt="Kaswara logo" className="w-11 h-11 rounded-xl shrink-0" />
           <div>
             <p className="text-[22px] font-bold text-brand leading-none">
               kas<span className="text-accent">wara</span>

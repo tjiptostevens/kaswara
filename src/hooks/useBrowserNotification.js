@@ -21,7 +21,7 @@ export function useBrowserNotification() {
   const sendNotification = useCallback((title, options = {}) => {
     if (permission === 'granted') {
       const notification = new Notification(title, {
-        icon: '/vite.svg', // Default icon, ganti dengan logo Kaswara jika ada
+        icon: '/logo.png',
         ...options,
       })
 
