@@ -119,6 +119,7 @@ export default function RABPage() {
         })) || [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
       }
     : undefined
+  const canManageOwnDetail = detail ? canManageRAB && isOwnedByCurrentUser(detail) : false
 
   return (
     <PageWrapper title="RAB">
@@ -180,10 +181,6 @@ export default function RABPage() {
       >
         {detail && (
           <div className="space-y-4">
-            {(() => {
-              const canManageOwnDetail = canManageRAB && isOwnedByCurrentUser(detail)
-              return (
-                <>
             <RABStatusFlow status={detail.status} />
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -307,9 +304,6 @@ export default function RABPage() {
                 onReject={handleApproval}
               />
             )}
-                </>
-              )
-            })()}
           </div>
         )}
       </Modal>
