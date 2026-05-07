@@ -10,21 +10,53 @@ export function useIuran() {
 
   const fetchIuran = useCallback(async () => {
     if (!activeWorkspace?.id) return
-    if (isAnggota && !profile?.id) return
+    if (isAnggota && !user?.id) return
     setLoading(true)
+
     let query = supabase
       .from('iuran_rutin')
       .select('*, anggota_organisasi(nama_lengkap, nomor_anggota), kategori_iuran(nama, nominal_default, tipe, frekuensi)')
       .eq('organisasi_id', activeWorkspace.id)
       .order('periode', { ascending: false })
-    if (isAnggota) query = query.eq('anggota_id', profile.id)
+
+    if (isAnggota) {
+      query = supabase
+        .from('iuran_rutin')
+        .select('*, anggota_organisasi!inner(nama_lengkap, nomor_anggota, user_id), kategori_iuran(nama, nominal_default, tipe, frekuensi)')
+        .eq('organisasi_id', activeWorkspace.id)
+        .eq('anggota_organisasi.user_id', user.id)
+        .order('periode', { ascending: false })
+    }
+
     const { data, error } = await query
     setLoading(false)
     if (!error) setIuran(data || [])
-  }, [activeWorkspace?.id, isAnggota, profile?.id])
+  }, [activeWorkspace?.id, isAnggota, user?.id])
 
   const addIuran = async (data) => {
     const { kategori_iuran_id, ...rest } = data
+
+    if (kategori_iuran_id && data.anggota_id && data.periode) {
+      const { data: existing, error: checkError } = await supabase
+        .from('iuran_rutin')
+        .select('id, status')
+        .eq('organisasi_id', activeWorkspace.id)
+        .eq('anggota_id', data.anggota_id)
+        .eq('kategori_iuran_id', kategori_iuran_id)
+        .eq('periode', data.periode)
+        .in('status', ['draft', 'diajukan', 'lunas'])
+        .limit(1)
+
+      if (checkError) return { error: checkError }
+      if (existing?.length) {
+        return {
+          error: {
+            message: 'Iuran untuk anggota, kategori, dan periode ini sudah ada. Hindari input ganda.',
+          },
+        }
+      }
+    }
+
     const { data: result, error } = await supabase
       .from('iuran_rutin')
       .insert({
@@ -35,6 +67,14 @@ export function useIuran() {
       })
       .select()
       .single()
+
+    if (error?.code === '23505') {
+      return {
+        error: {
+          message: 'Duplikat iuran terdeteksi untuk bulan, anggota, dan kategori yang sama.',
+        },
+      }
+    }
     if (error) return { error }
     await fetchIuran()
     return { data: result, error: null }
