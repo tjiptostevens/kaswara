@@ -34,6 +34,9 @@ const useAnggotaStore = create((set) => ({
 
   updateAnggota: async (id, updates) => {
     const { permissions, ...anggotaUpdates } = updates
+    const permissionRows = permissions
+      ? flattenPermissions(permissions, id).map(({ resource, action, scope }) => ({ resource, action, scope }))
+      : null
 
     // Update kolom anggota_organisasi
     const { data: result, error } = await supabase
@@ -46,16 +49,23 @@ const useAnggotaStore = create((set) => ({
 
     // Upsert permission matrix jika ada (via RPC agar bypass RLS self-restriction)
     if (permissions) {
-      const permRows = flattenPermissions(permissions, id)
       const { error: permError } = await supabase.rpc('save_anggota_permissions', {
         p_ao_id: id,
-        p_permissions: permRows.map(({ resource, action, scope }) => ({ resource, action, scope })),
+        p_permissions: permissionRows,
       })
       if (permError) return { error: permError }
     }
 
     set((state) => ({
-      anggota: state.anggota.map((a) => (a.id === id ? { ...result, anggota_permission: a.anggota_permission } : a)),
+      anggota: state.anggota.map((a) => (
+        a.id === id
+          ? {
+            ...a,
+            ...result,
+            anggota_permission: permissionRows || a.anggota_permission || [],
+          }
+          : a
+      )),
     }))
     return { data: result, error: null }
   },

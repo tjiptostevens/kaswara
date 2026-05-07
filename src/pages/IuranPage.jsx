@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { Navigate } from 'react-router-dom'
 import PageWrapper from '../components/layout/PageWrapper'
 import IuranTable, { KategoriTipeBadge, FREKUENSI_LABEL } from '../components/iuran/IuranTable'
 import IuranStatusFlow from '../components/iuran/IuranStatusFlow'
@@ -11,6 +12,7 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 import { formatRupiah, formatPeriode, formatTanggalPendek } from '../lib/formatters'
 import { generateIuranPDF } from '../lib/pdfExport'
+import { ROUTES } from '../constants/routes'
 
 const WAJIB_FALLBACK_NAME = 'Iuran wajib'
 
@@ -261,7 +263,7 @@ function AnggotaWajibPanel({ kategori, iuranList, pendingWajib }) {
 }
 
 export default function IuranPage() {
-  const { activeWorkspace, isBendahara, isAnggota, profile, user, can } = useAuth()
+  const { activeWorkspace, profile, user, can } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const {
     iuran, loading, fetchIuran,
@@ -274,9 +276,13 @@ export default function IuranPage() {
   const [anggotaList, setAnggotaList] = useState([])
   const [kategoriList, setKategoriList] = useState([])
   const [anggotaInsights, setAnggotaInsights] = useState({ pendingWajib: [], sukarelaRows: [] })
+  const canReadAllIuran = can('iuran', 'read', 'all')
+  const canReadOwnIuran = can('iuran', 'read', 'own')
+  const canReadIuran = canReadAllIuran || canReadOwnIuran
+  const useOwnScopeView = canReadOwnIuran && !canReadAllIuran
 
   const fetchAnggotaInsights = useCallback(async () => {
-    if (!activeWorkspace?.id || !isAnggota || !user?.id) {
+    if (!activeWorkspace?.id || !useOwnScopeView || !user?.id) {
       setAnggotaInsights({ pendingWajib: [], sukarelaRows: [] })
       return
     }
@@ -345,7 +351,7 @@ export default function IuranPage() {
     const sukarelaRows = sukarelaRes.data || []
 
     setAnggotaInsights({ pendingWajib, sukarelaRows })
-  }, [activeWorkspace?.id, isAnggota, showToast, user?.id])
+  }, [activeWorkspace?.id, showToast, useOwnScopeView, user?.id])
 
   useEffect(() => {
     if (!activeWorkspace?.id) return
@@ -357,7 +363,7 @@ export default function IuranPage() {
       .order('nama')
       .then(({ data }) => setKategoriList(data || []))
 
-    if (isAnggota) {
+    if (useOwnScopeView) {
       setAnggotaList(profile ? [profile] : [])
       return
     }
@@ -368,7 +374,7 @@ export default function IuranPage() {
       .eq('aktif', true)
       .order('nama_lengkap')
       .then(({ data }) => setAnggotaList(data || []))
-  }, [activeWorkspace?.id, isAnggota, profile?.id])
+  }, [activeWorkspace?.id, profile?.id, useOwnScopeView])
 
   useEffect(() => {
     if (!activeWorkspace?.id) return
@@ -472,6 +478,14 @@ export default function IuranPage() {
   const sekaliKategori = kategoriList.filter((k) => k.tipe === 'sekali')
   const wajibKategori = kategoriList.filter((k) => k.tipe === 'wajib')
 
+  const canUpdateDetail = detail && (can('iuran', 'update', 'all') || (can('iuran', 'update', 'own') && detail.anggota_id === profile?.id))
+  const canSubmitDetail = detail && (can('iuran', 'submit', 'all') || (can('iuran', 'submit', 'own') && detail.anggota_id === profile?.id))
+  const canCancelDetail = detail && (can('iuran', 'cancel', 'all') || (can('iuran', 'cancel', 'own') && detail.anggota_id === profile?.id))
+
+  if (!canReadIuran) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />
+  }
+
   return (
     <PageWrapper title="Iuran">
       <div className="space-y-5">
@@ -504,7 +518,7 @@ export default function IuranPage() {
               </p>
             </div>
             {sekaliKategori.map((kat) =>
-              isAnggota ? (
+              useOwnScopeView ? (
                 <AnggotaSekaliPanel
                   key={kat.id}
                   kategori={kat}
@@ -532,7 +546,7 @@ export default function IuranPage() {
               </p>
             </div>
             {wajibKategori.map((kat) =>
-              isAnggota ? (
+              useOwnScopeView ? (
                 <AnggotaWajibPanel
                   key={kat.id}
                   kategori={kat}
@@ -666,7 +680,7 @@ export default function IuranPage() {
               >
                 Cetak
               </Button>
-              {can('iuran', 'update') && detail.status === 'draft' && (
+              {canUpdateDetail && detail.status === 'draft' && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -676,7 +690,7 @@ export default function IuranPage() {
                   Edit
                 </Button>
               )}
-              {can('iuran', 'submit') && detail.status === 'draft' && (
+              {canSubmitDetail && detail.status === 'draft' && (
                 <Button
                   variant="accent"
                   size="sm"
@@ -686,7 +700,7 @@ export default function IuranPage() {
                   Ajukan
                 </Button>
               )}
-              {can('iuran', 'cancel') && detail.status === 'diajukan' && (
+              {canCancelDetail && detail.status === 'diajukan' && (
                 <Button
                   variant="danger"
                   size="sm"
@@ -696,7 +710,7 @@ export default function IuranPage() {
                   Batalkan
                 </Button>
               )}
-              {can('iuran', 'update') && detail.status === 'cancelled' && (
+              {canUpdateDetail && detail.status === 'cancelled' && (
                 <Button
                   variant="primary"
                   size="sm"

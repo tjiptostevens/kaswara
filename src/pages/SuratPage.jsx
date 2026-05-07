@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import PageWrapper from '../components/layout/PageWrapper'
 import Table from '../components/ui/Table'
 import Badge from '../components/ui/Badge'
@@ -8,9 +9,10 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 import { formatTanggalPendek } from '../lib/formatters'
+import { ROUTES } from '../constants/routes'
 
 export default function SuratPage() {
-  const { activeWorkspace, user, profile, isAnggota, can, canForRecord } = useAuth()
+  const { activeWorkspace, user, profile, can, canForRecord } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -18,27 +20,37 @@ export default function SuratPage() {
   const [detail, setDetail] = useState(null)
   const [form, setForm] = useState({ judul: '', keperluan: '', detail: '' })
 
+  const canReadAllSurat = can('surat', 'read', 'all')
+  const canReadOwnSurat = can('surat', 'read', 'own')
+  const canReadSurat = canReadAllSurat || canReadOwnSurat
+  const canCreateSurat = can('surat', 'create')
   const canProcess = can('surat', 'approve')
 
   const fetchRows = async () => {
     if (!activeWorkspace?.id) return
+    if (!canReadSurat) {
+      setRows([])
+      return
+    }
+    if (!canReadAllSurat && !user?.id) return
     setLoading(true)
     let query = supabase
       .from('permintaan_surat')
       .select('*, anggota_organisasi!dibuat_oleh_anggota_id(nama_lengkap)')
       .eq('organisasi_id', activeWorkspace.id)
       .order('created_at', { ascending: false })
-    if (isAnggota) query = query.eq('dibuat_oleh', user?.id)
+    if (!canReadAllSurat) query = query.eq('dibuat_oleh', user?.id)
     const { data } = await query
     setRows(data || [])
     setLoading(false)
   }
 
-  useEffect(() => { fetchRows() }, [activeWorkspace?.id, isAnggota, user?.id])
+  useEffect(() => { fetchRows() }, [activeWorkspace?.id, canReadAllSurat, canReadSurat, user?.id])
 
   const resetForm = () => setForm({ judul: '', keperluan: '', detail: '' })
 
   const handleCreate = async () => {
+    if (!canCreateSurat) return
     const { error } = await supabase.from('permintaan_surat').insert({
       organisasi_id: activeWorkspace.id,
       judul: form.judul,
@@ -181,19 +193,28 @@ export default function SuratPage() {
     },
   ]
 
-  const isOwner = (row) => row?.dibuat_oleh === user?.id
-  const editableDraft = detail && detail.status === 'draft' && isOwner(detail)
-  const cancellableByMember = detail && ['draft', 'diajukan'].includes(detail.status) && isOwner(detail)
+  const canUpdateDetail = detail ? canForRecord('surat', 'update', detail, 'dibuat_oleh') : false
+  const canSubmitDetail = detail ? canForRecord('surat', 'submit', detail, 'dibuat_oleh') : false
+  const canDeleteDetail = detail ? canForRecord('surat', 'delete', detail, 'dibuat_oleh') : false
+  const canCancelDetail = detail ? canForRecord('surat', 'cancel', detail, 'dibuat_oleh') : false
+  const editableDraft = detail && detail.status === 'draft' && canUpdateDetail
+  const cancellableByMember = detail && ['draft', 'diajukan'].includes(detail.status) && canCancelDetail
   const processable = detail && detail.status === 'diajukan' && canProcess
+
+  if (!canReadSurat) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />
+  }
 
   return (
     <PageWrapper title="Permintaan Surat">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-[#0f3d32]">Permintaan Surat</h2>
-          <Button variant="primary" size="md" icon={<Plus size={16} />} onClick={() => { resetForm(); setOpenForm(true) }}>
-            Buat Draft
-          </Button>
+          {canCreateSurat && (
+            <Button variant="primary" size="md" icon={<Plus size={16} />} onClick={() => { resetForm(); setOpenForm(true) }}>
+              Buat Draft
+            </Button>
+          )}
         </div>
         <Table
           caption="Daftar permintaan surat"
@@ -286,12 +307,16 @@ export default function SuratPage() {
             <div className="flex flex-wrap gap-2">
               {editableDraft && (
                 <>
-                  <Button variant="accent" size="sm" icon={<Send size={14} />} onClick={() => handleSubmit(detail)}>
-                    Ajukan
-                  </Button>
-                  <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={() => handleDeleteDraft(detail)}>
-                    Hapus Draft
-                  </Button>
+                  {canSubmitDetail && (
+                    <Button variant="accent" size="sm" icon={<Send size={14} />} onClick={() => handleSubmit(detail)}>
+                      Ajukan
+                    </Button>
+                  )}
+                  {canDeleteDetail && (
+                    <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={() => handleDeleteDraft(detail)}>
+                      Hapus Draft
+                    </Button>
+                  )}
                 </>
               )}
               {cancellableByMember && (
