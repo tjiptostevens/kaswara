@@ -65,6 +65,18 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
       ),
     },
     {
+      key: 'can_manage_rap',
+      label: 'Kelola RAP',
+      render: (row) => (
+        <span
+          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${row.can_manage_rap ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
+            }`}
+        >
+          {row.can_manage_rap ? 'Ya' : 'Tidak'}
+        </span>
+      ),
+    },
+    {
       key: 'can_approve_join_request',
       label: 'Approval Gabung',
       render: (row) => (

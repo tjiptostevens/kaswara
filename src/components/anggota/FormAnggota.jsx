@@ -101,6 +101,17 @@ export default function FormAnggota({ defaultValues, onSubmit, onCancel }) {
           <input
             type="checkbox"
             className="w-4 h-4 rounded border-border text-brand focus:ring-brand/40 focus:ring-2"
+            {...register('can_manage_rap')}
+          />
+          <span className="text-sm text-charcoal">Izinkan kelola RAP</span>
+        </label>
+        <p className="text-xs text-stone ml-6">Anggota dapat membuat dan mengajukan Realisasi Anggaran Pengeluaran</p>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-border text-brand focus:ring-brand/40 focus:ring-2"
             {...register('can_approve_rab')}
           />
           <span className="text-sm text-charcoal">Izinkan menyetujui RAB</span>

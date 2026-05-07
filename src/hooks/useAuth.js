@@ -22,7 +22,8 @@ export function useAuth() {
   const isAnggota = role === 'anggota'
   const isPersonalWorkspace = activeWorkspace?.tipe === 'personal'
   const isAdmin = isBendahara
-  const canManageRAB = isBendahara || isKetua || isPersonalWorkspace || profile?.can_manage_rab === true
+  const canManageRAB = isPersonalWorkspace || profile?.can_manage_rab === true
+  const canManageRAP = isPersonalWorkspace || profile?.can_manage_rap === true
   const canApproveRAB = isPersonalWorkspace || isKetua || profile?.can_approve_rab === true
   const canApproveJoinRequest = isBendahara || isKetua || profile?.can_approve_join_request === true
 
@@ -48,6 +49,7 @@ export function useAuth() {
     isPersonalWorkspace,
     isAdmin,
     canManageRAB,
+    canManageRAP,
     canApproveRAB,
     canApproveJoinRequest,
   }

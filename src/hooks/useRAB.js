@@ -123,6 +123,7 @@ export function useRAB() {
         tanggal_pengajuan: new Date().toISOString().split('T')[0],
         status: 'draft',
         diajukan_oleh: user?.id,
+        dibuat_oleh_anggota_id: profile?.id ?? null,
         amended_from: original.id,
       })
       .select()

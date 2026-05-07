@@ -4,7 +4,7 @@ import RABTable from '../components/rab/RABTable'
 import FormRAB from '../components/rab/FormRAB'
 import RABStatusFlow from '../components/rab/RABStatusFlow'
 import ApprovalButtons from '../components/rab/ApprovalButtons'
-import { Modal, Button, Badge } from '../components/ui'
+import { Modal, Button } from '../components/ui'
 import { Plus, Printer, XCircle, RefreshCw, Pencil } from 'lucide-react'
 import { useRAB } from '../hooks/useRAB'
 import { useAuth } from '../hooks/useAuth'
@@ -14,7 +14,7 @@ import { formatRupiah, formatTanggalPendek, getTodayString } from '../lib/format
 import { generateRABPDF } from '../lib/pdfExport'
 
 export default function RABPage() {
-  const { isBendahara, isKetua, canManageRAB, canApproveRAB, isPersonalWorkspace, activeWorkspace } = useAuth()
+  const { canManageRAB, canApproveRAB, activeWorkspace, user, profile } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const kategori = useKasStore((s) => s.kategori)
   const fetchKategori = useKasStore((s) => s.fetchKategori)
@@ -99,6 +99,9 @@ export default function RABPage() {
   }
 
   const canApprove = canApproveRAB
+  const isOwnedByCurrentUser = (row) =>
+    row?.diajukan_oleh === user?.id ||
+    (row?.dibuat_oleh_anggota_id && row?.dibuat_oleh_anggota_id === profile?.id)
 
   // Build defaultValues for RAB edit form
   const editDefaults = detail
@@ -177,6 +180,10 @@ export default function RABPage() {
       >
         {detail && (
           <div className="space-y-4">
+            {(() => {
+              const canManageOwnDetail = canManageRAB && isOwnedByCurrentUser(detail)
+              return (
+                <>
             <RABStatusFlow status={detail.status} />
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -255,7 +262,7 @@ export default function RABPage() {
               >
                 Cetak
               </Button>
-              {canManageRAB && detail.status === 'draft' && (
+              {canManageOwnDetail && detail.status === 'draft' && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -265,12 +272,12 @@ export default function RABPage() {
                   Edit
                 </Button>
               )}
-              {canManageRAB && detail.status === 'draft' && (
+              {canManageOwnDetail && detail.status === 'draft' && (
                 <Button variant="accent" size="sm" onClick={() => handleSubmitRAB(detail.id)}>
                   Ajukan RAB
                 </Button>
               )}
-              {(canManageRAB || canApprove) && ['draft', 'diajukan'].includes(detail.status) && (
+              {canManageOwnDetail && ['draft', 'diajukan'].includes(detail.status) && (
                 <Button
                   variant="danger"
                   size="sm"
@@ -280,7 +287,7 @@ export default function RABPage() {
                   Batalkan
                 </Button>
               )}
-              {(canApprove || canManageRAB) && detail.status === 'cancelled' && (
+              {canManageOwnDetail && detail.status === 'cancelled' && (
                 <Button
                   variant="primary"
                   size="sm"
@@ -300,6 +307,9 @@ export default function RABPage() {
                 onReject={handleApproval}
               />
             )}
+                </>
+              )
+            })()}
           </div>
         )}
       </Modal>

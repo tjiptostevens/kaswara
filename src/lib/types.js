@@ -35,6 +35,7 @@
  * @property {string} [email] - Email
  * @property {string} [no_hp] - Phone number
  * @property {boolean} [can_manage_rab] - Can create/edit RAB
+ * @property {boolean} [can_manage_rap] - Can create/edit RAP
  * @property {boolean} [can_approve_rab] - Can approve RAB
  * @property {boolean} [can_approve_join_request] - Can approve join requests
  * @property {boolean} aktif - Active status
@@ -201,6 +202,7 @@
  * @property {boolean} isAuthenticated - True if user logged in
  * @property {'bendahara' | 'ketua' | 'anggota'} [role] - User's role in active workspace
  * @property {boolean} canManageRAB - True if user can create/edit RAB
+ * @property {boolean} canManageRAP - True if user can create/edit RAP
  * @property {boolean} canApproveRAB - True if user can approve RAB
  */
 
