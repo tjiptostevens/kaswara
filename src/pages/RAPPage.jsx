@@ -255,7 +255,11 @@ export default function RAPPage() {
       return
     }
 
-    await supabase.from('rap_item_realisasi').delete().eq('rap_id', detail.id)
+    const { error: deleteErr } = await supabase.from('rap_item_realisasi').delete().eq('rap_id', detail.id)
+    if (deleteErr) {
+      showToast('Gagal menghapus item lama: ' + deleteErr.message, 'error')
+      return
+    }
     if (data.items?.length) {
       const itemPayload = data.items.map((item) => {
         const subtotal = Number(item.subtotal_anggaran || 0)
@@ -405,7 +409,10 @@ export default function RAPPage() {
         ...item,
         rap_id: newRap.id,
       }))
-      await supabase.from('rap_item_realisasi').insert(clonedItems)
+      const { error: cloneErr } = await supabase.from('rap_item_realisasi').insert(clonedItems)
+      if (cloneErr) {
+        showToast('RAP amandemen dibuat, tetapi clone item gagal: ' + cloneErr.message, 'error')
+      }
     }
     showToast('RAP amandemen berhasil dibuat!')
     setDetail(null)

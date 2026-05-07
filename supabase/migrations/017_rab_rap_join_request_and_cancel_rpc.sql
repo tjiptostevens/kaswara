@@ -85,7 +85,7 @@ select
   coalesce(ri.nama_item, r.nama_item) as nama_item,
   coalesce(ri.volume, 1) as volume,
   coalesce(ri.satuan, 'item') as satuan,
-  coalesce(ri.harga_satuan, coalesce(r.jumlah_realisasi, 0)) as harga_satuan_anggaran,
+  coalesce(ri.harga_satuan, 0) as harga_satuan_anggaran,
   coalesce(ri.subtotal, coalesce(r.jumlah_realisasi, 0)) as subtotal_anggaran,
   coalesce(r.jumlah_realisasi, 0) as jumlah_realisasi,
   coalesce(r.jumlah_realisasi, 0) - coalesce(ri.subtotal, coalesce(r.jumlah_realisasi, 0)) as selisih,
@@ -325,7 +325,11 @@ begin
     where ao.organisasi_id = v_org_id
       and ao.user_id = auth.uid()
       and ao.aktif = true
-      and ao.role in ('bendahara', 'ketua')
+      and (
+        ao.role in ('bendahara', 'ketua')
+        or ao.can_manage_rab = true
+        or ao.can_approve_rab = true
+      )
   ) into v_has_access;
 
   if not v_has_access then

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import PageWrapper from '../components/layout/PageWrapper'
 import AnggotaTable from '../components/anggota/AnggotaTable'
@@ -24,7 +24,7 @@ export default function AnggotaPage() {
   const [joinRequests, setJoinRequests] = useState([])
   const [requestLoading, setRequestLoading] = useState(false)
 
-  const fetchJoinRequests = async () => {
+  const fetchJoinRequests = useCallback(async () => {
     if (!organisasi?.id || !canApproveRequest) return
     setRequestLoading(true)
     const { data } = await supabase
@@ -35,9 +35,9 @@ export default function AnggotaPage() {
       .order('requested_at', { ascending: false })
     setJoinRequests(data || [])
     setRequestLoading(false)
-  }
+  }, [organisasi?.id, canApproveRequest])
 
-  useEffect(() => { fetchJoinRequests() }, [organisasi?.id, canApproveRequest])
+  useEffect(() => { fetchJoinRequests() }, [fetchJoinRequests])
 
   const handleAdd = async (data) => {
     const { error, existingUser } = await addAnggota({ ...data, organisasi_id: organisasi.id })

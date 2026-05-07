@@ -257,7 +257,7 @@ function BergabungForm({ user, initialize, navigate }) {
           <span className="text-2xl">✓</span>
         </div>
         <p className="text-sm font-medium text-[#0f3d32]">Permintaan bergabung berhasil dikirim!</p>
-        <p className="text-xs text-stone">Menunggu approval bendahara/ketua/delegasi. Mengarahkan ke dashboard…</p>
+        <p className="text-xs text-stone">Menunggu persetujuan bendahara/ketua/delegasi. Mengarahkan ke dashboard…</p>
       </div>
     )
   }

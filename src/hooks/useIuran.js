@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
 import { formatPeriode } from '../lib/formatters'
@@ -8,7 +8,7 @@ export function useIuran() {
   const [iuran, setIuran] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const fetchIuran = async () => {
+  const fetchIuran = useCallback(async () => {
     if (!activeWorkspace?.id) return
     if (isAnggota && !profile?.id) return
     setLoading(true)
@@ -21,7 +21,7 @@ export function useIuran() {
     const { data, error } = await query
     setLoading(false)
     if (!error) setIuran(data || [])
-  }
+  }, [activeWorkspace?.id, isAnggota, profile?.id])
 
   const addIuran = async (data) => {
     const { kategori_iuran_id, ...rest } = data
@@ -146,7 +146,7 @@ export function useIuran() {
     return { data: newIuran, error: null }
   }
 
-  useEffect(() => { fetchIuran() }, [activeWorkspace?.id])
+  useEffect(() => { fetchIuran() }, [fetchIuran])
 
   return {
     iuran,

@@ -44,7 +44,7 @@ export default function FormRAP({ rabList = [], kategori = [], onSubmit, onCance
         jumlah_realisasi: 0,
       }))
     )
-  }, [selectedRAB?.id, defaultValues])
+  }, [selectedRAB, defaultValues, setValue, replace])
 
   const totalAnggaran = watchedItems.reduce((sum, item) => sum + Number(item.subtotal_anggaran || 0), 0)
   const totalRealisasi = watchedItems.reduce((sum, item) => sum + Number(item.jumlah_realisasi || 0), 0)

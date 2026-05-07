@@ -4,6 +4,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Users, Wallet,
   FileText, Receipt, BarChart2, Settings2, LogOut, X, Home,
   Tag, ChevronDown, Check, Building2, User, ListChecks,
+  FileCheck2,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
@@ -32,6 +33,7 @@ const orgNavGroups = [
       { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
       { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
       { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
+      { to: ROUTES.SURAT, icon: FileCheck2, label: 'Surat' },
     ],
   },
   {

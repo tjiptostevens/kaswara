@@ -200,7 +200,7 @@ export default function IuranPage() {
     return () => {
       supabase.removeChannel(iuranChannel)
     }
-  }, [activeWorkspace?.id])
+  }, [activeWorkspace?.id, fetchIuran])
 
   useEffect(() => {
     if (!detail?.id) return

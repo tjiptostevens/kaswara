@@ -24,6 +24,10 @@ export default function RABPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [detail, setDetail] = useState(null)
 
+  useEffect(() => {
+    if (activeWorkspace?.id) fetchKategori(activeWorkspace.id)
+  }, [activeWorkspace?.id])
+
   const handleAdd = async (data) => {
     const { error } = await addRAB(data)
     if (error) {
@@ -302,7 +306,3 @@ export default function RABPage() {
     </PageWrapper>
   )
 }
-  useEffect(() => {
-    if (activeWorkspace?.id) fetchKategori(activeWorkspace.id)
-  }, [activeWorkspace?.id])
-
