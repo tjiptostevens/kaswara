@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import IuranTable, { KategoriTipeBadge, FREKUENSI_LABEL } from '../components/iuran/IuranTable'
 import IuranStatusFlow from '../components/iuran/IuranStatusFlow'
@@ -11,6 +11,8 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 import { formatRupiah, formatPeriode, formatTanggalPendek } from '../lib/formatters'
 import { generateIuranPDF } from '../lib/pdfExport'
+
+const WAJIB_FALLBACK_NAME = 'Iuran wajib'
 
 /**
  * Shows which members have/haven't paid a one-time (sekali) iuran.
@@ -211,6 +213,65 @@ export default function IuranPage() {
   const [kategoriList, setKategoriList] = useState([])
   const [anggotaInsights, setAnggotaInsights] = useState({ pendingWajib: [], sukarelaRows: [] })
 
+  const fetchAnggotaInsights = useCallback(async () => {
+    if (!activeWorkspace?.id || !isAnggota || !profile?.id) {
+      setAnggotaInsights({ pendingWajib: [], sukarelaRows: [] })
+      return
+    }
+
+    const [wajibPaidRes, sukarelaRes] = await Promise.all([
+      supabase
+        .from('iuran_rutin')
+        .select('anggota_id, periode, kategori_iuran_id, kategori_iuran!inner(nama, tipe)')
+        .eq('organisasi_id', activeWorkspace.id)
+        .eq('status', 'diajukan')
+        .eq('kategori_iuran.tipe', 'wajib')
+        .order('periode', { ascending: false }),
+      supabase
+        .from('iuran_rutin')
+        .select('id, anggota_id, periode, jumlah, status, kategori_iuran!inner(nama, tipe)')
+        .eq('organisasi_id', activeWorkspace.id)
+        .eq('anggota_id', profile.id)
+        .eq('kategori_iuran.tipe', 'sukarela')
+        .order('periode', { ascending: false }),
+    ])
+
+    if (wajibPaidRes.error || sukarelaRes.error) {
+      showToast('Gagal memuat ringkasan iuran anggota.', 'error')
+      return
+    }
+
+    const wajibDiajukanRows = wajibPaidRes.data || []
+
+    const wajibByKategoriPeriode = new Map()
+    for (const row of wajibDiajukanRows) {
+      if (!row.kategori_iuran_id || !row.periode) continue
+      const key = `${row.kategori_iuran_id}::${row.periode}`
+      if (!wajibByKategoriPeriode.has(key)) {
+        wajibByKategoriPeriode.set(key, {
+          kategoriId: row.kategori_iuran_id,
+          kategoriNama: row.kategori_iuran?.nama || WAJIB_FALLBACK_NAME,
+          periode: row.periode,
+          paidMemberIds: new Set(),
+        })
+      }
+      wajibByKategoriPeriode.get(key).paidMemberIds.add(row.anggota_id)
+    }
+
+    const pendingWajib = Array.from(wajibByKategoriPeriode.values())
+      .filter((item) => !item.paidMemberIds.has(profile.id))
+      .map((item) => ({
+        kategoriId: item.kategoriId,
+        kategoriNama: item.kategoriNama,
+        periode: item.periode,
+        paidCount: item.paidMemberIds.size,
+      }))
+
+    const sukarelaRows = sukarelaRes.data || []
+
+    setAnggotaInsights({ pendingWajib, sukarelaRows })
+  }, [activeWorkspace?.id, isAnggota, profile?.id, showToast])
+
   useEffect(() => {
     if (!activeWorkspace?.id) return
     if (isAnggota) {
@@ -249,6 +310,7 @@ export default function IuranPage() {
         },
         () => {
           fetchIuran()
+          fetchAnggotaInsights()
         }
       )
       .subscribe()
@@ -256,66 +318,11 @@ export default function IuranPage() {
     return () => {
       supabase.removeChannel(iuranChannel)
     }
-  }, [activeWorkspace?.id, fetchIuran])
+  }, [activeWorkspace?.id, fetchIuran, fetchAnggotaInsights])
 
   useEffect(() => {
-    if (!activeWorkspace?.id || !isAnggota || !profile?.id) {
-      setAnggotaInsights({ pendingWajib: [], sukarelaRows: [] })
-      return
-    }
-
-    let isCancelled = false
-
-    const fetchAnggotaInsights = async () => {
-      const { data, error } = await supabase
-        .from('iuran_rutin')
-        .select('id, anggota_id, periode, jumlah, status, kategori_iuran_id, kategori_iuran(nama, tipe, frekuensi)')
-        .eq('organisasi_id', activeWorkspace.id)
-        .order('periode', { ascending: false })
-
-      if (error || isCancelled) return
-
-      const rows = data || []
-      const paidRows = rows.filter((row) => row.status === 'diajukan')
-
-      const wajibByKategoriPeriode = new Map()
-      for (const row of paidRows) {
-        if (row.kategori_iuran?.tipe !== 'wajib' || !row.kategori_iuran_id || !row.periode) continue
-        const key = `${row.kategori_iuran_id}::${row.periode}`
-        if (!wajibByKategoriPeriode.has(key)) {
-          wajibByKategoriPeriode.set(key, {
-            kategoriId: row.kategori_iuran_id,
-            kategoriNama: row.kategori_iuran?.nama || 'Iuran wajib',
-            periode: row.periode,
-            paidMemberIds: new Set(),
-          })
-        }
-        wajibByKategoriPeriode.get(key).paidMemberIds.add(row.anggota_id)
-      }
-
-      const pendingWajib = Array.from(wajibByKategoriPeriode.values())
-        .filter((item) => !item.paidMemberIds.has(profile.id))
-        .map((item) => ({
-          kategoriId: item.kategoriId,
-          kategoriNama: item.kategoriNama,
-          periode: item.periode,
-          paidCount: item.paidMemberIds.size,
-        }))
-        .sort((a, b) => new Date(b.periode) - new Date(a.periode))
-
-      const sukarelaRows = rows
-        .filter((row) => row.anggota_id === profile.id && row.kategori_iuran?.tipe === 'sukarela')
-        .sort((a, b) => new Date(b.periode) - new Date(a.periode))
-
-      setAnggotaInsights({ pendingWajib, sukarelaRows })
-    }
-
     fetchAnggotaInsights()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [activeWorkspace?.id, isAnggota, profile?.id, iuran])
+  }, [fetchAnggotaInsights])
 
   useEffect(() => {
     if (!detail?.id) return
