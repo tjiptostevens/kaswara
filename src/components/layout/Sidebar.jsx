@@ -156,6 +156,7 @@ export default function Sidebar() {
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
 
   const canManageAnggota = isBendahara || isKetua || canApproveJoinRequest
+  const canAccessSettings = isBendahara || isKetua
 
   const navGroups = (isPersonalWorkspace ? personalNavGroups : orgNavGroups).map((group) => ({
     ...group,
@@ -239,18 +240,20 @@ export default function Sidebar() {
 
         {/* Bottom actions */}
         <div className="border-t border-white/10 px-5 py-3 space-y-1">
-          <NavLink
-            to={ROUTES.SETTINGS}
-            className={({ isActive }) =>
-              [
-                'flex items-center gap-3 px-0 py-2 text-sm transition-colors',
-                isActive ? 'text-white font-medium' : 'text-white/60 hover:text-white',
-              ].join(' ')
-            }
-          >
-            <Settings2 size={18} strokeWidth={1.5} />
-            Pengaturan
-          </NavLink>
+          {canAccessSettings && (
+            <NavLink
+              to={ROUTES.SETTINGS}
+              className={({ isActive }) =>
+                [
+                  'flex items-center gap-3 px-0 py-2 text-sm transition-colors',
+                  isActive ? 'text-white font-medium' : 'text-white/60 hover:text-white',
+                ].join(' ')
+              }
+            >
+              <Settings2 size={18} strokeWidth={1.5} />
+              Pengaturan
+            </NavLink>
+          )}
           <button
             onClick={logout}
             className="flex items-center gap-3 py-2 text-sm text-white/60 hover:text-white transition-colors w-full"

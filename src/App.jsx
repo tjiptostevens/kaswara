@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ROUTES } from './constants/routes'
+import { ROLES } from './constants/roles'
 import useAuthStore from './stores/authStore'
 import { ErrorBoundary } from './components/layout/ErrorBoundary'
 
@@ -125,7 +126,7 @@ export default function App() {
           <Route
             path={ROUTES.SETTINGS}
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRoles={[ROLES.KETUA, ROLES.BENDAHARA]}>
                 <SettingsPage />
               </ProtectedRoute>
             }

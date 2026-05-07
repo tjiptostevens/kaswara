@@ -49,6 +49,10 @@ export default function SettingsPage() {
 
   const handleSaveOrg = async (e) => {
     e.preventDefault()
+    if (!canManage) {
+      showToast('Hanya ketua atau bendahara yang dapat mengubah pengaturan organisasi.', 'error')
+      return
+    }
     setSaving(true)
     const { error } = await supabase
       .from('organisasi')
@@ -259,11 +263,13 @@ export default function SettingsPage() {
               label="Nama Organisasi"
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
+              disabled={!canManage || saving}
             />
             <Input
               label="Alamat"
               value={orgAlamat}
               onChange={(e) => setOrgAlamat(e.target.value)}
+              disabled={!canManage || saving}
             />
             <div>
               <p className="text-xs text-stone mb-1">Tipe Organisasi</p>
@@ -271,7 +277,7 @@ export default function SettingsPage() {
                 {organisasi?.tipe === 'rt_rw' ? 'RT/RW' : organisasi?.tipe === 'personal' ? 'Personal' : 'Keluarga'}
               </p>
             </div>
-            <Button type="submit" variant="primary" loading={saving}>
+            <Button type="submit" variant="primary" loading={saving} disabled={!canManage}>
               Simpan perubahan
             </Button>
           </form>
