@@ -141,6 +141,61 @@ function WajibIuranPanel({ kategori, iuranList, anggotaList }) {
   )
 }
 
+function AnggotaIuranPanel({ pendingWajib, sukarelaRows }) {
+  return (
+    <div className="space-y-3">
+      {pendingWajib.length > 0 && (
+        <div className="glass-card p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <RefreshCcw size={13} className="text-info" />
+            <p className="text-xs font-semibold text-stone uppercase tracking-wide">
+              Iuran Wajib Belum Dibayar
+            </p>
+          </div>
+          <div className="space-y-2">
+            {pendingWajib.map((item) => (
+              <div
+                key={`${item.kategoriId}-${item.periode}`}
+                className="rounded-input border border-border px-3 py-2 bg-white/70"
+              >
+                <p className="text-sm font-medium text-charcoal">{item.kategoriNama}</p>
+                <p className="text-xs text-stone">
+                  {formatPeriode(item.periode)} • {item.paidCount} anggota sudah bayar
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sukarelaRows.length > 0 && (
+        <div className="glass-card p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Star size={13} className="fill-[#e8a020] stroke-[#e8a020]" />
+            <p className="text-xs font-semibold text-stone uppercase tracking-wide">
+              Iuran Sukarela Saya
+            </p>
+          </div>
+          <div className="space-y-2">
+            {sukarelaRows.map((row) => (
+              <div key={row.id} className="rounded-input border border-border px-3 py-2 bg-white/70">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-charcoal">{row.kategori_iuran?.nama || 'Sukarela'}</p>
+                    <p className="text-xs text-stone">{formatPeriode(row.periode)}</p>
+                  </div>
+                  <Badge status={row.status || 'draft'} />
+                </div>
+                <p className="text-sm font-mono font-semibold text-success mt-1">{formatRupiah(row.jumlah)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function IuranPage() {
   const { activeWorkspace, isBendahara, isAnggota, profile } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
@@ -154,6 +209,7 @@ export default function IuranPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [anggotaList, setAnggotaList] = useState([])
   const [kategoriList, setKategoriList] = useState([])
+  const [anggotaInsights, setAnggotaInsights] = useState({ pendingWajib: [], sukarelaRows: [] })
 
   useEffect(() => {
     if (!activeWorkspace?.id) return
@@ -201,6 +257,65 @@ export default function IuranPage() {
       supabase.removeChannel(iuranChannel)
     }
   }, [activeWorkspace?.id, fetchIuran])
+
+  useEffect(() => {
+    if (!activeWorkspace?.id || !isAnggota || !profile?.id) {
+      setAnggotaInsights({ pendingWajib: [], sukarelaRows: [] })
+      return
+    }
+
+    let isCancelled = false
+
+    const fetchAnggotaInsights = async () => {
+      const { data, error } = await supabase
+        .from('iuran_rutin')
+        .select('id, anggota_id, periode, jumlah, status, kategori_iuran_id, kategori_iuran(nama, tipe, frekuensi)')
+        .eq('organisasi_id', activeWorkspace.id)
+        .order('periode', { ascending: false })
+
+      if (error || isCancelled) return
+
+      const rows = data || []
+      const paidRows = rows.filter((row) => row.status === 'diajukan')
+
+      const wajibByKategoriPeriode = new Map()
+      for (const row of paidRows) {
+        if (row.kategori_iuran?.tipe !== 'wajib' || !row.kategori_iuran_id || !row.periode) continue
+        const key = `${row.kategori_iuran_id}::${row.periode}`
+        if (!wajibByKategoriPeriode.has(key)) {
+          wajibByKategoriPeriode.set(key, {
+            kategoriId: row.kategori_iuran_id,
+            kategoriNama: row.kategori_iuran?.nama || 'Iuran wajib',
+            periode: row.periode,
+            paidMemberIds: new Set(),
+          })
+        }
+        wajibByKategoriPeriode.get(key).paidMemberIds.add(row.anggota_id)
+      }
+
+      const pendingWajib = Array.from(wajibByKategoriPeriode.values())
+        .filter((item) => !item.paidMemberIds.has(profile.id))
+        .map((item) => ({
+          kategoriId: item.kategoriId,
+          kategoriNama: item.kategoriNama,
+          periode: item.periode,
+          paidCount: item.paidMemberIds.size,
+        }))
+        .sort((a, b) => new Date(b.periode) - new Date(a.periode))
+
+      const sukarelaRows = rows
+        .filter((row) => row.anggota_id === profile.id && row.kategori_iuran?.tipe === 'sukarela')
+        .sort((a, b) => new Date(b.periode) - new Date(a.periode))
+
+      setAnggotaInsights({ pendingWajib, sukarelaRows })
+    }
+
+    fetchAnggotaInsights()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [activeWorkspace?.id, isAnggota, profile?.id, iuran])
 
   useEffect(() => {
     if (!detail?.id) return
@@ -335,6 +450,13 @@ export default function IuranPage() {
               />
             ))}
           </div>
+        )}
+
+        {isAnggota && (
+          <AnggotaIuranPanel
+            pendingWajib={anggotaInsights.pendingWajib}
+            sukarelaRows={anggotaInsights.sukarelaRows}
+          />
         )}
 
         <IuranTable data={iuran} loading={loading} onView={(row) => setDetail(row)} />
