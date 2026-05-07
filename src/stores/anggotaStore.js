@@ -44,12 +44,13 @@ const useAnggotaStore = create((set) => ({
       .single()
     if (error) return { error }
 
-    // Upsert permission matrix jika ada
+    // Upsert permission matrix jika ada (via RPC agar bypass RLS self-restriction)
     if (permissions) {
       const permRows = flattenPermissions(permissions, id)
-      const { error: permError } = await supabase
-        .from('anggota_permission')
-        .upsert(permRows, { onConflict: 'anggota_organisasi_id,resource,action' })
+      const { error: permError } = await supabase.rpc('save_anggota_permissions', {
+        p_ao_id: id,
+        p_permissions: permRows.map(({ resource, action, scope }) => ({ resource, action, scope })),
+      })
       if (permError) return { error: permError }
     }
 

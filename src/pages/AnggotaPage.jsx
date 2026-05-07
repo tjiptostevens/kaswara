@@ -100,16 +100,17 @@ export default function AnggotaPage() {
       }
       newMemberId = inserted?.id
 
-      // Seed default permission matrix untuk anggota baru
+      // Seed default permission matrix untuk anggota baru (via RPC agar bypass RLS)
       if (newMemberId) {
         const permRows = []
         for (const [resource, actions] of Object.entries(DEFAULT_ANGGOTA_PERMISSIONS)) {
           for (const [action, scope] of Object.entries(actions)) {
-            permRows.push({ anggota_organisasi_id: newMemberId, resource, action, scope })
+            permRows.push({ resource, action, scope })
           }
         }
-        await supabase.from('anggota_permission').upsert(permRows, {
-          onConflict: 'anggota_organisasi_id,resource,action',
+        await supabase.rpc('save_anggota_permissions', {
+          p_ao_id: newMemberId,
+          p_permissions: permRows,
         })
       }
     }
