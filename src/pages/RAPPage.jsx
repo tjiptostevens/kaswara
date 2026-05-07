@@ -119,7 +119,7 @@ const optimizeImageForUpload = async (file, uploaderName) => {
 }
 
 export default function RAPPage() {
-  const { activeWorkspace, canManageRAP, canApproveRAB: canApprove, user, profile } = useAuth()
+  const { activeWorkspace, can, canForRecord, user, profile } = useAuth()
   const organisasi = activeWorkspace
   const uploaderDisplayName = profile?.nama_lengkap || user?.email || 'Unknown user'
   const showToast = useUIStore((s) => s.showToast)
@@ -468,7 +468,7 @@ export default function RAPPage() {
             <Button variant="ghost" size="md" icon={<Printer size={16} />} onClick={handlePrint}>
               Cetak
             </Button>
-            {canManageRAP && (
+            {can('rap', 'create') && (
               <Button variant="primary" size="md" icon={<Plus size={16} />} onClick={() => setAddOpen(true)}>
                 Tambah RAP
               </Button>
@@ -598,27 +598,27 @@ export default function RAPPage() {
               <Button variant="ghost" size="sm" icon={<Printer size={15} />} onClick={() => handlePrintDetail(detail)}>
                 Cetak
               </Button>
-              {canManageRAP && isOwnedByCurrentUser(detail) && detail.status === 'draft' && (
+              {canForRecord('rap', 'update', detail, 'dibuat_oleh') && detail.status === 'draft' && (
                 <Button variant="ghost" size="sm" icon={<Pencil size={15} />} onClick={() => setEditOpen(true)}>
                   Edit
                 </Button>
               )}
-              {canManageRAP && isOwnedByCurrentUser(detail) && detail.status === 'draft' && (
+              {canForRecord('rap', 'submit', detail, 'dibuat_oleh') && detail.status === 'draft' && (
                 <Button variant="accent" size="sm" icon={<Send size={15} />} onClick={() => handleSubmit(detail.id)}>
                   Ajukan
                 </Button>
               )}
-              {canApprove && detail.status === 'submitted' && (
+              {can('rap', 'approve') && detail.status === 'submitted' && (
                 <Button variant="primary" size="sm" icon={<CheckCircle2 size={15} />} onClick={() => handleApprove(detail)}>
                   Setujui
                 </Button>
               )}
-              {canManageRAP && isOwnedByCurrentUser(detail) && ['draft', 'submitted'].includes(detail.status) && (
+              {canForRecord('rap', 'cancel', detail, 'dibuat_oleh') && ['draft', 'submitted'].includes(detail.status) && (
                 <Button variant="danger" size="sm" icon={<XCircle size={15} />} onClick={() => handleCancel(detail.id)}>
                   Batalkan
                 </Button>
               )}
-              {canManageRAP && isOwnedByCurrentUser(detail) && detail.status === 'cancelled' && (
+              {canForRecord('rap', 'update', detail, 'dibuat_oleh') && detail.status === 'cancelled' && (
                 <Button variant="primary" size="sm" icon={<RefreshCw size={15} />} onClick={() => handleAmend(detail)}>
                   Amandemen
                 </Button>

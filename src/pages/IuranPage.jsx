@@ -261,7 +261,7 @@ function AnggotaWajibPanel({ kategori, iuranList, pendingWajib }) {
 }
 
 export default function IuranPage() {
-  const { activeWorkspace, isBendahara, isAnggota, profile, user } = useAuth()
+  const { activeWorkspace, isBendahara, isAnggota, profile, user, can } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const {
     iuran, loading, fetchIuran,
@@ -481,7 +481,7 @@ export default function IuranPage() {
             <Button variant="ghost" size="md" icon={<Printer size={16} />} onClick={handlePrint}>
               Cetak
             </Button>
-            {isBendahara && (
+            {can('iuran', 'create') && (
               <Button
                 variant="primary"
                 size="md"
@@ -666,7 +666,7 @@ export default function IuranPage() {
               >
                 Cetak
               </Button>
-              {isBendahara && detail.status === 'draft' && (
+              {can('iuran', 'update') && detail.status === 'draft' && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -676,7 +676,7 @@ export default function IuranPage() {
                   Edit
                 </Button>
               )}
-              {isBendahara && detail.status === 'draft' && (
+              {can('iuran', 'submit') && detail.status === 'draft' && (
                 <Button
                   variant="accent"
                   size="sm"
@@ -686,7 +686,7 @@ export default function IuranPage() {
                   Ajukan
                 </Button>
               )}
-              {isBendahara && detail.status === 'diajukan' && (
+              {can('iuran', 'cancel') && detail.status === 'diajukan' && (
                 <Button
                   variant="danger"
                   size="sm"
@@ -696,7 +696,7 @@ export default function IuranPage() {
                   Batalkan
                 </Button>
               )}
-              {isBendahara && detail.status === 'cancelled' && (
+              {can('iuran', 'update') && detail.status === 'cancelled' && (
                 <Button
                   variant="primary"
                   size="sm"

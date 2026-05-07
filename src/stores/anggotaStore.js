@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { flattenPermissions } from '../constants/permissions'
 
 const useAnggotaStore = create((set) => ({
   anggota: [],
@@ -10,7 +11,7 @@ const useAnggotaStore = create((set) => ({
     set({ loading: true, error: null })
     const { data, error } = await supabase
       .from('anggota_organisasi')
-      .select('*')
+      .select('*, anggota_permission(resource, action, scope)')
       .eq('organisasi_id', organisasiId)
       .order('nama_lengkap')
 
@@ -32,15 +33,28 @@ const useAnggotaStore = create((set) => ({
   },
 
   updateAnggota: async (id, updates) => {
+    const { permissions, ...anggotaUpdates } = updates
+
+    // Update kolom anggota_organisasi
     const { data: result, error } = await supabase
       .from('anggota_organisasi')
-      .update(updates)
+      .update(anggotaUpdates)
       .eq('id', id)
       .select()
       .single()
     if (error) return { error }
+
+    // Upsert permission matrix jika ada
+    if (permissions) {
+      const permRows = flattenPermissions(permissions, id)
+      const { error: permError } = await supabase
+        .from('anggota_permission')
+        .upsert(permRows, { onConflict: 'anggota_organisasi_id,resource,action' })
+      if (permError) return { error: permError }
+    }
+
     set((state) => ({
-      anggota: state.anggota.map((a) => (a.id === id ? result : a)),
+      anggota: state.anggota.map((a) => (a.id === id ? { ...result, anggota_permission: a.anggota_permission } : a)),
     }))
     return { data: result, error: null }
   },

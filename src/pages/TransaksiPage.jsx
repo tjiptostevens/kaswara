@@ -14,7 +14,7 @@ import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { generateTransaksiPDF } from '../lib/pdfExport'
 
 export default function TransaksiPage() {
-  const { isBendahara, organisasi, profile, user, activeWorkspace } = useAuth()
+  const { organisasi, profile, user, activeWorkspace, can, canForRecord } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const updateTransaksi = useKasStore((s) => s.updateTransaksi)
   const [modalOpen, setModalOpen] = useState(false)
@@ -130,7 +130,7 @@ export default function TransaksiPage() {
             >
               Cetak
             </Button>
-            {isBendahara && (
+            {can('transaksi', 'create') && (
               <Button
                 variant="primary"
                 size="md"
@@ -154,7 +154,7 @@ export default function TransaksiPage() {
           loading={loading}
           onView={(row) => setDetail(row)}
           onDelete={handleDelete}
-          canDelete={isBendahara}
+          canDelete={can('transaksi', 'delete')}
         />
       </div>
 
@@ -255,7 +255,7 @@ export default function TransaksiPage() {
               >
                 Cetak
               </Button>
-              {isBendahara && detail.status === 'draft' && (
+              {canForRecord('transaksi', 'update', detail, 'dibuat_oleh') && detail.status === 'draft' && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -265,7 +265,7 @@ export default function TransaksiPage() {
                   Edit
                 </Button>
               )}
-              {isBendahara && detail.status === 'draft' && (
+              {canForRecord('transaksi', 'submit', detail, 'dibuat_oleh') && detail.status === 'draft' && (
                 <Button
                   variant="accent"
                   size="sm"
@@ -275,7 +275,7 @@ export default function TransaksiPage() {
                   Ajukan
                 </Button>
               )}
-              {isBendahara && detail.status === 'submitted' && (
+              {canForRecord('transaksi', 'cancel', detail, 'dibuat_oleh') && detail.status === 'submitted' && (
                 <Button
                   variant="danger"
                   size="sm"
@@ -285,7 +285,7 @@ export default function TransaksiPage() {
                   Batalkan
                 </Button>
               )}
-              {isBendahara && detail.status === 'cancelled' && (
+              {canForRecord('transaksi', 'cancel', detail, 'dibuat_oleh') && detail.status === 'cancelled' && (
                 <>
                   <Button
                     variant="primary"
