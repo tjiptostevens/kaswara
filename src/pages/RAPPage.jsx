@@ -337,6 +337,7 @@ export default function RAPPage() {
   }
 
   const handleApprove = async (rapRow) => {
+    const previousStatus = rapRow.status
     const { error: approveErr } = await updateRAPStatus(rapRow.id, 'approved')
     if (approveErr) { showToast('Gagal menyetujui: ' + approveErr.message, 'error'); return }
     const totals = computeRapTotals(rapRow)
@@ -362,7 +363,14 @@ export default function RAPPage() {
       .single()
 
     if (txErr) {
-      showToast('RAP disetujui, tapi gagal buat transaksi: ' + txErr.message, 'error')
+      // Rollback RAP status back to previous state
+      await supabase.from('rap').update({
+        status: previousStatus,
+        approved_by: null,
+        approved_at: null,
+      }).eq('id', rapRow.id)
+      await fetchRAP()
+      showToast('Gagal membuat transaksi, status RAP dikembalikan: ' + txErr.message, 'error')
     } else {
       await supabase.from('rap').update({ transaksi_id: transaksiData.id }).eq('id', rapRow.id)
 
