@@ -1,8 +1,8 @@
 # Kaswara — Kas Warga Negara
 
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18.x-61DAFB?logo=react" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-v3.4-38BDF8?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/React-19.x-61DAFB?logo=react" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-v4.2-38BDF8?logo=tailwindcss" />
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase" />
   <img src="https://img.shields.io/badge/Vite-Build_Tool-646CFF?logo=vite" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
@@ -19,6 +19,7 @@
 ## Daftar Isi
 
 - [Tentang Proyek](#tentang-proyek)
+- [Perubahan Terbaru](#perubahan-terbaru)
 - [Fitur](#fitur)
 - [Tech Stack](#tech-stack)
 - [Brand Guideline](#brand-guideline)
@@ -50,6 +51,19 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 
 ---
 
+## Perubahan Terbaru
+
+Pembaruan yang sudah ditambahkan di aplikasi:
+
+- [x] Halaman transparansi publik (`/publik` dan `/publik/:handle`) untuk akses laporan tanpa login.
+- [x] Modul **Surat** (`/surat`) beserta alur persetujuan/status pengajuan.
+- [x] Alur iuran yang lebih lengkap (workflow iuran + kategori iuran).
+- [x] Integrasi RAP ke transaksi otomatis saat disetujui.
+- [x] Dukungan upload bukti RAP ke Supabase Storage.
+- [x] Penyempurnaan skema dan kebijakan RLS Supabase melalui migration berkelanjutan.
+
+---
+
 ## Fitur
 
 ### Fitur Utama (v1.0)
@@ -63,9 +77,12 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 | **RAB (Rencana Anggaran Biaya)**         | Pengajuan anggaran kegiatan, alur persetujuan Ketua         | Bendahara/Ketua |
 | **RAP (Realisasi Anggaran Pengeluaran)** | Pencatatan realisasi RAB + upload bukti foto struk/kwitansi | Bendahara       |
 | **Kategori Transaksi**                   | Pengelompokan transaksi (kebersihan, keamanan, sosial, dll) | Admin           |
+| **Kategori Iuran**                       | Kategori iuran per jenis tagihan warga/anggota              | Admin           |
 | **Multi-role**                           | Bendahara, Ketua, Anggota (view only)                       | Admin           |
 | **Laporan PDF**                          | Export laporan bulanan/tahunan ke PDF                       | Bendahara       |
 | **Mode Keluarga**                        | Toggle mode: RT/RW atau Keluarga                            | Admin           |
+| **Transparansi Publik**                  | Halaman publik read-only laporan organisasi                 | Admin/Warga     |
+| **Manajemen Surat**                      | Pengajuan surat warga + workflow persetujuan                | Pengurus        |
 
 ### Roadmap (v2.0)
 
@@ -78,7 +95,7 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 - [x] Supabase Storage untuk upload foto bukti RAP ✓
 - [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — RAP & RAB detail masih tampilkan UUID
 - [ ] Cetak laporan dengan filter range tanggal (organisasi & personal)
-- [ ] **Halaman transparansi publik** — URL read-only untuk warga tanpa login (`/publik/:orgId`), toggle aktif/nonaktif dari Pengaturan
+- [x] **Halaman transparansi publik** — URL read-only untuk warga tanpa login (`/publik/:handle`) ✓
 
 ### Roadmap (v3.0)
 
@@ -100,10 +117,10 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 
 | Layer                | Teknologi             | Keterangan                        |
 | -------------------- | --------------------- | --------------------------------- | ----------------------------- |
-| **Frontend**         | React 18 + Vite       | SPA, fast refresh                 |
+| **Frontend**         | React 19 + Vite       | SPA, fast refresh                 |
 | **Styling**          | Tailwind CSS v4.2     | Utility-first CSS                 | vanila css for custom styling |
 | **State Management** | Zustand               | Lightweight, no boilerplate       |
-| **Routing**          | React Router v6       | Client-side routing               |
+| **Routing**          | React Router v7       | Client-side routing               |
 | **Form**             | React Hook Form + Zod | Validasi form & schema            |
 | **Database**         | Supabase (PostgreSQL) | Relasional, gratis s.d. 500MB     |
 | **Auth**             | Supabase Auth         | Email/password + Magic Link       |
