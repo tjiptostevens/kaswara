@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { anggotaSchema, editAnggotaSchema } from '../../schemas/anggotaSchema'
@@ -50,12 +50,17 @@ function ScopeToggle({ value, onChange }) {
  */
 function PermissionMatrix({ control, setValue, role }) {
   const permissions = useWatch({ control, name: 'permissions' })
+  const previousRole = useRef(role)
 
-  // Saat role berubah, reset matrix ke default role baru
+  // Saat role benar-benar berubah, reset matrix ke default role baru
   useEffect(() => {
-    const defaults =
-      role === 'anggota' ? DEFAULT_ANGGOTA_PERMISSIONS : DEFAULT_FULL_PERMISSIONS
-    setValue('permissions', defaults, { shouldDirty: false })
+    if (!role) return
+    if (previousRole.current !== role) {
+      const defaults =
+        role === 'anggota' ? DEFAULT_ANGGOTA_PERMISSIONS : DEFAULT_FULL_PERMISSIONS
+      setValue('permissions', defaults, { shouldDirty: true })
+    }
+    previousRole.current = role
   }, [role, setValue])
 
   const setScope = (resource, action, scope) => {

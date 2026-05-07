@@ -151,16 +151,28 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
 }
 
 export default function Sidebar() {
-  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace, isBendahara, isKetua, canApproveJoinRequest } = useAuth()
+  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace, isBendahara, isKetua, canApproveJoinRequest, can } = useAuth()
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
 
   const canManageAnggota = isBendahara || isKetua || canApproveJoinRequest
   const canAccessSettings = isBendahara || isKetua
+  const routeToResource = {
+    [ROUTES.TRANSAKSI]: 'transaksi',
+    [ROUTES.IURAN]: 'iuran',
+    [ROUTES.RAB]: 'rab',
+    [ROUTES.RAP]: 'rap',
+    [ROUTES.SURAT]: 'surat',
+  }
 
   const navGroups = (isPersonalWorkspace ? personalNavGroups : orgNavGroups).map((group) => ({
     ...group,
-    items: group.items.filter((item) => item.to !== ROUTES.ANGGOTA || canManageAnggota),
+    items: group.items.filter((item) => {
+      if (item.to === ROUTES.ANGGOTA) return canManageAnggota
+      const resource = routeToResource[item.to]
+      if (!resource) return true
+      return can(resource, 'read')
+    }),
   })).filter((group) => group.items.length > 0)
 
   return (

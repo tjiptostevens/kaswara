@@ -4,22 +4,29 @@ import { useAuth } from './useAuth'
 import { formatPeriode } from '../lib/formatters'
 
 export function useIuran() {
-  const { activeWorkspace, user, profile, isAnggota } = useAuth()
+  const { activeWorkspace, user, profile, can } = useAuth()
   const [iuran, setIuran] = useState([])
   const [loading, setLoading] = useState(false)
 
   const fetchIuran = useCallback(async () => {
     if (!activeWorkspace?.id) return
-    if (isAnggota && !user?.id) return
+    const canReadAll = can('iuran', 'read', 'all')
+    const canReadOwn = can('iuran', 'read', 'own')
+    if (!canReadAll && !canReadOwn) {
+      setIuran([])
+      return
+    }
+    if (!canReadAll && !user?.id) return
     setLoading(true)
 
-    let query = supabase
-      .from('iuran_rutin')
-      .select('*, anggota_organisasi(nama_lengkap, nomor_anggota), kategori_iuran(nama, nominal_default, tipe, frekuensi)')
-      .eq('organisasi_id', activeWorkspace.id)
-      .order('periode', { ascending: false })
-
-    if (isAnggota) {
+    let query
+    if (canReadAll) {
+      query = supabase
+        .from('iuran_rutin')
+        .select('*, anggota_organisasi(nama_lengkap, nomor_anggota), kategori_iuran(nama, nominal_default, tipe, frekuensi)')
+        .eq('organisasi_id', activeWorkspace.id)
+        .order('periode', { ascending: false })
+    } else {
       query = supabase
         .from('iuran_rutin')
         .select('*, anggota_organisasi!inner(nama_lengkap, nomor_anggota, user_id), kategori_iuran(nama, nominal_default, tipe, frekuensi)')
@@ -31,7 +38,7 @@ export function useIuran() {
     const { data, error } = await query
     setLoading(false)
     if (!error) setIuran(data || [])
-  }, [activeWorkspace?.id, isAnggota, user?.id])
+  }, [activeWorkspace?.id, can, user?.id])
 
   const addIuran = async (data) => {
     const { kategori_iuran_id, ...rest } = data

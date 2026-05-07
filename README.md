@@ -68,17 +68,17 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 
 ### Fitur Utama (v1.0)
 
-| Fitur                                    | Deskripsi                                                   | Role            |
-| ---------------------------------------- | ----------------------------------------------------------- | --------------- |
-| **Dashboard Ringkasan**                  | Saldo terkini, total pemasukan/pengeluaran bulan ini        | Semua           |
-| **Pemasukan & Pengeluaran**              | Input transaksi kas harian dengan kategori                  | Bendahara       |
-| **Manajemen Anggota**                    | Data warga/anggota, status iuran, histori pembayaran        | Bendahara       |
-| **Iuran Rutin**                          | Pencatatan iuran per periode (bulanan/tahunan) per anggota  | Bendahara       |
-| **RAB (Rencana Anggaran Biaya)**         | Pengajuan anggaran kegiatan, alur persetujuan Ketua         | Bendahara/Ketua |
-| **RAP (Realisasi Anggaran Pengeluaran)** | Pencatatan realisasi RAB + upload bukti foto struk/kwitansi | Bendahara       |
+| Fitur                                    | Deskripsi                                                   | Akses            |
+| ---------------------------------------- | ----------------------------------------------------------- | ---------------- |
+| **Dashboard Ringkasan**                  | Saldo terkini, total pemasukan/pengeluaran bulan ini        | Semua pengguna   |
+| **Pemasukan & Pengeluaran**              | Input transaksi kas harian dengan kategori                  | Matriks izin     |
+| **Manajemen Anggota**                    | Data warga/anggota + pengaturan matriks izin                | Bendahara/Ketua  |
+| **Iuran Rutin**                          | Pencatatan iuran per periode (bulanan/tahunan) per anggota  | Matriks izin     |
+| **RAB (Rencana Anggaran Biaya)**         | Pengajuan anggaran kegiatan, alur persetujuan Ketua         | Matriks izin     |
+| **RAP (Realisasi Anggaran Pengeluaran)** | Pencatatan realisasi RAB + upload bukti foto struk/kwitansi | Matriks izin     |
 | **Kategori Transaksi**                   | Pengelompokan transaksi (kebersihan, keamanan, sosial, dll) | Admin           |
 | **Kategori Iuran**                       | Kategori iuran per jenis tagihan warga/anggota              | Admin           |
-| **Multi-role**                           | Bendahara, Ketua, Anggota (view only)                       | Admin           |
+| **Multi-role**                           | Bendahara, Ketua, Anggota (scope none/own/all per aksi)     | Admin           |
 | **Laporan PDF**                          | Export laporan bulanan/tahunan ke PDF                       | Bendahara       |
 | **Mode Keluarga**                        | Toggle mode: RT/RW atau Keluarga                            | Admin           |
 | **Transparansi Publik**                  | Halaman publik read-only laporan organisasi                 | Admin/Warga     |
@@ -517,9 +517,14 @@ Pengguna Login (Supabase Auth)
          ▼
     RLS Policy aktif → User hanya bisa akses data organisasi sendiri
          │
-         ├──► role = 'bendahara'  → Full CRUD semua transaksi
-         ├──► role = 'ketua'      → Approve/reject RAB, view semua
-         └──► role = 'anggota'    → View laporan & riwayat iuran sendiri
+         ├──► role = 'bendahara/ketua' → default full permission matrix
+         └──► role = 'anggota'         → default matrix terbatas (dapat dikustom)
+                    │
+                    ▼
+      Matrix `anggota_permission` menentukan aksi per resource:
+      - Resource: transaksi, iuran, rab, rap, surat
+      - Aksi: create/read/update/delete/submit/approve/cancel
+      - Scope: none | own | all
 ```
 
 ---
