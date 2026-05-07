@@ -25,7 +25,7 @@ import RABPage from './pages/RABPage'
 import RAPPage from './pages/RAPPage'
 import SuratPage from './pages/SuratPage'
 import LaporanPage from './pages/LaporanPage'
-import KelargaPage from './pages/KelargaPage'
+import KeluargaPage from './pages/KeluargaPage'
 import SettingsPage from './pages/SettingsPage'
 import KategoriPage from './pages/KategoriPage'
 import KategoriIuranPage from './pages/KategoriIuranPage'
@@ -79,7 +79,7 @@ export default function App() {
             path={ROUTES.KELUARGA}
             element={
               <ProtectedRoute>
-                <KelargaPage />
+                <KeluargaPage />
               </ProtectedRoute>
             }
           />

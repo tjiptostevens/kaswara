@@ -11,6 +11,7 @@ import useUIStore from '../stores/uiStore'
 import { supabase } from '../lib/supabase'
 import { formatTanggalPendek } from '../lib/formatters'
 import { ROUTES } from '../constants/routes'
+import { DEFAULT_ANGGOTA_PERMISSIONS } from '../constants/permissions'
 
 export default function AnggotaPage() {
   const { isBendahara, isKetua, canApproveJoinRequest, user, organisasi } = useAuth()
@@ -77,19 +78,39 @@ export default function AnggotaPage() {
       .eq('organisasi_id', request.organisasi_id)
       .maybeSingle()
 
+    let newMemberId = existing?.id
+
     if (!existing) {
-      const { error: addErr } = await supabase.from('anggota_organisasi').insert({
-        user_id: request.user_id,
-        organisasi_id: request.organisasi_id,
-        role: 'anggota',
-        nama_lengkap: request.nama_lengkap || request.email || 'Anggota',
-        email: request.email || null,
-        no_hp: request.no_hp || null,
-        aktif: true,
-      })
+      const { data: inserted, error: addErr } = await supabase
+        .from('anggota_organisasi')
+        .insert({
+          user_id: request.user_id,
+          organisasi_id: request.organisasi_id,
+          role: 'anggota',
+          nama_lengkap: request.nama_lengkap || request.email || 'Anggota',
+          email: request.email || null,
+          no_hp: request.no_hp || null,
+          aktif: true,
+        })
+        .select('id')
+        .single()
       if (addErr) {
-        showToast('Gagal approve request: ' + addErr.message, 'error')
+        showToast('Gagal menyetujui permintaan: ' + addErr.message, 'error')
         return
+      }
+      newMemberId = inserted?.id
+
+      // Seed default permission matrix untuk anggota baru
+      if (newMemberId) {
+        const permRows = []
+        for (const [resource, actions] of Object.entries(DEFAULT_ANGGOTA_PERMISSIONS)) {
+          for (const [action, scope] of Object.entries(actions)) {
+            permRows.push({ anggota_organisasi_id: newMemberId, resource, action, scope })
+          }
+        }
+        await supabase.from('anggota_permission').upsert(permRows, {
+          onConflict: 'anggota_organisasi_id,resource,action',
+        })
       }
     }
 
@@ -103,7 +124,7 @@ export default function AnggotaPage() {
       })
       .eq('id', request.id)
     if (error) {
-      showToast('Gagal update status request: ' + error.message, 'error')
+      showToast('Gagal memperbarui status permintaan: ' + error.message, 'error')
       return
     }
     showToast('Permintaan bergabung disetujui')
@@ -122,7 +143,7 @@ export default function AnggotaPage() {
       })
       .eq('id', request.id)
     if (error) {
-      showToast('Gagal menolak request: ' + error.message, 'error')
+      showToast('Gagal menolak permintaan: ' + error.message, 'error')
       return
     }
     showToast('Permintaan bergabung ditolak')
@@ -145,7 +166,7 @@ export default function AnggotaPage() {
               icon={<Plus size={16} />}
               onClick={() => setModalOpen(true)}
             >
-              Tambah anggota
+              Tambah Anggota
             </Button>
           )}
         </div>
@@ -179,7 +200,7 @@ export default function AnggotaPage() {
                     icon={<CheckCircle2 size={14} />}
                     onClick={() => handleApproveRequest(req)}
                   >
-                    Approve
+                    Setujui
                   </Button>
                   <Button
                     variant="danger"

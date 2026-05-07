@@ -10,7 +10,7 @@ import useUIStore from '../stores/uiStore'
 import { formatTanggalPendek } from '../lib/formatters'
 
 export default function SuratPage() {
-  const { activeWorkspace, user, profile, isAnggota, isBendahara, isKetua } = useAuth()
+  const { activeWorkspace, user, profile, isAnggota, can, canForRecord } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -18,7 +18,7 @@ export default function SuratPage() {
   const [detail, setDetail] = useState(null)
   const [form, setForm] = useState({ judul: '', keperluan: '', detail: '' })
 
-  const canProcess = isBendahara || isKetua
+  const canProcess = can('surat', 'approve')
 
   const fetchRows = async () => {
     if (!activeWorkspace?.id) return
@@ -161,7 +161,7 @@ export default function SuratPage() {
       label: 'Hasil',
       render: (row) =>
         row.hasil_status
-          ? <Badge status={row.hasil_status === 'approve' ? 'approved' : 'ditolak'} label={row.hasil_status === 'approve' ? 'Approve' : 'Reject'} />
+          ? <Badge status={row.hasil_status === 'approve' ? 'approved' : 'ditolak'} label={row.hasil_status === 'approve' ? 'Disetujui' : 'Ditolak'} />
           : '—',
     },
     {
@@ -237,7 +237,7 @@ export default function SuratPage() {
               <div>
                 <p className="text-xs text-stone">Hasil</p>
                 {detail.hasil_status
-                  ? <Badge status={detail.hasil_status === 'approve' ? 'approved' : 'ditolak'} label={detail.hasil_status === 'approve' ? 'Approve' : 'Reject'} />
+                  ? <Badge status={detail.hasil_status === 'approve' ? 'approved' : 'ditolak'} label={detail.hasil_status === 'approve' ? 'Disetujui' : 'Ditolak'} />
                   : <p className="font-medium text-charcoal">—</p>}
               </div>
               <div className="col-span-2">
@@ -302,10 +302,10 @@ export default function SuratPage() {
               {processable && (
                 <>
                   <Button variant="primary" size="sm" icon={<CheckCircle2 size={14} />} onClick={() => handleProcess(detail, 'approve')}>
-                    Selesai (Approve)
+                    Setujui
                   </Button>
                   <Button variant="danger" size="sm" icon={<XCircle size={14} />} onClick={() => handleProcess(detail, 'reject')}>
-                    Selesai (Reject)
+                    Tolak
                   </Button>
                 </>
               )}

@@ -58,6 +58,7 @@ serve(async (req) => {
       can_manage_rap = false,
       can_approve_rab = false,
       can_approve_join_request = false,
+      permissions = null, // matrix baru: { resource: { action: scope } }
     } = body;
 
     if (!email || !nama_lengkap || !role || !organisasi_id) {
@@ -233,6 +234,34 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Simpan permission matrix jika dikirim dari client
+    if (permissions && anggota?.id) {
+      const RESOURCES = ["transaksi", "iuran", "rab", "rap", "surat"];
+      const ACTIONS = ["create", "read", "update", "delete", "submit", "approve", "cancel"];
+      const VALID_SCOPES = ["none", "own", "all"];
+
+      const permRows: Array<{ anggota_organisasi_id: string; resource: string; action: string; scope: string }> = [];
+      for (const resource of RESOURCES) {
+        for (const action of ACTIONS) {
+          const scope = permissions?.[resource]?.[action];
+          if (VALID_SCOPES.includes(scope)) {
+            permRows.push({
+              anggota_organisasi_id: anggota.id,
+              resource,
+              action,
+              scope,
+            });
+          }
+        }
+      }
+
+      if (permRows.length > 0) {
+        await supabaseAdmin
+          .from("anggota_permission")
+          .upsert(permRows, { onConflict: "anggota_organisasi_id,resource,action" });
+      }
     }
 
     return new Response(

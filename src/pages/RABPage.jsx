@@ -14,7 +14,7 @@ import { formatRupiah, formatTanggalPendek, getTodayString } from '../lib/format
 import { generateRABPDF } from '../lib/pdfExport'
 
 export default function RABPage() {
-  const { canManageRAB, canApproveRAB, activeWorkspace, user, profile } = useAuth()
+  const { activeWorkspace, user, profile, can, canForRecord } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const kategori = useKasStore((s) => s.kategori)
   const fetchKategori = useKasStore((s) => s.fetchKategori)
@@ -98,7 +98,7 @@ export default function RABPage() {
     generateRABPDF([row], activeWorkspace?.nama || 'Kaswara')
   }
 
-  const canApprove = canApproveRAB
+  const canApprove = can('rab', 'approve')
   const isOwnedByCurrentUser = (row) =>
     row?.diajukan_oleh === user?.id ||
     (row?.dibuat_oleh_anggota_id && row?.dibuat_oleh_anggota_id === profile?.id)
@@ -119,7 +119,7 @@ export default function RABPage() {
         })) || [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
       }
     : undefined
-  const canManageOwnDetail = detail ? canManageRAB && isOwnedByCurrentUser(detail) : false
+  const canManageOwnDetail = detail ? canForRecord('rab', 'update', detail, 'diajukan_oleh') : false
 
   return (
     <PageWrapper title="RAB">
@@ -135,7 +135,7 @@ export default function RABPage() {
             >
               Cetak
             </Button>
-            {canManageRAB && (
+            {can('rab', 'create') && (
               <Button
                 variant="primary"
                 size="md"
