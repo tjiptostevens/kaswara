@@ -291,7 +291,7 @@ export default function IuranPage() {
         .order('periode', { ascending: false }),
       supabase
         .from('iuran_rutin')
-        .select('periode, kategori_iuran_id, anggota_organisasi!inner(user_id)')
+        .select('periode, kategori_iuran_id, kategori_iuran!inner(tipe), anggota_organisasi!inner(user_id)')
         .eq('organisasi_id', activeWorkspace.id)
         .in('status', ['diajukan', 'lunas'])
         .eq('kategori_iuran.tipe', 'wajib')

@@ -134,7 +134,13 @@ export default function RAPPage() {
   const [detail, setDetail] = useState(null)
   const [fotosOpen, setFotosOpen] = useState(false)
 
-  const approvedRAB = rab.filter((r) => r.status === 'disetujui' || r.status === 'selesai')
+  const approvedRAB = rab.filter((r) => {
+    if (r.status !== 'disetujui' && r.status !== 'selesai') return false
+    const activeRap = rap.find(
+      (p) => p.rab_id === r.id && p.status !== 'cancelled' && p.status !== 'amended'
+    )
+    return !activeRap
+  })
   const isOwnedByCurrentUser = (row) =>
     row?.dibuat_oleh === user?.id ||
     (row?.dibuat_oleh_anggota_id && row?.dibuat_oleh_anggota_id === profile?.id)
@@ -472,11 +478,11 @@ export default function RAPPage() {
       {/* Edit Modal */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit RAP">
         {detail && (
-            <FormRAP
-              kategori={kategori}
-              rabList={approvedRAB}
-              defaultValues={editDefaults}
-              onSubmit={handleEdit}
+          <FormRAP
+            kategori={kategori}
+            rabList={approvedRAB}
+            defaultValues={editDefaults}
+            onSubmit={handleEdit}
             onCancel={() => setEditOpen(false)}
           />
         )}
