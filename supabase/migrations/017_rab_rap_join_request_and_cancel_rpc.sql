@@ -84,7 +84,7 @@ select
   ri.id as rab_item_id,
   coalesce(ri.nama_item, r.nama_item) as nama_item,
   coalesce(ri.volume, 1) as volume,
-  coalesce(ri.satuan, 'item') as satuan,
+  coalesce(ri.satuan, 'unit') as satuan,
   coalesce(ri.harga_satuan, 0) as harga_satuan_anggaran,
   coalesce(ri.subtotal, coalesce(r.jumlah_realisasi, 0)) as subtotal_anggaran,
   coalesce(r.jumlah_realisasi, 0) as jumlah_realisasi,
