@@ -11,6 +11,7 @@ import SetupOrganisasiPage from './pages/auth/SetupOrganisasiPage'
 import ToastProvider from './components/ui/ToastProvider'
 
 // Public page (no auth required)
+import PublikLandingPage from './pages/PublikLandingPage'
 import PublikPage from './pages/PublikPage'
 
 // Protected pages
@@ -44,6 +45,7 @@ export default function App() {
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
           <Route path={ROUTES.SETUP} element={<SetupOrganisasiPage />} />
+          <Route path={ROUTES.PUBLIK_LANDING} element={<PublikLandingPage />} />
           <Route path={ROUTES.PUBLIK} element={<PublikPage />} />
 
           {/* Protected routes */}
@@ -135,7 +137,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* 404 Route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

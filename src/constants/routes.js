@@ -13,6 +13,7 @@ export const ROUTES = {
   SETTINGS: '/settings',
   KATEGORI: '/kategori',
   KATEGORI_IURAN: '/kategori-iuran',
+  PUBLIK_LANDING: '/publik',
   PUBLIK: '/publik/:handle',
 }
 

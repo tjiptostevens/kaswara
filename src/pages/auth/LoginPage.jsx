@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm relative z-10 animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <img src="/logo.png" alt="Kaswara logo" className="w-11 h-11 rounded-xl shrink-0" />
+          <img src="/logo.png" alt="Kaswara logo" className="w-11 h-11 rounded shrink-0" />
           <div>
             <p className="text-[22px] font-bold text-brand leading-none">
               kas<span className="text-accent">wara</span>

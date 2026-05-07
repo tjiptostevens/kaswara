@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react'
 import PageWrapper from '../components/layout/PageWrapper'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
-import { Copy, Check, ExternalLink } from 'lucide-react'
+import { Copy, Check, ExternalLink, Download } from 'lucide-react'
 import { getPublikUrl } from '../constants/routes'
 
 export default function SettingsPage() {
@@ -22,6 +23,7 @@ export default function SettingsPage() {
   const [publikAktif, setPublikAktif] = useState(organisasi?.publik_aktif ?? false)
   const [savingPublik, setSavingPublik] = useState(false)
   const [savingPublikSlug, setSavingPublikSlug] = useState(false)
+  const qrCanvasRef = useRef(null)
 
   useEffect(() => {
     setOrgName(organisasi?.nama || '')
@@ -117,6 +119,125 @@ export default function SettingsPage() {
     showToast(slug ? 'Alias link publik berhasil disimpan!' : 'Alias link publik dihapus.')
   }
 
+  const handleDownloadQR = async () => {
+    const qrEl = qrCanvasRef.current
+    if (!qrEl || !organisasi?.id) return
+
+    const W = 380
+    const H = 580
+    const SCALE = 2
+    const canvas = document.createElement('canvas')
+    canvas.width = W * SCALE
+    canvas.height = H * SCALE
+    const ctx = canvas.getContext('2d')
+    ctx.scale(SCALE, SCALE)
+
+    // Brand green background
+    ctx.fillStyle = '#0f3d32'
+    ctx.fillRect(0, 0, W, H)
+
+    // Decorative blobs
+    ctx.globalAlpha = 0.08
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath(); ctx.arc(-50, -50, 200, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(W + 50, H + 50, 200, 0, Math.PI * 2); ctx.fill()
+    ctx.globalAlpha = 1
+
+    // Logo
+    try {
+      const logo = await new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = '/logo.png'
+      })
+      const logoSize = 46
+      ctx.drawImage(logo, W / 2 - logoSize / 2, 32, logoSize, logoSize)
+    } catch (_) { }
+
+    // Brand name "kas" + "wara" two-color
+    ctx.font = 'bold 28px system-ui, sans-serif'
+    const kasW = ctx.measureText('kas').width
+    const waraW = ctx.measureText('wara').width
+    const brandStartX = (W - kasW - waraW) / 2
+    const brandY = 110
+    ctx.textAlign = 'left'
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText('kas', brandStartX, brandY)
+    ctx.fillStyle = '#6ee7b7'
+    ctx.fillText('wara', brandStartX + kasW, brandY)
+
+    // Subtitle
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'
+    ctx.font = '12px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('Kas Warga Negara', W / 2, 127)
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(40, 140); ctx.lineTo(W - 40, 140); ctx.stroke()
+
+    // Org name (truncate if too long)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 18px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    let orgDisplay = organisasi.nama || 'Organisasi'
+    while (ctx.measureText(orgDisplay).width > W - 60 && orgDisplay.length > 6)
+      orgDisplay = orgDisplay.slice(0, -4) + '...'
+    ctx.fillText(orgDisplay, W / 2, 163)
+
+    // White card behind QR
+    const qrSize = 176
+    const cardPad = 18
+    const cardW = qrSize + cardPad * 2
+    const cardH = qrSize + cardPad * 2
+    const cardX = (W - cardW) / 2
+    const cardY = 180
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    if (ctx.roundRect) {
+      ctx.roundRect(cardX, cardY, cardW, cardH, 14)
+    } else {
+      ctx.rect(cardX, cardY, cardW, cardH)
+    }
+    ctx.fill()
+
+    // QR code
+    ctx.drawImage(qrEl, cardX + cardPad, cardY + cardPad, qrSize, qrSize)
+
+    // Scan instruction
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'
+    ctx.font = '11px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('Pindai untuk transparansi keuangan', W / 2, cardY + cardH + 24)
+
+    // Alias / publik URL
+    const displayUrl = publikUrlUnik || publikUrlOriginal || window.location.origin
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'
+    ctx.font = '10px monospace'
+    let urlDisplay = displayUrl
+    while (ctx.measureText(urlDisplay).width > W - 40 && urlDisplay.length > 10)
+      urlDisplay = urlDisplay.slice(0, -4) + '...'
+    ctx.fillText(urlDisplay, W / 2, cardY + cardH + 42)
+
+    // Thin divider before UUID
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(60, H - 40); ctx.lineTo(W - 60, H - 40); ctx.stroke()
+
+    // UUID at bottom
+    ctx.fillStyle = 'rgba(255,255,255,0.28)'
+    ctx.font = '8px monospace'
+    ctx.fillText(organisasi.id, W / 2, H - 22)
+
+    // Download
+    const link = document.createElement('a')
+    link.download = `qr-${(organisasi.nama || organisasi.id).replace(/\s+/g, '-')}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
+
   const handleCopyPublikUrl = (url, setCopiedState) => {
     if (!url) return
     navigator.clipboard.writeText(url)
@@ -176,6 +297,31 @@ export default function SettingsPage() {
                 title="Salin kode"
               >
                 {copied ? <Check size={15} /> : <Copy size={15} />}
+              </button>
+            </div>
+            {/* QR Code display */}
+            <div className="mt-4 flex flex-col items-start gap-3">
+              <p className="text-xs text-stone">QR Code Organisasi — calon anggota bisa memindai untuk bergabung.</p>
+              <div className="bg-white p-3 rounded-lg border border-border inline-block">
+                <QRCodeSVG
+                  value={organisasi.id}
+                  size={140}
+                  bgColor="#ffffff"
+                  fgColor="#0f3d32"
+                  level="M"
+                />
+              </div>
+              {/* Hidden canvas used for PNG export */}
+              <div style={{ position: 'absolute', left: '-9999px', visibility: 'hidden' }}>
+                <QRCodeCanvas ref={qrCanvasRef} value={organisasi.id} size={512} bgColor="#ffffff" fgColor="#0f3d32" level="H" />
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadQR}
+                className="flex items-center gap-1.5 text-xs text-stone hover:text-brand transition-colors"
+              >
+                <Download size={13} />
+                Unduh QR Code (PNG)
               </button>
             </div>
           </div>
