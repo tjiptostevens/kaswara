@@ -119,7 +119,7 @@ const optimizeImageForUpload = async (file, uploaderName) => {
 }
 
 export default function RAPPage() {
-  const { activeWorkspace, isBendahara, canApproveRAB: canApprove, user, profile } = useAuth()
+  const { activeWorkspace, canManageRAP, canApproveRAB: canApprove, user, profile } = useAuth()
   const organisasi = activeWorkspace
   const uploaderDisplayName = profile?.nama_lengkap || user?.email || 'Unknown user'
   const showToast = useUIStore((s) => s.showToast)
@@ -135,6 +135,9 @@ export default function RAPPage() {
   const [fotosOpen, setFotosOpen] = useState(false)
 
   const approvedRAB = rab.filter((r) => r.status === 'disetujui' || r.status === 'selesai')
+  const isOwnedByCurrentUser = (row) =>
+    row?.dibuat_oleh === user?.id ||
+    (row?.dibuat_oleh_anggota_id && row?.dibuat_oleh_anggota_id === profile?.id)
 
   const computeRapTotals = (rapRow) => {
     const items = rapRow.rap_item_realisasi || []
@@ -451,7 +454,7 @@ export default function RAPPage() {
             <Button variant="ghost" size="md" icon={<Printer size={16} />} onClick={handlePrint}>
               Cetak
             </Button>
-            {isBendahara && (
+            {canManageRAP && (
               <Button variant="primary" size="md" icon={<Plus size={16} />} onClick={() => setAddOpen(true)}>
                 Tambah RAP
               </Button>
@@ -581,12 +584,12 @@ export default function RAPPage() {
               <Button variant="ghost" size="sm" icon={<Printer size={15} />} onClick={() => handlePrintDetail(detail)}>
                 Cetak
               </Button>
-              {isBendahara && detail.status === 'draft' && (
+              {canManageRAP && isOwnedByCurrentUser(detail) && detail.status === 'draft' && (
                 <Button variant="ghost" size="sm" icon={<Pencil size={15} />} onClick={() => setEditOpen(true)}>
                   Edit
                 </Button>
               )}
-              {isBendahara && detail.status === 'draft' && (
+              {canManageRAP && isOwnedByCurrentUser(detail) && detail.status === 'draft' && (
                 <Button variant="accent" size="sm" icon={<Send size={15} />} onClick={() => handleSubmit(detail.id)}>
                   Ajukan
                 </Button>
@@ -596,12 +599,12 @@ export default function RAPPage() {
                   Setujui
                 </Button>
               )}
-              {(isBendahara || canApprove) && ['draft', 'submitted'].includes(detail.status) && (
+              {canManageRAP && isOwnedByCurrentUser(detail) && ['draft', 'submitted'].includes(detail.status) && (
                 <Button variant="danger" size="sm" icon={<XCircle size={15} />} onClick={() => handleCancel(detail.id)}>
                   Batalkan
                 </Button>
               )}
-              {isBendahara && detail.status === 'cancelled' && (
+              {canManageRAP && isOwnedByCurrentUser(detail) && detail.status === 'cancelled' && (
                 <Button variant="primary" size="sm" icon={<RefreshCw size={15} />} onClick={() => handleAmend(detail)}>
                   Amandemen
                 </Button>
