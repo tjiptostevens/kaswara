@@ -24,6 +24,7 @@ export function useAuth() {
   const isAdmin = isBendahara
   const canManageRAB = isBendahara || isKetua || isPersonalWorkspace || profile?.can_manage_rab === true
   const canApproveRAB = isPersonalWorkspace || isKetua || profile?.can_approve_rab === true
+  const canApproveJoinRequest = isBendahara || isKetua || profile?.can_approve_join_request === true
 
   return {
     user,
@@ -48,5 +49,6 @@ export function useAuth() {
     isAdmin,
     canManageRAB,
     canApproveRAB,
+    canApproveJoinRequest,
   }
 }

@@ -4,6 +4,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Users, Wallet,
   FileText, Receipt, BarChart2, Settings2, LogOut, X, Home,
   Tag, ChevronDown, Check, Building2, User, ListChecks,
+  FileCheck2,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
@@ -32,6 +33,7 @@ const orgNavGroups = [
       { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
       { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
       { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
+      { to: ROUTES.SURAT, icon: FileCheck2, label: 'Surat' },
     ],
   },
   {
@@ -149,11 +151,11 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
 }
 
 export default function Sidebar() {
-  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace, isBendahara, isKetua } = useAuth()
+  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace, isBendahara, isKetua, canApproveJoinRequest } = useAuth()
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
 
-  const canManageAnggota = isBendahara || isKetua
+  const canManageAnggota = isBendahara || isKetua || canApproveJoinRequest
 
   const navGroups = (isPersonalWorkspace ? personalNavGroups : orgNavGroups).map((group) => ({
     ...group,

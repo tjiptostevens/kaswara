@@ -11,6 +11,7 @@ export const anggotaSchema = z.object({
   aktif: z.boolean().default(true),
   can_manage_rab: z.boolean().default(false),
   can_approve_rab: z.boolean().default(false),
+  can_approve_join_request: z.boolean().default(false),
 })
 
 // Schema untuk edit — email tidak bisa diubah setelah undangan dikirim

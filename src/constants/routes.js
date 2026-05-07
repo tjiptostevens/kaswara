@@ -9,6 +9,7 @@ export const ROUTES = {
   IURAN: '/iuran',
   RAB: '/rab',
   RAP: '/rap',
+  SURAT: '/surat',
   LAPORAN: '/laporan',
   SETTINGS: '/settings',
   KATEGORI: '/kategori',

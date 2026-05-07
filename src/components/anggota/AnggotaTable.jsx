@@ -65,6 +65,18 @@ export default function AnggotaTable({ data = [], loading, onEdit, onDelete, can
       ),
     },
     {
+      key: 'can_approve_join_request',
+      label: 'Approval Gabung',
+      render: (row) => (
+        <span
+          className={`text-xs font-medium px-2 py-0.5 rounded-pill ${row.can_approve_join_request ? 'bg-[#E6F1FB] text-[#185FA5]' : 'bg-[#F1EFE8] text-[#5F5E5A]'
+            }`}
+        >
+          {row.can_approve_join_request ? 'Ya' : 'Tidak'}
+        </span>
+      ),
+    },
+    {
       key: 'aktif',
       label: 'Status',
       render: (row) => (

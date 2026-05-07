@@ -22,6 +22,7 @@ import AnggotaPage from './pages/AnggotaPage'
 import IuranPage from './pages/IuranPage'
 import RABPage from './pages/RABPage'
 import RAPPage from './pages/RAPPage'
+import SuratPage from './pages/SuratPage'
 import LaporanPage from './pages/LaporanPage'
 import KelargaPage from './pages/KelargaPage'
 import SettingsPage from './pages/SettingsPage'
@@ -68,7 +69,7 @@ export default function App() {
           <Route
             path={ROUTES.ANGGOTA}
             element={
-              <ProtectedRoute requiredRoles={['bendahara', 'ketua']}>
+              <ProtectedRoute>
                 <AnggotaPage />
               </ProtectedRoute>
             }
@@ -102,6 +103,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <RAPPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.SURAT}
+            element={
+              <ProtectedRoute>
+                <SuratPage />
               </ProtectedRoute>
             }
           />
