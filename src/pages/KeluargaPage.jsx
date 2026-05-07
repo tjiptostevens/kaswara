@@ -83,7 +83,7 @@ function FormKeluarga({ defaultValues, onSubmit, onCancel }) {
   )
 }
 
-export default function KelargaPage() {
+export default function KeluargaPage() {
   const { activeWorkspace, profile, isBendahara, isKetua } = useAuth()
   const organisasi = activeWorkspace
   const showToast = useUIStore((s) => s.showToast)
