@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const rabSchema = z.object({
   nama_kegiatan: z.string().min(3, 'Nama kegiatan minimal 3 karakter'),
+  kategori_id: z.string().uuid('Kategori transaksi wajib dipilih'),
   deskripsi: z.string().optional(),
   tanggal_kegiatan: z.string().min(1, 'Tanggal kegiatan wajib diisi'),
   tanggal_pengajuan: z.string().min(1, 'Tanggal pengajuan wajib diisi'),

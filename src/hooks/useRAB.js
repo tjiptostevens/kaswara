@@ -14,7 +14,7 @@ export function useRAB() {
     setError(null)
     const { data, error } = await supabase
       .from('rab')
-      .select('*, rab_item(*), anggota_organisasi!dibuat_oleh_anggota_id(nama_lengkap)')
+      .select('*, kategori_transaksi(id, nama, tipe), rab_item(*), anggota_organisasi!dibuat_oleh_anggota_id(nama_lengkap)')
       .eq('organisasi_id', activeWorkspace.id)
       .order('created_at', { ascending: false })
     setLoading(false)
@@ -96,11 +96,7 @@ export function useRAB() {
   }
 
   const cancelRAB = async (id) => {
-    const now = new Date().toISOString()
-    const { error } = await supabase
-      .from('rab')
-      .update({ status: 'cancelled', cancelled_by: user?.id, cancelled_at: now })
-      .eq('id', id)
+    const { error } = await supabase.rpc('cancel_rab_cascade', { p_rab_id: id })
     if (error) return { error }
     await fetchRAB()
     return { error: null }

@@ -56,6 +56,7 @@ serve(async (req) => {
       aktif = true,
       can_manage_rab = false,
       can_approve_rab = false,
+      can_approve_join_request = false,
     } = body;
 
     if (!email || !nama_lengkap || !role || !organisasi_id) {
@@ -216,6 +217,7 @@ serve(async (req) => {
         aktif,
         can_manage_rab,
         can_approve_rab,
+        can_approve_join_request,
       })
       .select()
       .single();

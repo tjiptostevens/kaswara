@@ -76,13 +76,17 @@ const useKasStore = create((set, get) => ({
 
   updateTransaksiStatus: async (id, status, userId, organisasiId) => {
     const now = new Date().toISOString()
+    if (status === 'cancelled') {
+      const { error } = await supabase.rpc('cancel_transaksi_and_rap', { p_transaksi_id: id })
+      if (error) return { error }
+      if (organisasiId) await get().fetchTransaksi(organisasiId)
+      return { error: null }
+    }
+
     const updates = { status }
     if (status === 'submitted') {
       updates.submitted_by = userId
       updates.submitted_at = now
-    } else if (status === 'cancelled') {
-      updates.cancelled_by = userId
-      updates.cancelled_at = now
     }
     const { data: updatedTransaksi, error } = await supabase
       .from('transaksi')
@@ -91,30 +95,6 @@ const useKasStore = create((set, get) => ({
       .select('id, rap_id')
       .single()
     if (error) return { error }
-
-    if (status === 'cancelled') {
-      if (updatedTransaksi?.rap_id) {
-        const { error: rapSyncErr } = await supabase
-          .from('rap')
-          .update({
-            status: 'cancelled',
-            cancelled_by: userId,
-            cancelled_at: now,
-          })
-          .eq('id', updatedTransaksi.rap_id)
-        if (rapSyncErr) return { error: rapSyncErr }
-      }
-
-      const { error: iuranSyncErr } = await supabase
-        .from('iuran_rutin')
-        .update({
-          status: 'cancelled',
-          cancelled_by: userId,
-          cancelled_at: now,
-        })
-        .eq('transaksi_id', id)
-      if (iuranSyncErr) return { error: iuranSyncErr }
-    }
 
     if (organisasiId) await get().fetchTransaksi(organisasiId)
     return { error: null }

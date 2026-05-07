@@ -13,6 +13,11 @@ export default function RABTable({ data = [], loading, onView }) {
   const columns = [
     { key: 'nama_kegiatan', label: 'Nama Kegiatan' },
     {
+      key: 'kategori',
+      label: 'Kategori',
+      render: (row) => row.kategori_transaksi?.nama || '—',
+    },
+    {
       key: 'tanggal_kegiatan',
       label: 'Tgl. Kegiatan',
       render: (row) => formatTanggalPendek(row.tanggal_kegiatan),

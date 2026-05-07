@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import RABTable from '../components/rab/RABTable'
 import FormRAB from '../components/rab/FormRAB'
@@ -9,12 +9,15 @@ import { Plus, Printer, XCircle, RefreshCw, Pencil } from 'lucide-react'
 import { useRAB } from '../hooks/useRAB'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
+import useKasStore from '../stores/kasStore'
 import { formatRupiah, formatTanggalPendek, getTodayString } from '../lib/formatters'
 import { generateRABPDF } from '../lib/pdfExport'
 
 export default function RABPage() {
   const { isBendahara, isKetua, canManageRAB, canApproveRAB, isPersonalWorkspace, activeWorkspace } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
+  const kategori = useKasStore((s) => s.kategori)
+  const fetchKategori = useKasStore((s) => s.fetchKategori)
   const { rab, loading, addRAB, updateRAB, updateStatus, cancelRAB, amendRAB } = useRAB()
 
   const [addOpen, setAddOpen] = useState(false)
@@ -97,6 +100,7 @@ export default function RABPage() {
   const editDefaults = detail
     ? {
         nama_kegiatan: detail.nama_kegiatan,
+        kategori_id: detail.kategori_id || '',
         deskripsi: detail.deskripsi || '',
         tanggal_kegiatan: detail.tanggal_kegiatan,
         tanggal_pengajuan: detail.tanggal_pengajuan || getTodayString(),
@@ -145,7 +149,7 @@ export default function RABPage() {
 
       {/* Add RAB Modal */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Buat RAB Baru" size="lg">
-        <FormRAB onSubmit={handleAdd} onCancel={() => setAddOpen(false)} />
+        <FormRAB kategori={kategori} onSubmit={handleAdd} onCancel={() => setAddOpen(false)} />
       </Modal>
 
       {/* Edit RAB Modal */}
@@ -153,6 +157,7 @@ export default function RABPage() {
         {detail && (
           <FormRAB
             defaultValues={editDefaults}
+            kategori={kategori}
             onSubmit={handleEdit}
             onCancel={() => setEditOpen(false)}
           />
@@ -173,6 +178,10 @@ export default function RABPage() {
               <div>
                 <p className="text-xs text-stone">Tanggal Kegiatan</p>
                 <p className="font-medium text-charcoal">{formatTanggalPendek(detail.tanggal_kegiatan)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone">Kategori</p>
+                <p className="font-medium text-charcoal">{detail.kategori_transaksi?.nama || '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-stone">Total Anggaran</p>
@@ -293,4 +302,7 @@ export default function RABPage() {
     </PageWrapper>
   )
 }
+  useEffect(() => {
+    if (activeWorkspace?.id) fetchKategori(activeWorkspace.id)
+  }, [activeWorkspace?.id])
 

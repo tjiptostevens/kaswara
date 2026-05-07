@@ -6,7 +6,7 @@ import { Input, Button } from '../ui'
 import { Plus, Trash2 } from 'lucide-react'
 import { getTodayString, formatRupiah } from '../../lib/formatters'
 
-export default function FormRAB({ onSubmit, onCancel, defaultValues }) {
+export default function FormRAB({ onSubmit, onCancel, defaultValues, kategori = [] }) {
   const {
     register,
     handleSubmit,
@@ -17,6 +17,7 @@ export default function FormRAB({ onSubmit, onCancel, defaultValues }) {
     resolver: zodResolver(rabSchema),
     defaultValues: defaultValues || {
       tanggal_pengajuan: getTodayString(),
+      kategori_id: '',
       items: [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
     },
   })
@@ -49,6 +50,25 @@ export default function FormRAB({ onSubmit, onCancel, defaultValues }) {
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 flex flex-col gap-1">
+          <label className="text-xs font-medium text-charcoal uppercase tracking-wide">
+            Kategori Transaksi
+          </label>
+          <select
+            className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
+            {...register('kategori_id')}
+          >
+            <option value="">Pilih kategori</option>
+            {kategori
+              .filter((k) => k.tipe === 'pengeluaran' || k.tipe === 'keduanya')
+              .map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.nama}
+                </option>
+              ))}
+          </select>
+          {errors.kategori_id && <p className="text-xs text-danger">{errors.kategori_id.message}</p>}
+        </div>
         <Input
           label="Tanggal Pengajuan"
           type="date"

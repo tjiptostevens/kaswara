@@ -142,7 +142,7 @@ function WajibIuranPanel({ kategori, iuranList, anggotaList }) {
 }
 
 export default function IuranPage() {
-  const { activeWorkspace, isBendahara } = useAuth()
+  const { activeWorkspace, isBendahara, isAnggota, profile } = useAuth()
   const showToast = useUIStore((s) => s.showToast)
   const {
     iuran, loading, fetchIuran,
@@ -157,6 +157,11 @@ export default function IuranPage() {
 
   useEffect(() => {
     if (!activeWorkspace?.id) return
+    if (isAnggota) {
+      setAnggotaList(profile ? [profile] : [])
+      setKategoriList([])
+      return
+    }
     supabase
       .from('anggota_organisasi')
       .select('id, nama_lengkap, nomor_anggota, email, no_hp')
@@ -171,7 +176,7 @@ export default function IuranPage() {
       .eq('organisasi_id', activeWorkspace.id)
       .order('nama')
       .then(({ data }) => setKategoriList(data || []))
-  }, [activeWorkspace?.id])
+  }, [activeWorkspace?.id, isAnggota, profile?.id])
 
   useEffect(() => {
     if (!activeWorkspace?.id) return
@@ -293,7 +298,7 @@ export default function IuranPage() {
         </div>
 
         {/* One-time iuran summary panels */}
-        {sekaliKategori.length > 0 && (
+        {!isAnggota && sekaliKategori.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Users size={14} className="text-stone" />
@@ -313,7 +318,7 @@ export default function IuranPage() {
         )}
 
         {/* Recurring (wajib) iuran summary panels */}
-        {wajibKategori.length > 0 && (
+        {!isAnggota && wajibKategori.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Users size={14} className="text-stone" />

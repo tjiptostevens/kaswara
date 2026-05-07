@@ -10,14 +10,34 @@ import { formatRupiah, formatTanggalPendek } from '../../lib/formatters'
  * @param {(row: object) => void} [props.onView]
  */
 export default function RAPTable({ data = [], loading, onView }) {
+  const getTotals = (row) => {
+    const items = row.rap_item_realisasi || []
+    const itemTotalAnggaran = items.reduce((sum, item) => sum + Number(item.subtotal_anggaran || 0), 0)
+    const itemTotalRAP = items.reduce((sum, item) => sum + Number(item.jumlah_realisasi || 0), 0)
+    const totalAnggaran = itemTotalAnggaran || Number(row.rab?.total_anggaran || 0)
+    const totalRAP = itemTotalRAP || Number(row.jumlah_realisasi || 0)
+    const selisih = totalRAP - totalAnggaran
+    const disparitas = selisih === 0 ? 'tepat' : selisih > 0 ? 'lebih' : 'kurang'
+    return { totalAnggaran, totalRAP, selisih, disparitas }
+  }
+
   const columns = [
     { key: 'nama_item', label: 'Item Realisasi' },
     {
-      key: 'jumlah_realisasi',
-      label: 'Jumlah',
+      key: 'anggaran',
+      label: 'Total RAB',
       render: (row) => (
         <span className="font-mono font-medium text-charcoal">
-          {formatRupiah(row.jumlah_realisasi)}
+          {formatRupiah(getTotals(row).totalAnggaran)}
+        </span>
+      ),
+    },
+    {
+      key: 'jumlah_realisasi',
+      label: 'Total RAP',
+      render: (row) => (
+        <span className="font-mono font-medium text-charcoal">
+          {formatRupiah(getTotals(row).totalRAP)}
         </span>
       ),
     },
@@ -27,6 +47,18 @@ export default function RAPTable({ data = [], loading, onView }) {
       render: (row) => formatTanggalPendek(row.tanggal_realisasi),
     },
     { key: 'keterangan', label: 'Keterangan', render: (row) => row.keterangan || '—' },
+    {
+      key: 'disparitas',
+      label: 'Disparitas',
+      render: (row) => {
+        const { disparitas, selisih } = getTotals(row)
+        return (
+          <span className={`text-xs font-medium ${disparitas === 'tepat' ? 'text-success' : disparitas === 'lebih' ? 'text-danger' : 'text-info'}`}>
+            {disparitas.toUpperCase()} ({formatRupiah(Math.abs(selisih))})
+          </span>
+        )
+      },
+    },
     {
       key: 'status',
       label: 'Status',

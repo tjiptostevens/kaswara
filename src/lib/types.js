@@ -36,6 +36,7 @@
  * @property {string} [no_hp] - Phone number
  * @property {boolean} [can_manage_rab] - Can create/edit RAB
  * @property {boolean} [can_approve_rab] - Can approve RAB
+ * @property {boolean} [can_approve_join_request] - Can approve join requests
  * @property {boolean} aktif - Active status
  */
 
@@ -87,6 +88,7 @@
  * @property {number} total_anggaran - Total budget amount (IDR)
  * @property {'draft' | 'diajukan' | 'disetujui' | 'ditolak' | 'selesai' | 'cancelled' | 'amended'} status - RAB status
  * @property {string} [catatan_ketua] - Chairman notes/feedback
+ * @property {string} [kategori_id] - FK to kategori_transaksi
  * @property {string} tanggal_pengajuan - Submission date (YYYY-MM-DD)
  * @property {string} tanggal_kegiatan - Activity date (YYYY-MM-DD)
  * @property {string} [diajukan_oleh] - FK to auth.users (submitter)
@@ -121,6 +123,7 @@
  * @property {string} [keterangan] - Description/notes
  * @property {string} tanggal_realisasi - Realization date (YYYY-MM-DD)
  * @property {'draft' | 'submitted' | 'approved' | 'cancelled'} [status] - RAP status
+ * @property {string} [kategori_id] - FK to kategori_transaksi
  * @property {string} [dibuat_oleh] - FK to auth.users
  * @property {string} [submitted_by] - FK to auth.users
  * @property {string} [submitted_at] - ISO timestamp
@@ -130,6 +133,7 @@
  * @property {string} [dibuat_oleh_anggota_id] - FK to anggota_organisasi
  * @property {Array<RAPFoto>} [rap_foto] - Photos (if loaded)
  * @property {Object} [rab] - RAB data (if joined)
+ * @property {Array<RAPItemRealisasi>} [rap_item_realisasi] - Itemized realization rows
  * @property {string} created_at - ISO timestamp
  */
 
@@ -140,6 +144,20 @@
  * @property {string} storage_path - Path in Supabase storage
  * @property {string} [nama_file] - Original filename
  * @property {string} uploaded_at - ISO timestamp
+ */
+
+/**
+ * @typedef {Object} RAPItemRealisasi
+ * @property {string} id - UUID
+ * @property {string} rap_id - FK to rap
+ * @property {string} [rab_item_id] - FK to rab_item
+ * @property {string} nama_item - Item name
+ * @property {number} volume - Quantity
+ * @property {string} satuan - Unit
+ * @property {number} subtotal_anggaran - Planned subtotal from RAB
+ * @property {number} jumlah_realisasi - Realized amount
+ * @property {number} selisih - Realisasi - Anggaran
+ * @property {'tepat' | 'lebih' | 'kurang'} disparitas - Disparity label
  */
 
 /**

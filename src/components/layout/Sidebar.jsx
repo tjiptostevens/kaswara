@@ -149,11 +149,11 @@ function WorkspaceSwitcher({ activeWorkspace, workspaces, onSwitch }) {
 }
 
 export default function Sidebar() {
-  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace, isBendahara, isKetua } = useAuth()
+  const { activeWorkspace, workspaces, switchWorkspace, logout, isPersonalWorkspace, isBendahara, isKetua, canApproveJoinRequest } = useAuth()
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
 
-  const canManageAnggota = isBendahara || isKetua
+  const canManageAnggota = isBendahara || isKetua || canApproveJoinRequest
 
   const navGroups = (isPersonalWorkspace ? personalNavGroups : orgNavGroups).map((group) => ({
     ...group,

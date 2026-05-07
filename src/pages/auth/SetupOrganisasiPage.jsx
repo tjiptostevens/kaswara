@@ -218,12 +218,26 @@ function BergabungForm({ user, initialize, navigate }) {
     setLoading(true)
     setError(null)
 
-    const { error: joinErr } = await supabase.from('anggota_organisasi').insert({
+    const { data: pending } = await supabase
+      .from('organisasi_join_request')
+      .select('id')
+      .eq('organisasi_id', preview.id)
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (pending) {
+      setLoading(false)
+      setError('Permintaan bergabung sudah dikirim dan menunggu persetujuan.')
+      return
+    }
+
+    const { error: joinErr } = await supabase.from('organisasi_join_request').insert({
       user_id: user.id,
       organisasi_id: preview.id,
-      role: 'anggota',
       nama_lengkap: namaAnggota || user.email,
-      aktif: true,
+      email: user.email,
+      status: 'pending',
     })
 
     setLoading(false)
@@ -242,8 +256,8 @@ function BergabungForm({ user, initialize, navigate }) {
         <div className="w-12 h-12 rounded-full bg-[#E1F5EE] flex items-center justify-center mx-auto">
           <span className="text-2xl">✓</span>
         </div>
-        <p className="text-sm font-medium text-[#0f3d32]">Berhasil bergabung!</p>
-        <p className="text-xs text-stone">Mengarahkan ke dashboard…</p>
+        <p className="text-sm font-medium text-[#0f3d32]">Permintaan bergabung berhasil dikirim!</p>
+        <p className="text-xs text-stone">Menunggu approval bendahara/ketua/delegasi. Mengarahkan ke dashboard…</p>
       </div>
     )
   }
