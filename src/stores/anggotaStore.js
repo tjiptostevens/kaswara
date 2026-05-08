@@ -28,7 +28,16 @@ const useAnggotaStore = create((set) => ({
     })
     if (error) return { error }
     if (result?.error) return { error: { message: result.error } }
-    set((state) => ({ anggota: [...state.anggota, result.data] }))
+
+    // Build anggota_permission rows from submitted permissions so the store
+    // immediately reflects the correct permissions without a full refetch.
+    const permissionRows = data.permissions && result.data?.id
+      ? flattenPermissions(data.permissions, result.data.id).map(({ resource, action, scope }) => ({ resource, action, scope }))
+      : []
+
+    set((state) => ({
+      anggota: [...state.anggota, { ...result.data, anggota_permission: permissionRows }],
+    }))
     return { data: result.data, existingUser: result.existing_user === true, error: null }
   },
 
