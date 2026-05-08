@@ -141,10 +141,17 @@ export function useIuran() {
   const batalkanIuran = async (id, transaksiId) => {
     const now = new Date().toISOString()
 
-    // Delete linked transaksi: must first set to 'cancelled' to satisfy RLS delete policy
+    // Keep linked transaksi for history by marking it cancelled.
     if (transaksiId) {
-      await supabase.from('transaksi').update({ status: 'cancelled' }).eq('id', transaksiId)
-      await supabase.from('transaksi').delete().eq('id', transaksiId)
+      const { error: txErr } = await supabase
+        .from('transaksi')
+        .update({
+          status: 'cancelled',
+          cancelled_by: user?.id,
+          cancelled_at: now,
+        })
+        .eq('id', transaksiId)
+      if (txErr) return { error: txErr }
     }
 
     const { error } = await supabase

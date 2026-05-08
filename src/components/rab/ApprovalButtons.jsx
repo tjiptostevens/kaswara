@@ -29,9 +29,9 @@ export default function ApprovalButtons({ rabId, onApprove, onReject }) {
     setLoading('reject')
     try {
       await onReject(rabId, 'ditolak', catatan)
-      toast.success('RAB berhasil ditolak')
+      toast.success('RAB berhasil dibatalkan')
     } catch (error) {
-      toast.error('Gagal menolak RAB')
+      toast.error('Gagal membatalkan RAB')
     } finally {
       setLoading(null)
     }
@@ -47,7 +47,7 @@ export default function ApprovalButtons({ rabId, onApprove, onReject }) {
           rows={2}
           value={catatan}
           onChange={(e) => setCatatan(e.target.value)}
-          placeholder="Tambahkan catatan persetujuan atau penolakan..."
+          placeholder="Tambahkan catatan persetujuan atau pembatalan..."
           className="w-full rounded-input border border-border bg-white/50 backdrop-blur-sm px-3 py-2.5 text-sm text-charcoal placeholder:text-stone/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand resize-none transition-all"
         />
       </div>
@@ -59,7 +59,7 @@ export default function ApprovalButtons({ rabId, onApprove, onReject }) {
           icon={<XCircle size={16} />}
           onClick={handleReject}
         >
-          Tolak
+          Batalkan
         </Button>
         <Button
           variant="accent"

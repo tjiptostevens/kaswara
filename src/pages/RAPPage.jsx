@@ -392,11 +392,43 @@ export default function RAPPage() {
     setDetail(null)
   }
 
-  const handleCancel = async (id) => {
+  const handleCancel = async (row) => {
+    const id = row?.id
+    if (!id) return
     if (!window.confirm('Yakin ingin membatalkan RAP ini?')) return
     const { error } = await updateRAPStatus(id, 'cancelled')
-    if (error) showToast('Gagal membatalkan: ' + error.message, 'error')
-    else { showToast('RAP dibatalkan'); setDetail(null) }
+    if (error) {
+      showToast('Gagal membatalkan: ' + error.message, 'error')
+      return
+    }
+
+    const now = new Date().toISOString()
+    if (row.transaksi_id) {
+      await supabase
+        .from('transaksi')
+        .update({
+          status: 'cancelled',
+          cancelled_by: user?.id,
+          cancelled_at: now,
+        })
+        .eq('id', row.transaksi_id)
+    }
+
+    if (row.rab_id) {
+      const { data: rabRow } = await supabase
+        .from('rab')
+        .select('status')
+        .eq('id', row.rab_id)
+        .single()
+      if (rabRow?.status === 'selesai') {
+        await supabase.from('rab').update({ status: 'disetujui' }).eq('id', row.rab_id)
+      }
+    }
+
+    showToast('RAP dibatalkan')
+    setDetail(null)
+    fetchTransaksi(organisasi.id)
+    fetchRAP()
   }
 
   const handleAmend = async (original) => {
@@ -420,7 +452,7 @@ export default function RAPPage() {
       })
       .select()
       .single()
-    if (insertErr) { showToast('Gagal membuat amandemen: ' + insertErr.message, 'error'); return }
+    if (insertErr) { showToast('Gagal membuat perubahan: ' + insertErr.message, 'error'); return }
     if (original.rap_item_realisasi?.length) {
       const clonedItems = original.rap_item_realisasi.map(({ id: _id, rap_id: _rid, created_at: _ca, ...item }) => ({
         ...item,
@@ -428,10 +460,10 @@ export default function RAPPage() {
       }))
       const { error: cloneErr } = await supabase.from('rap_item_realisasi').insert(clonedItems)
       if (cloneErr) {
-        showToast('RAP amandemen dibuat, tetapi clone item gagal: ' + cloneErr.message, 'error')
+        showToast('RAP perubahan dibuat, tetapi clone item gagal: ' + cloneErr.message, 'error')
       }
     }
-    showToast('RAP amandemen berhasil dibuat!')
+    showToast('RAP perubahan berhasil dibuat!')
     setDetail(null)
     fetchRAP()
   }
@@ -463,7 +495,7 @@ export default function RAPPage() {
     <PageWrapper title="RAP">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-[#0f3d32]">Realisasi Anggaran Pengeluaran</h2>
+          <h2 className="text-lg font-bold text-brand-dark">Realisasi Anggaran Pengeluaran</h2>
           <div className="flex gap-2">
             <Button variant="ghost" size="md" icon={<Printer size={16} />} onClick={handlePrint}>
               Cetak
@@ -587,9 +619,9 @@ export default function RAPPage() {
                 <p>Dibatalkan pada: <span className="text-charcoal">{formatTanggalPendek(detail.cancelled_at)}</span></p>
               )}
               {detail.amended_at && (
-                <p>Diamandemen pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
+                <p>Diubah pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
               )}
-              {detail.amended_from && <p className="text-[#5B3FA8]">Amandemen dari RAP sebelumnya</p>}
+              {detail.amended_from && <p className="text-[#5B3FA8]">Diubah dari RAP sebelumnya</p>}
               {detail.transaksi_id && <p className="text-success">✓ Transaksi pengeluaran otomatis dibuat</p>}
             </div>
 
@@ -613,14 +645,14 @@ export default function RAPPage() {
                   Setujui
                 </Button>
               )}
-              {canForRecord('rap', 'cancel', detail, 'dibuat_oleh') && ['draft', 'submitted'].includes(detail.status) && (
-                <Button variant="danger" size="sm" icon={<XCircle size={15} />} onClick={() => handleCancel(detail.id)}>
+              {(can('rap', 'approve') || canForRecord('rap', 'cancel', detail, 'dibuat_oleh')) && ['submitted', 'approved'].includes(detail.status) && (
+                <Button variant="danger" size="sm" icon={<XCircle size={15} />} onClick={() => handleCancel(detail)}>
                   Batalkan
                 </Button>
               )}
               {canForRecord('rap', 'update', detail, 'dibuat_oleh') && detail.status === 'cancelled' && (
                 <Button variant="primary" size="sm" icon={<RefreshCw size={15} />} onClick={() => handleAmend(detail)}>
-                  Amandemen
+                  Ubah
                 </Button>
               )}
             </div>

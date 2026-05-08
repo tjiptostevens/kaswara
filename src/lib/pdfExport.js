@@ -200,8 +200,9 @@ export function generateTransaksiPDF(transaksi, namaOrganisasi) {
     const isMasuk = t.tipe === 'pemasukan'
     pdf.setTextColor(isMasuk ? 29 : 226, isMasuk ? 158 : 75, isMasuk ? 117 : 74)
     pdf.text(isMasuk ? 'Masuk' : 'Keluar', 110, y)
+    const TRANSAKSI_STATUS = { draft: 'Draft', submitted: 'Diajukan', cancelled: 'Dibatalkan', amended: 'Diubah' }
     pdf.setTextColor(90, 90, 85)
-    pdf.text(t.status || 'draft', 128, y)
+    pdf.text(TRANSAKSI_STATUS[t.status] || t.status || 'draft', 128, y)
     pdf.setTextColor(isMasuk ? 29 : 226, isMasuk ? 158 : 75, isMasuk ? 117 : 74)
     pdf.text(formatRupiah(t.jumlah || 0), pageWidth - 14, y, { align: 'right' })
     pdf.setTextColor(60, 60, 58)
@@ -233,11 +234,12 @@ export function generateRABPDF(rabList, namaOrganisasi) {
     pdf.text(rab.nama_kegiatan || '—', 14, y)
     y += 5
 
+    const RAB_STATUS = { draft: 'Draft', diajukan: 'Diajukan', disetujui: 'Disetujui', ditolak: 'Ditolak', selesai: 'Selesai', cancelled: 'Dibatalkan', amended: 'Diubah' }
     pdf.setFontSize(9)
     pdf.setFont('helvetica', 'normal')
     pdf.setTextColor(90, 90, 85)
     const tglKegiatan = rab.tanggal_kegiatan ? formatTanggalPendek(rab.tanggal_kegiatan) : '—'
-    pdf.text(`Tanggal: ${tglKegiatan}  |  Status: ${rab.status || 'draft'}`, 14, y)
+    pdf.text(`Tanggal: ${tglKegiatan}  |  Status: ${RAB_STATUS[rab.status] || rab.status || 'draft'}`, 14, y)
     y += 5
 
     // Items
@@ -357,11 +359,12 @@ export function generateRAPPDF(rapList, namaOrganisasi) {
 
   rapList.forEach((rap) => {
     if (y > PAGE_BREAK_THRESHOLD) { pdf.addPage(); y = 20 }
+    const RAP_STATUS = { draft: 'Draft', submitted: 'Diajukan', approved: 'Disetujui', cancelled: 'Dibatalkan', amended: 'Diubah' }
     pdf.setTextColor(60, 60, 58)
     pdf.text((rap.nama_item || '—').substring(0, 35), 14, y)
     pdf.text(rap.tanggal_realisasi ? formatTanggalPendek(rap.tanggal_realisasi) : '—', 80, y)
     pdf.setTextColor(90, 90, 85)
-    pdf.text(rap.status || 'draft', 108, y)
+    pdf.text(RAP_STATUS[rap.status] || rap.status || 'draft', 108, y)
     pdf.setTextColor(26, 107, 90)
     pdf.text(formatRupiah(rap.jumlah_realisasi || 0), pageWidth - 14, y, { align: 'right' })
     if (rap.keterangan) {

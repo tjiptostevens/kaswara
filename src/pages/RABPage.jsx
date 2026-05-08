@@ -5,7 +5,7 @@ import FormRAB from '../components/rab/FormRAB'
 import RABStatusFlow from '../components/rab/RABStatusFlow'
 import ApprovalButtons from '../components/rab/ApprovalButtons'
 import { Modal, Button } from '../components/ui'
-import { Plus, Printer, XCircle, RefreshCw, Pencil } from 'lucide-react'
+import { Plus, Printer, XCircle, Pencil } from 'lucide-react'
 import { useRAB } from '../hooks/useRAB'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
@@ -18,7 +18,7 @@ export default function RABPage() {
   const showToast = useUIStore((s) => s.showToast)
   const kategori = useKasStore((s) => s.kategori)
   const fetchKategori = useKasStore((s) => s.fetchKategori)
-  const { rab, loading, addRAB, updateRAB, updateStatus, cancelRAB, amendRAB } = useRAB()
+  const { rab, loading, addRAB, updateRAB, updateStatus, cancelRAB } = useRAB()
 
   const [addOpen, setAddOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -80,16 +80,6 @@ export default function RABPage() {
     }
   }
 
-  const handleAmend = async (row) => {
-    const { error } = await amendRAB(row)
-    if (error) {
-      showToast('Gagal membuat amandemen: ' + error.message, 'error')
-    } else {
-      showToast('RAB amandemen berhasil dibuat!')
-      setDetail(null)
-    }
-  }
-
   const handlePrint = () => {
     generateRABPDF(rab, activeWorkspace?.nama || 'Kaswara')
   }
@@ -106,26 +96,28 @@ export default function RABPage() {
   // Build defaultValues for RAB edit form
   const editDefaults = detail
     ? {
-        nama_kegiatan: detail.nama_kegiatan,
-        kategori_id: detail.kategori_id || '',
-        deskripsi: detail.deskripsi || '',
-        tanggal_kegiatan: detail.tanggal_kegiatan,
-        tanggal_pengajuan: detail.tanggal_pengajuan || getTodayString(),
-        items: detail.rab_item?.map(({ nama_item, volume, satuan, harga_satuan }) => ({
-          nama_item,
-          volume: Number(volume),
-          satuan,
-          harga_satuan: Number(harga_satuan),
-        })) || [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
-      }
+      nama_kegiatan: detail.nama_kegiatan,
+      kategori_id: detail.kategori_id || '',
+      deskripsi: detail.deskripsi || '',
+      tanggal_kegiatan: detail.tanggal_kegiatan,
+      tanggal_pengajuan: detail.tanggal_pengajuan || getTodayString(),
+      items: detail.rab_item?.map(({ nama_item, volume, satuan, harga_satuan }) => ({
+        nama_item,
+        volume: Number(volume),
+        satuan,
+        harga_satuan: Number(harga_satuan),
+      })) || [{ nama_item: '', volume: 1, satuan: 'unit', harga_satuan: 0 }],
+    }
     : undefined
   const canManageOwnDetail = detail ? canForRecord('rab', 'update', detail, 'diajukan_oleh') : false
+  const canCancelOwnDetail = detail ? canForRecord('rab', 'cancel', detail, 'diajukan_oleh') : false
+  const canCancelDetail = detail ? canApprove || canCancelOwnDetail : false
 
   return (
     <PageWrapper title="RAB">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-[#0f3d32]">Rencana Anggaran Biaya</h2>
+          <h2 className="text-lg font-bold text-brand-dark">Rencana Anggaran Biaya</h2>
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -242,10 +234,10 @@ export default function RABPage() {
                 <p>Dibatalkan pada: <span className="text-charcoal">{formatTanggalPendek(detail.cancelled_at)}</span></p>
               )}
               {detail.amended_at && (
-                <p>Diamandemen pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
+                <p>Diubah pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
               )}
               {detail.amended_from && (
-                <p className="text-[#5B3FA8]">Amandemen dari RAB sebelumnya</p>
+                <p className="text-[#5B3FA8]">Diubah dari RAB sebelumnya</p>
               )}
             </div>
 
@@ -274,7 +266,7 @@ export default function RABPage() {
                   Ajukan RAB
                 </Button>
               )}
-              {canManageOwnDetail && ['draft', 'diajukan'].includes(detail.status) && (
+              {canCancelDetail && ['diajukan', 'disetujui'].includes(detail.status) && (
                 <Button
                   variant="danger"
                   size="sm"
@@ -282,16 +274,6 @@ export default function RABPage() {
                   onClick={() => handleCancel(detail.id)}
                 >
                   Batalkan
-                </Button>
-              )}
-              {canManageOwnDetail && detail.status === 'cancelled' && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={<RefreshCw size={15} />}
-                  onClick={() => handleAmend(detail)}
-                >
-                  Amandemen
                 </Button>
               )}
             </div>

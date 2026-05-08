@@ -10,6 +10,7 @@ import { useTransaksi } from '../hooks/useTransaksi'
 import useKasStore from '../stores/kasStore'
 import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
+import { supabase } from '../lib/supabase'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { generateTransaksiPDF } from '../lib/pdfExport'
 
@@ -22,8 +23,8 @@ export default function TransaksiPage() {
   const [detail, setDetail] = useState(null)
   const [filters, setFilters] = useState({})
 
-  const { transaksi, kategori, loading, addTransaksi, deleteTransaksi,
-          updateTransaksiStatus, amendTransaksi, refetch } = useTransaksi(filters)
+  const { transaksi, kategori, loading, addTransaksi,
+    updateTransaksiStatus, amendTransaksi, refetch } = useTransaksi(filters)
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value || undefined }
@@ -66,34 +67,46 @@ export default function TransaksiPage() {
     }
   }
 
-  const handleCancel = async (id) => {
+  const handleCancel = async (row) => {
+    const id = row?.id
+    if (!id) return
     if (!window.confirm('Yakin ingin membatalkan transaksi ini?')) return
     const { error } = await updateTransaksiStatus(id, 'cancelled', user?.id, organisasi?.id)
     if (error) {
       showToast('Gagal membatalkan: ' + error.message, 'error')
     } else {
+      if (row?.rap_id) {
+        const { data: rapRow } = await supabase
+          .from('rap')
+          .select('rab_id')
+          .eq('id', row.rap_id)
+          .single()
+        if (rapRow?.rab_id) {
+          const { data: rabRow } = await supabase
+            .from('rab')
+            .select('status')
+            .eq('id', rapRow.rab_id)
+            .single()
+          if (rabRow?.status === 'selesai') {
+            await supabase.from('rab').update({ status: 'diajukan' }).eq('id', rapRow.rab_id)
+          }
+        }
+      }
       showToast('Transaksi dibatalkan')
       setDetail(null)
     }
   }
 
   const handleAmend = async (row) => {
-    const { error } = await amendTransaksi(row, user?.id, organisasi?.id)
+    const { error, data } = await amendTransaksi(row, user?.id, organisasi?.id)
     if (error) {
       showToast('Gagal mengubah: ' + error.message, 'error')
     } else {
-      showToast('Transaksi baru (amandemen) berhasil dibuat!')
-      setDetail(null)
-    }
-  }
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus transaksi yang dibatalkan ini?')) return
-    const { error } = await deleteTransaksi(id)
-    if (error) {
-      showToast('Gagal menghapus: ' + error.message, 'error')
-    } else {
-      showToast('Transaksi berhasil dihapus!')
+      showToast('Transaksi baru berhasil dibuat. Silakan lanjutkan pengeditan.')
+      if (data) {
+        setDetail(data)
+        setEditOpen(true)
+      }
     }
   }
 
@@ -108,19 +121,25 @@ export default function TransaksiPage() {
   // Build defaultValues for edit form from the selected detail row
   const editDefaults = detail
     ? {
-        tipe: detail.tipe,
-        jumlah: Number(detail.jumlah),
-        kategori_id: detail.kategori_id || '',
-        keterangan: detail.keterangan || '',
-        tanggal: detail.tanggal,
-      }
+      tipe: detail.tipe,
+      jumlah: Number(detail.jumlah),
+      kategori_id: detail.kategori_id || '',
+      keterangan: detail.keterangan || '',
+      tanggal: detail.tanggal,
+    }
     : undefined
+  const previousVersion = detail?.amended_from
+    ? transaksi.find((row) => row.id === detail.amended_from)
+    : null
+  const nextVersions = detail
+    ? transaksi.filter((row) => row.amended_from === detail.id)
+    : []
 
   return (
     <PageWrapper title="Transaksi">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-[#0f3d32]">Daftar Transaksi</h2>
+          <h2 className="text-lg font-bold text-brand-dark">Daftar Transaksi</h2>
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -153,8 +172,8 @@ export default function TransaksiPage() {
           data={transaksi}
           loading={loading}
           onView={(row) => setDetail(row)}
-          onDelete={handleDelete}
-          canDelete={can('transaksi', 'delete')}
+          onDelete={() => { }}
+          canDelete={false}
         />
       </div>
 
@@ -238,10 +257,39 @@ export default function TransaksiPage() {
                 <p>Dibatalkan pada: <span className="text-charcoal">{formatTanggalPendek(detail.cancelled_at)}</span></p>
               )}
               {detail.amended_at && (
-                <p>Diamandemen pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
+                <p>Diubah pada: <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span></p>
               )}
               {detail.amended_from && (
-                <p className="text-[#5B3FA8]">Amandemen dari transaksi sebelumnya</p>
+                <p className="text-[#5B3FA8]">Diubah dari transaksi sebelumnya</p>
+              )}
+              {previousVersion && (
+                <p>
+                  Transaksi sebelumnya:{' '}
+                  <button
+                    type="button"
+                    className="text-brand hover:underline"
+                    onClick={() => setDetail(previousVersion)}
+                  >
+                    Lihat versi sebelumnya
+                  </button>
+                </p>
+              )}
+              {nextVersions.length > 0 && (
+                <p>
+                  Versi lanjutan:{' '}
+                  {nextVersions.map((row, idx) => (
+                    <React.Fragment key={row.id}>
+                      {idx > 0 ? ', ' : ''}
+                      <button
+                        type="button"
+                        className="text-brand hover:underline"
+                        onClick={() => setDetail(row)}
+                      >
+                        Versi {idx + 1}
+                      </button>
+                    </React.Fragment>
+                  ))}
+                </p>
               )}
             </div>
 
@@ -280,29 +328,20 @@ export default function TransaksiPage() {
                   variant="danger"
                   size="sm"
                   icon={<XCircle size={15} />}
-                  onClick={() => handleCancel(detail.id)}
+                  onClick={() => handleCancel(detail)}
                 >
                   Batalkan
                 </Button>
               )}
               {canForRecord('transaksi', 'cancel', detail, 'dibuat_oleh') && detail.status === 'cancelled' && (
-                <>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    icon={<RefreshCw size={15} />}
-                    onClick={() => handleAmend(detail)}
-                  >
-                    Amandemen
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => { setDetail(null); handleDelete(detail.id) }}
-                  >
-                    Hapus
-                  </Button>
-                </>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<RefreshCw size={15} />}
+                  onClick={() => handleAmend(detail)}
+                >
+                  Ubah
+                </Button>
               )}
             </div>
           </div>

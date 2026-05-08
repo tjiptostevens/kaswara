@@ -5,11 +5,17 @@ import useNotifikasiStore from '../stores/notifikasiStore'
 import { useAuth } from './useAuth'
 
 const RAB_STATUS_PESAN = {
-  diajukan:  { pesan: 'RAB baru diajukan dan menunggu persetujuan.', tipe: 'info' },
+  diajukan: { pesan: 'RAB baru diajukan dan menunggu persetujuan.', tipe: 'info' },
   disetujui: { pesan: 'RAB disetujui! Silakan buat RAP.', tipe: 'success' },
-  ditolak:   { pesan: 'RAB ditolak. Cek catatan dari ketua.', tipe: 'warning' },
+  ditolak: { pesan: 'RAB ditolak. Cek catatan dari ketua.', tipe: 'warning' },
   cancelled: { pesan: 'RAB dibatalkan.', tipe: 'warning' },
-  selesai:   { pesan: 'RAB selesai — semua RAP telah direalisasikan.', tipe: 'success' },
+  selesai: { pesan: 'RAB selesai — semua RAP telah direalisasikan.', tipe: 'success' },
+}
+
+const RAP_STATUS_PESAN = {
+  submitted: { pesan: 'RAP baru diajukan dan menunggu persetujuan.', tipe: 'info' },
+  approved: { pesan: 'RAP disetujui! Transaksi pengeluaran telah dicatat.', tipe: 'success' },
+  cancelled: { pesan: 'RAP dibatalkan.', tipe: 'warning' },
 }
 
 /**
@@ -75,9 +81,43 @@ export function useSupabaseRealtime() {
       )
       .subscribe()
 
+    // --- RAP channel ---
+    const rapChannel = supabase
+      .channel(`rap:${activeWorkspace.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rap',
+          filter: `organisasi_id=eq.${activeWorkspace.id}`,
+        },
+        (payload) => {
+          const newStatus = payload.new?.status
+          const oldStatus = payload.old?.status
+          if (!newStatus || newStatus === oldStatus) return
+
+          // Ketua gets notified when a RAP is submitted
+          // Bendahara gets notified on approval/cancellation
+          const shouldNotify =
+            (newStatus === 'submitted' && isKetua) ||
+            (['approved', 'cancelled'].includes(newStatus) && isBendahara)
+
+          if (shouldNotify) {
+            const { pesan, tipe } = RAP_STATUS_PESAN[newStatus] || {}
+            if (pesan) {
+              const namaItem = payload.new?.nama_item
+              tambahNotif(namaItem ? `${namaItem}: ${pesan}` : pesan, tipe)
+            }
+          }
+        }
+      )
+      .subscribe()
+
     return () => {
       supabase.removeChannel(transaksiChannel)
       supabase.removeChannel(rabChannel)
+      supabase.removeChannel(rapChannel)
     }
   }, [activeWorkspace?.id, isKetua, isBendahara])
 }

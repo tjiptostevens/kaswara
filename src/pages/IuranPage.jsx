@@ -32,7 +32,7 @@ function SekaliIuranPanel({ kategori, iuranList, anggotaList }) {
   return (
     <div className="glass-card p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <Star size={14} className="fill-[#e8a020] stroke-[#e8a020]" />
+        <Star size={14} className="fill-accent stroke-accent" />
         <span className="font-semibold text-charcoal text-sm">{kategori.nama}</span>
         <span className="text-xs text-stone">
           — {paidIds.size}/{anggotaList.length} sudah bayar
@@ -166,7 +166,7 @@ function AnggotaSekaliPanel({ kategori, iuranList }) {
     <div className="glass-card p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Star size={14} className="fill-[#e8a020] stroke-[#e8a020]" />
+          <Star size={14} className="fill-accent stroke-accent" />
           <span className="font-semibold text-charcoal text-sm">{kategori.nama}</span>
           <KategoriTipeBadge tipe="sekali" />
         </div>
@@ -447,12 +447,12 @@ export default function IuranPage() {
   }
 
   const handleBatalkan = async () => {
-    if (!window.confirm('Yakin ingin membatalkan iuran ini? Transaksi terkait akan dihapus.')) return
+    if (!window.confirm('Yakin ingin membatalkan iuran ini? Transaksi terkait akan ikut dibatalkan.')) return
     const { error } = await batalkanIuran(detail.id, detail.transaksi_id)
     if (error) {
       showToast('Gagal membatalkan: ' + error.message, 'error')
     } else {
-      showToast('Iuran dibatalkan. Transaksi terkait telah dihapus.')
+      showToast('Iuran dibatalkan. Transaksi terkait ikut dibatalkan.')
       setDetail(null)
     }
   }
@@ -460,9 +460,9 @@ export default function IuranPage() {
   const handleAmend = async () => {
     const { error } = await amendIuran(detail)
     if (error) {
-      showToast('Gagal membuat revisi: ' + error.message, 'error')
+      showToast('Gagal membuat perubahan: ' + error.message, 'error')
     } else {
-      showToast('Revisi iuran berhasil dibuat!')
+      showToast('Perubahan iuran berhasil dibuat!')
       setDetail(null)
     }
   }
@@ -490,7 +490,7 @@ export default function IuranPage() {
     <PageWrapper title="Iuran">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h2 className="text-lg font-bold text-[#0f3d32]">Iuran</h2>
+          <h2 className="text-lg font-bold text-brand-dark">Iuran</h2>
           <div className="flex gap-2">
             <Button variant="ghost" size="md" icon={<Printer size={16} />} onClick={handlePrint}>
               Cetak
@@ -658,12 +658,12 @@ export default function IuranPage() {
               )}
               {detail.amended_at && (
                 <p>
-                  Direvisi pada:{' '}
+                  Diubah pada:{' '}
                   <span className="text-charcoal">{formatTanggalPendek(detail.amended_at)}</span>
                 </p>
               )}
               {detail.amended_from && (
-                <p className="text-[#5B3FA8]">Revisi dari iuran sebelumnya</p>
+                <p className="text-[#5B3FA8]">Diubah dari iuran sebelumnya</p>
               )}
               {detail.transaksi_id && (
                 <p className="text-success">✓ Transaksi pemasukan otomatis dibuat</p>
@@ -717,7 +717,7 @@ export default function IuranPage() {
                   icon={<RefreshCw size={15} />}
                   onClick={handleAmend}
                 >
-                  Revisi
+                  Ubah
                 </Button>
               )}
             </div>
