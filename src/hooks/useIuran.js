@@ -7,11 +7,11 @@ export function useIuran() {
   const { activeWorkspace, user, profile, can } = useAuth()
   const [iuran, setIuran] = useState([])
   const [loading, setLoading] = useState(false)
+  const canReadAll = can('iuran', 'read', 'all')
+  const canReadOwn = can('iuran', 'read', 'own')
 
   const fetchIuran = useCallback(async () => {
     if (!activeWorkspace?.id) return
-    const canReadAll = can('iuran', 'read', 'all')
-    const canReadOwn = can('iuran', 'read', 'own')
     if (!canReadAll && !canReadOwn) {
       setIuran([])
       return
@@ -38,7 +38,7 @@ export function useIuran() {
     const { data, error } = await query
     setLoading(false)
     if (!error) setIuran(data || [])
-  }, [activeWorkspace?.id, can, user?.id])
+  }, [activeWorkspace?.id, canReadAll, canReadOwn, user?.id])
 
   const addIuran = async (data) => {
     const { kategori_iuran_id, ...rest } = data
