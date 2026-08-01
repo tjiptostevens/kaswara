@@ -1,20 +1,34 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PageWrapper from '../components/layout/PageWrapper'
 import StatGrid from '../components/dashboard/StatGrid'
 import TransaksiRecent from '../components/dashboard/TransaksiRecent'
 import CashflowChart from '../components/dashboard/CashflowChart'
 import KategoriBreakdown from '../components/dashboard/KategoriBreakdown'
+import { TempatUangGrid } from '../components/akunting/TempatUangGrid'
 import Skeleton from '../components/ui/Skeleton'
+import Badge from '../components/ui/Badge'
 import { useTransaksi } from '../hooks/useTransaksi'
 import { useSupabaseRealtime } from '../hooks/useSupabaseRealtime'
 import { useAuth } from '../hooks/useAuth'
+import { useAkunting } from '../hooks/useAkunting'
 import { formatPeriode, formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { supabase } from '../lib/supabase'
-import Badge from '../components/ui/Badge'
+import { ROUTES } from '../constants/routes'
 
 export default function DashboardPage() {
   const { activeWorkspace } = useAuth()
   const { transaksi, saldo, totalPemasukan, totalPengeluaran, loading } = useTransaksi()
+  const {
+    isSimple,
+    saldoAkun,
+    totalUang,
+    totalUtang,
+    totalPiutang,
+    mataUang,
+    simbolMataUang,
+    sistemAktif,
+  } = useAkunting()
   const [recentRAB, setRecentRAB] = useState([])
   useSupabaseRealtime()
 
@@ -50,42 +64,63 @@ export default function DashboardPage() {
   return (
     <PageWrapper title="Dashboard">
       <div className="space-y-6">
-        {/* Welcome */}
-        <div>
-          <h2 className="text-xl font-bold text-[#0f3d32]">
-            Selamat datang di Kaswara 👋
-          </h2>
-          {activeWorkspace && (
-            <p className="text-sm text-stone mt-1">{activeWorkspace.nama}</p>
-          )}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-[#0f3d32]">
+              Selamat datang di Kaswara
+            </h2>
+            {activeWorkspace && (
+              <p className="text-sm text-stone mt-1">{activeWorkspace.nama}</p>
+            )}
+          </div>
+          <span className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-pill border border-border text-stone bg-white/50">
+            Mode {isSimple ? 'Simple' : 'Advance'}
+          </span>
         </div>
 
-        {/* Stats */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="glass-card p-5"><Skeleton lines={3} /></div>
-            <div className="glass-card p-5"><Skeleton lines={3} /></div>
-            <div className="glass-card p-5"><Skeleton lines={3} /></div>
-          </div>
-        ) : (
-          <StatGrid
-            saldo={saldo}
-            totalPemasukan={totalPemasukan}
-            totalPengeluaran={totalPengeluaran}
-            periode={periode}
+        {/* Simple: fokus "uang di mana" */}
+        {isSimple ? (
+          <TempatUangGrid
+            saldoAkun={saldoAkun}
+            totalUang={sistemAktif ? totalUang : saldo}
+            totalUtang={totalUtang}
+            totalPiutang={totalPiutang}
+            currency={mataUang}
+            simbol={simbolMataUang}
           />
+        ) : (
+          loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="glass-card p-5"><Skeleton lines={3} /></div>
+              <div className="glass-card p-5"><Skeleton lines={3} /></div>
+              <div className="glass-card p-5"><Skeleton lines={3} /></div>
+            </div>
+          ) : (
+            <StatGrid
+              saldo={sistemAktif ? totalUang : saldo}
+              totalPemasukan={totalPemasukan}
+              totalPengeluaran={totalPengeluaran}
+              periode={periode}
+            />
+          )
         )}
 
-        {/* Cashflow chart */}
-        {loading ? (
-          <div className="glass-card p-5">
-            <Skeleton lines={6} />
+        {!sistemAktif && (
+          <div className="rounded-input border border-accent/30 bg-accent-light/40 px-4 py-3 text-sm text-charcoal">
+            Sistem akunting baru belum diaktifkan.{' '}
+            <Link to={ROUTES.SETTINGS} className="text-brand font-medium hover:underline">
+              Atur di Pengaturan
+            </Link>{' '}
+            — tentukan tanggal mulai dan saldo awal tempat uang Anda.
           </div>
+        )}
+
+        {loading ? (
+          <div className="glass-card p-5"><Skeleton lines={6} /></div>
         ) : (
           <CashflowChart transaksi={transaksi} />
         )}
 
-        {/* Category breakdown + Recent transactions side by side on large screens */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {loading ? (
             <div className="glass-card p-5"><Skeleton lines={5} /></div>

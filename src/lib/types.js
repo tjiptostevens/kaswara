@@ -54,10 +54,13 @@
  * @property {string} id - UUID
  * @property {string} organisasi_id - FK to organisasi
  * @property {string} [kategori_id] - FK to kategori_transaksi
- * @property {'pemasukan' | 'pengeluaran'} tipe - Income or expense
- * @property {number} jumlah - Amount in IDR
+ * @property {'pemasukan' | 'pengeluaran' | 'transfer'} tipe - Income, expense, or transfer
+ * @property {number} jumlah - Amount
  * @property {string} [keterangan] - Description
  * @property {string} tanggal - Transaction date (YYYY-MM-DD)
+ * @property {string} [akun_keuangan_id] - FK to akun_keuangan (asal / tempat uang)
+ * @property {string} [akun_tujuan_id] - FK to akun_keuangan (tujuan transfer)
+ * @property {string} [jurnal_id] - FK to jurnal (double-entry)
  * @property {'draft' | 'submitted' | 'cancelled' | 'amended'} [status] - Transaction status
  * @property {string} [dibuat_oleh] - FK to auth.users
  * @property {string} [submitted_by] - FK to auth.users
@@ -69,6 +72,38 @@
  * @property {string} [amended_from] - Original transaksi ID
  * @property {string} [rap_id] - FK to rap (if from RAP approval)
  * @property {string} created_at - ISO timestamp
+ */
+
+/**
+ * @typedef {Object} AkunKeuangan
+ * @property {string} id
+ * @property {string} organisasi_id
+ * @property {string} nama
+ * @property {'cash'|'bank'|'ewallet'|'lainnya'} tipe
+ * @property {string} [coa_id]
+ * @property {number} saldo_awal
+ * @property {boolean} is_default
+ * @property {boolean} aktif
+ */
+
+/**
+ * @typedef {Object} UtangPiutang
+ * @property {string} id
+ * @property {string} organisasi_id
+ * @property {'utang'|'piutang'} tipe
+ * @property {string} nama_pihak
+ * @property {number} jumlah_awal
+ * @property {number} jumlah_terbayar
+ * @property {'berjalan'|'lunas'|'dibatalkan'} status
+ */
+
+/**
+ * @typedef {Object} PengaturanAkunting
+ * @property {string} organisasi_id
+ * @property {string} mata_uang
+ * @property {string} simbol_mata_uang
+ * @property {boolean} sistem_aktif
+ * @property {string} [tanggal_mulai_sistem]
  */
 
 /**

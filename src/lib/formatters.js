@@ -1,27 +1,39 @@
 /**
- * Format angka menjadi format mata uang Rupiah
+ * Format angka menjadi format mata uang
  * @param {number} amount
+ * @param {{ currency?: string, simbol?: string }} [opts]
  * @returns {string}
  */
-export function formatRupiah(amount) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount)
+export function formatRupiah(amount, opts = {}) {
+  const currency = opts.currency || 'IDR'
+  try {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: currency === 'IDR' ? 0 : 2,
+      maximumFractionDigits: currency === 'IDR' ? 0 : 2,
+    }).format(amount || 0)
+  } catch {
+    const simbol = opts.simbol || 'Rp'
+    return `${simbol} ${new Intl.NumberFormat('id-ID').format(amount || 0)}`
+  }
 }
 
 /**
- * Format angka menjadi singkatan Rupiah (jt, rb)
+ * Format angka menjadi singkatan (jt, rb) — terutama untuk IDR
  * @param {number} amount
+ * @param {{ currency?: string, simbol?: string }} [opts]
  * @returns {string}
  */
-export function formatRupiahShort(amount) {
-  if (amount >= 1_000_000_000) return `Rp ${(amount / 1_000_000_000).toFixed(1)} M`
-  if (amount >= 1_000_000) return `Rp ${(amount / 1_000_000).toFixed(1)} jt`
-  if (amount >= 1_000) return `Rp ${(amount / 1_000).toFixed(0)} rb`
-  return formatRupiah(amount)
+export function formatRupiahShort(amount, opts = {}) {
+  const currency = opts.currency || 'IDR'
+  const simbol = opts.simbol || (currency === 'IDR' ? 'Rp' : currency)
+  if (currency === 'IDR') {
+    if (amount >= 1_000_000_000) return `${simbol} ${(amount / 1_000_000_000).toFixed(1)} M`
+    if (amount >= 1_000_000) return `${simbol} ${(amount / 1_000_000).toFixed(1)} jt`
+    if (amount >= 1_000) return `${simbol} ${(amount / 1_000).toFixed(0)} rb`
+  }
+  return formatRupiah(amount, opts)
 }
 
 /**

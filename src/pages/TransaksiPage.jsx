@@ -9,13 +9,15 @@ import { Plus, Printer, Send, XCircle, RefreshCw, Pencil } from 'lucide-react'
 import { useTransaksi } from '../hooks/useTransaksi'
 import useKasStore from '../stores/kasStore'
 import { useAuth } from '../hooks/useAuth'
+import { useAkunting } from '../hooks/useAkunting'
 import useUIStore from '../stores/uiStore'
 import { supabase } from '../lib/supabase'
 import { formatRupiah, formatTanggalPendek } from '../lib/formatters'
 import { generateTransaksiPDF } from '../lib/pdfExport'
 
 export default function TransaksiPage() {
-  const { organisasi, profile, user, activeWorkspace, can, canForRecord } = useAuth()
+  const { organisasi, profile, user, activeWorkspace, can, canForRecord, isPersonalWorkspace } = useAuth()
+  const { akunKeuangan, fetchAkunKeuangan, sistemAktif } = useAkunting()
   const showToast = useUIStore((s) => s.showToast)
   const updateTransaksi = useKasStore((s) => s.updateTransaksi)
   const [modalOpen, setModalOpen] = useState(false)
@@ -32,7 +34,7 @@ export default function TransaksiPage() {
   }
 
   const handleAdd = async (data) => {
-    const { error } = await addTransaksi({
+    const { data: created, error } = await addTransaksi({
       ...data,
       organisasi_id: organisasi.id,
       dibuat_oleh: user?.id,
@@ -40,10 +42,27 @@ export default function TransaksiPage() {
     })
     if (error) {
       showToast('Gagal menyimpan transaksi: ' + error.message, 'error')
+      return
+    }
+
+    // Personal / sistem aktif: langsung ajukan agar jurnal terposting
+    if ((isPersonalWorkspace || sistemAktif) && created?.id) {
+      const { error: submitErr } = await updateTransaksiStatus(
+        created.id,
+        'submitted',
+        user?.id,
+        organisasi?.id
+      )
+      if (submitErr) {
+        showToast('Tersimpan sebagai draft. Gagal mengajukan: ' + submitErr.message, 'error')
+      } else {
+        showToast('Transaksi berhasil disimpan!')
+        fetchAkunKeuangan(organisasi.id)
+      }
     } else {
       showToast('Transaksi berhasil disimpan!')
-      setModalOpen(false)
     }
+    setModalOpen(false)
   }
 
   const handleEdit = async (data) => {
@@ -124,6 +143,8 @@ export default function TransaksiPage() {
       tipe: detail.tipe,
       jumlah: Number(detail.jumlah),
       kategori_id: detail.kategori_id || '',
+      akun_keuangan_id: detail.akun_keuangan_id || '',
+      akun_tujuan_id: detail.akun_tujuan_id || '',
       keterangan: detail.keterangan || '',
       tanggal: detail.tanggal,
     }
@@ -185,6 +206,7 @@ export default function TransaksiPage() {
       >
         <FormTransaksi
           kategori={kategori}
+          akunKeuangan={akunKeuangan}
           onSubmit={handleAdd}
           onCancel={() => setModalOpen(false)}
         />
@@ -199,6 +221,7 @@ export default function TransaksiPage() {
         {detail && (
           <FormTransaksi
             kategori={kategori}
+            akunKeuangan={akunKeuangan}
             defaultValues={editDefaults}
             onSubmit={handleEdit}
             onCancel={() => setEditOpen(false)}

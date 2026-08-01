@@ -4,6 +4,8 @@ export const ROUTES = {
   SETUP: '/setup',
   DASHBOARD: '/',
   TRANSAKSI: '/transaksi',
+  TEMPAT_UANG: '/tempat-uang',
+  UTANG_PIUTANG: '/utang-piutang',
   ANGGOTA: '/anggota',
   KELUARGA: '/keluarga',
   IURAN: '/iuran',

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { createJurnalFromTransaksi, voidJurnal } from '../lib/accountingService'
 
 const useKasStore = create((set, get) => ({
   transaksi: [],
@@ -14,7 +15,7 @@ const useKasStore = create((set, get) => ({
     set({ loading: true, error: null })
     let query = supabase
       .from('transaksi')
-      .select('*, kategori_transaksi(nama, tipe), anggota_organisasi(nama_lengkap)')
+      .select('*, kategori_transaksi(nama, tipe), anggota_organisasi(nama_lengkap), akun_keuangan:akun_keuangan_id(id, nama, tipe), akun_tujuan:akun_tujuan_id(id, nama, tipe)')
       .eq('organisasi_id', organisasiId)
       .order('tanggal', { ascending: false })
 
@@ -77,8 +78,19 @@ const useKasStore = create((set, get) => ({
   updateTransaksiStatus: async (id, status, userId, organisasiId) => {
     const now = new Date().toISOString()
     if (status === 'cancelled') {
+      // Void jurnal terkait dulu
+      const existing = get().transaksi.find((t) => t.id === id)
+      if (existing?.jurnal_id) await voidJurnal(existing.jurnal_id)
+
       const { error } = await supabase.rpc('cancel_transaksi_and_rap', { p_transaksi_id: id })
-      if (error) return { error }
+      if (error) {
+        // Fallback: update status langsung jika RPC gagal
+        const { error: updErr } = await supabase
+          .from('transaksi')
+          .update({ status: 'cancelled', cancelled_by: userId, cancelled_at: now })
+          .eq('id', id)
+        if (updErr) return { error: updErr }
+      }
       if (organisasiId) await get().fetchTransaksi(organisasiId)
       return { error: null }
     }
@@ -92,9 +104,17 @@ const useKasStore = create((set, get) => ({
       .from('transaksi')
       .update(updates)
       .eq('id', id)
-      .select('id, rap_id')
+      .select('*, kategori_transaksi(nama, tipe)')
       .single()
     if (error) return { error }
+
+    // Post jurnal saat submitted (jika belum ada)
+    if (status === 'submitted' && updatedTransaksi && !updatedTransaksi.jurnal_id) {
+      const { data: jurnal } = await createJurnalFromTransaksi(updatedTransaksi, userId)
+      if (jurnal?.id) {
+        await supabase.from('transaksi').update({ jurnal_id: jurnal.id }).eq('id', id)
+      }
+    }
 
     if (organisasiId) await get().fetchTransaksi(organisasiId)
     return { error: null }

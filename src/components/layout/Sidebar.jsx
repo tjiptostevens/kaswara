@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Users, Wallet,
   FileText, Receipt, BarChart2, Settings2, LogOut, X, Home,
   Tag, ChevronDown, Check, Building2, User, ListChecks,
-  FileCheck2,
+  FileCheck2, Landmark, HandCoins,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import useUIStore from '../../stores/uiStore'
@@ -22,14 +22,15 @@ const orgNavGroups = [
     items: [
       { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
       { to: ROUTES.KATEGORI_IURAN, icon: ListChecks, label: 'Kategori Iuran' },
+      { to: ROUTES.TEMPAT_UANG, icon: Landmark, label: 'Tempat Uang' },
       { to: ROUTES.ANGGOTA, icon: Users, label: 'Anggota' },
-      // { to: ROUTES.KELUARGA, icon: Home, label: 'Keluarga' },
     ],
   },
   {
     label: 'Transaksi',
     items: [
       { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
+      { to: ROUTES.UTANG_PIUTANG, icon: HandCoins, label: 'Hutang & Piutang' },
       { to: ROUTES.IURAN, icon: Wallet, label: 'Iuran' },
       { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
       { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
@@ -55,6 +56,7 @@ const personalNavGroups = [
     label: 'Master',
     items: [
       { to: ROUTES.KATEGORI, icon: Tag, label: 'Kategori' },
+      { to: ROUTES.TEMPAT_UANG, icon: Landmark, label: 'Tempat Uang' },
       { to: ROUTES.KELUARGA, icon: Home, label: 'Data Keluarga' },
     ],
   },
@@ -62,6 +64,7 @@ const personalNavGroups = [
     label: 'Transaksi',
     items: [
       { to: ROUTES.TRANSAKSI, icon: ArrowLeftRight, label: 'Transaksi' },
+      { to: ROUTES.UTANG_PIUTANG, icon: HandCoins, label: 'Hutang & Piutang' },
       { to: ROUTES.RAB, icon: FileText, label: 'RAB' },
       { to: ROUTES.RAP, icon: Receipt, label: 'RAP' },
     ],
@@ -156,7 +159,8 @@ export default function Sidebar() {
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
 
   const canManageAnggota = isBendahara || isKetua || canApproveJoinRequest
-  const canAccessSettings = isBendahara || isKetua
+  // Semua user bisa akses settings untuk toggle mode Simple/Advance
+  const canAccessSettings = true
   const routeToResource = {
     [ROUTES.TRANSAKSI]: 'transaksi',
     [ROUTES.IURAN]: 'iuran',
