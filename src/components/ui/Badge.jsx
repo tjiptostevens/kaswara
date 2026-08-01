@@ -14,7 +14,12 @@ const variants = {
   amended:    { bg: 'bg-[#EDE9F8] border-[#D9D1F1]', text: 'text-[#5B3FA8]' },
   pemasukan:  { bg: 'bg-[#E1F5EE] border-[#B2EAD3]', text: 'text-[#0F6E56]' },
   pengeluaran:{ bg: 'bg-[#FCEBEB] border-[#F7CACA]', text: 'text-[#A32D2D]' },
+  transfer:   { bg: 'bg-[#E8F5F1] border-[#B2EAD3]', text: 'text-[#1a6b5a]' },
   dispensasi: { bg: 'bg-[#F1EFE8] border-[#E5E4DE]', text: 'text-[#5F5E5A]' },
+  success:    { bg: 'bg-[#E1F5EE] border-[#B2EAD3]', text: 'text-[#0F6E56]' },
+  danger:     { bg: 'bg-[#FCEBEB] border-[#F7CACA]', text: 'text-[#A32D2D]' },
+  info:       { bg: 'bg-[#E6F1FB] border-[#CDE3F7]', text: 'text-[#185FA5]' },
+  default:    { bg: 'bg-[#F1EFE8] border-[#E5E4DE]', text: 'text-[#5F5E5A]' },
 }
 
 const labels = {
@@ -31,21 +36,25 @@ const labels = {
   amended: 'Diubah',
   pemasukan: 'Pemasukan',
   pengeluaran: 'Pengeluaran',
+  transfer: 'Pindah Uang',
   dispensasi: 'Dispensasi',
 }
 
 /**
  * @param {object} props
- * @param {string} props.status - One of the variant keys
+ * @param {string} [props.status] - One of the variant keys
+ * @param {string} [props.tone] - Alias for status (success|danger|info|default)
  * @param {string} [props.label] - Custom label (overrides default)
+ * @param {React.ReactNode} [props.children]
  */
-export default function Badge({ status, label, className = '' }) {
-  const style = variants[status] || variants.draft
+export default function Badge({ status, tone, label, children, className = '' }) {
+  const key = status || tone || 'draft'
+  const style = variants[key] || variants.draft
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-pill text-[10px] font-semibold border ${style.bg} ${style.text} ${className} transition-all duration-200 hover:brightness-95`}
     >
-      {label ?? labels[status] ?? status}
+      {children ?? label ?? labels[key] ?? key}
     </span>
   )
 }

@@ -55,6 +55,8 @@ Selama ini pengelolaan kas RT/RW masih sering dilakukan secara manual menggunaka
 
 Pembaruan yang sudah ditambahkan di aplikasi:
 
+- [x] **Akunting sederhana 2 mode** — Simple (uang di mana: Cash/Bank/E-Wallet, hutang & piutang) dan Advance (Arus Kas, Laba Rugi, Neraca, dasar pajak). Toggle per user di atas data yang sama; double-entry tersembunyi di balik layar.
+- [x] Tempat uang, transfer antar akun, migrasi/saldo awal, mata uang, closing periode.
 - [x] Halaman transparansi publik (`/publik` dan `/publik/:handle`) untuk akses laporan tanpa login.
 - [x] Modul **Surat** (`/surat`) beserta alur persetujuan/status pengajuan.
 - [x] Alur iuran yang lebih lengkap (workflow iuran + kategori iuran).

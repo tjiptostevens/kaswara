@@ -39,6 +39,7 @@ export default function FilterTransaksi({ filters, onChange, kategori = [] }) {
           <option value="">Semua tipe</option>
           <option value="pemasukan">Pemasukan</option>
           <option value="pengeluaran">Pengeluaran</option>
+          <option value="transfer">Pindah Uang</option>
         </select>
       </div>
       <div className="flex-1 min-w-[140px] flex flex-col gap-1.5">

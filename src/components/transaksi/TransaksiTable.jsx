@@ -26,8 +26,22 @@ export default function TransaksiTable({ data = [], loading, onView, onDelete, c
     },
     {
       key: 'kategori',
-      label: 'Kategori',
-      render: (row) => row.kategori_transaksi?.nama || '—',
+      label: 'Kategori / Tempat',
+      render: (row) => {
+        if (row.tipe === 'transfer') {
+          const asal = row.akun_keuangan?.nama || '—'
+          const tujuan = row.akun_tujuan?.nama || '—'
+          return <span className="text-xs">{asal} → {tujuan}</span>
+        }
+        const tempat = row.akun_keuangan?.nama
+        const kat = row.kategori_transaksi?.nama || '—'
+        return (
+          <span className="text-xs">
+            {kat}
+            {tempat ? <span className="text-stone"> · {tempat}</span> : null}
+          </span>
+        )
+      },
     },
     { key: 'keterangan', label: 'Keterangan', render: (row) => row.keterangan || '—' },
     {
@@ -35,10 +49,15 @@ export default function TransaksiTable({ data = [], loading, onView, onDelete, c
       label: 'Jumlah',
       render: (row) => (
         <span
-          className={`font-mono font-medium ${row.tipe === 'pemasukan' ? 'text-success' : 'text-danger'
-            }`}
+          className={`font-mono font-medium ${
+            row.tipe === 'pemasukan'
+              ? 'text-success'
+              : row.tipe === 'transfer'
+                ? 'text-brand'
+                : 'text-danger'
+          }`}
         >
-          {row.tipe === 'pemasukan' ? '+' : '-'}
+          {row.tipe === 'pemasukan' ? '+' : row.tipe === 'transfer' ? '' : '-'}
           {formatRupiah(row.jumlah)}
         </span>
       ),

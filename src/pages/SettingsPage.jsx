@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 import useUIStore from '../stores/uiStore'
 import { Copy, Check, ExternalLink, Download } from 'lucide-react'
 import { getPublikUrl } from '../constants/routes'
+import SettingsAkunting from '../components/akunting/SettingsAkunting'
 
 export default function SettingsPage() {
   const { organisasi, profile, isPersonalWorkspace, isBendahara, isKetua } = useAuth()
@@ -254,6 +255,9 @@ export default function SettingsPage() {
     <PageWrapper title="Pengaturan">
       <div className="max-w-lg space-y-6">
         <h2 className="text-lg font-bold text-[#0f3d32]">Pengaturan</h2>
+
+        {/* Akunting — semua user */}
+        <SettingsAkunting />
 
         {/* Org settings */}
         <div className="glass-card p-5">

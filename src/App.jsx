@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ROUTES } from './constants/routes'
-import { ROLES } from './constants/roles'
 import useAuthStore from './stores/authStore'
 import { ErrorBoundary } from './components/layout/ErrorBoundary'
 
@@ -19,6 +18,8 @@ import PublikPage from './pages/PublikPage'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import DashboardPage from './pages/DashboardPage'
 import TransaksiPage from './pages/TransaksiPage'
+import TempatUangPage from './pages/TempatUangPage'
+import UtangPiutangPage from './pages/UtangPiutangPage'
 import AnggotaPage from './pages/AnggotaPage'
 import IuranPage from './pages/IuranPage'
 import RABPage from './pages/RABPage'
@@ -64,6 +65,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TransaksiPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.TEMPAT_UANG}
+            element={
+              <ProtectedRoute>
+                <TempatUangPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.UTANG_PIUTANG}
+            element={
+              <ProtectedRoute>
+                <UtangPiutangPage />
               </ProtectedRoute>
             }
           />
@@ -126,7 +143,7 @@ export default function App() {
           <Route
             path={ROUTES.SETTINGS}
             element={
-              <ProtectedRoute requiredRoles={[ROLES.KETUA, ROLES.BENDAHARA]}>
+              <ProtectedRoute>
                 <SettingsPage />
               </ProtectedRoute>
             }
