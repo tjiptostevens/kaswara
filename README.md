@@ -31,6 +31,7 @@
 - [Konfigurasi Supabase](#konfigurasi-supabase)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
+- [Dokumentasi Engineering](#dokumentasi-engineering)
 - [Kontribusi](#kontribusi)
 - [Lisensi](#lisensi)
 
@@ -85,6 +86,9 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 | **Mode Keluarga**                        | Toggle mode: RT/RW atau Keluarga                            | Admin           |
 | **Transparansi Publik**                  | Halaman publik read-only laporan organisasi                 | Admin/Warga     |
 | **Manajemen Surat**                      | Pengajuan surat warga + workflow persetujuan                | Pengurus        |
+| **Tempat Uang**                          | Cash/Bank/E-Wallet + transfer antar akun + saldo dari jurnal | Semua pengguna |
+| **Hutang & Piutang**                     | Catat hutang/piutang, pelunasan, terhubung jurnal           | Member org      |
+| **Mode Simple / Advance**                | Toggle tampilan per user; double-entry tersembunyi di Simple | Semua pengguna |
 
 ### Roadmap (v2.0)
 
@@ -565,6 +569,12 @@ kaswara/
 │   │   │   ├── FormTransaksi.jsx
 │   │   │   ├── TransaksiTable.jsx
 │   │   │   └── FilterTransaksi.jsx
+│   │   ├── akunting/                  # Simple/Advance: tempat uang, hutang, laporan, settings
+│   │   │   ├── TempatUangGrid.jsx
+│   │   │   ├── FormAkunKeuangan.jsx
+│   │   │   ├── FormUtangPiutang.jsx
+│   │   │   ├── LaporanAdvance.jsx
+│   │   │   └── SettingsAkunting.jsx
 │   │   ├── anggota/
 │   │   │   ├── FormAnggota.jsx
 │   │   │   ├── AnggotaTable.jsx
@@ -587,23 +597,28 @@ kaswara/
 │   │   │   └── SetupOrganisasiPage.jsx
 │   │   ├── DashboardPage.jsx
 │   │   ├── TransaksiPage.jsx
+│   │   ├── TempatUangPage.jsx
+│   │   ├── UtangPiutangPage.jsx
 │   │   ├── AnggotaPage.jsx
 │   │   ├── IuranPage.jsx
-│   │   ├── KelargaPage.jsx
+│   │   ├── KeluargaPage.jsx
 │   │   ├── RABPage.jsx
 │   │   ├── RAPPage.jsx
+│   │   ├── SuratPage.jsx
 │   │   ├── LaporanPage.jsx
 │   │   ├── KategoriPage.jsx
 │   │   └── SettingsPage.jsx
 │   │
 │   ├── stores/
 │   │   ├── authStore.js
-│   │   ├── kasStore.js
+│   │   ├── kasStore.js           # transaksi; post/void jurnal saat submit/cancel
+│   │   ├── akuntingStore.js      # mode, tempat uang, hutang, closing
 │   │   ├── anggotaStore.js
 │   │   └── uiStore.js
 │   │
 │   ├── hooks/
-│   │   ├── useAuth.js
+│   │   ├── useAuth.js            # can() / permission matrix
+│   │   ├── useAkunting.js
 │   │   ├── useTransaksi.js
 │   │   ├── useAnggota.js
 │   │   ├── useRAB.js
@@ -611,17 +626,21 @@ kaswara/
 │   │
 │   ├── lib/
 │   │   ├── supabase.js
+│   │   ├── accountingService.js  # double-entry journal API
 │   │   ├── pdfExport.js
 │   │   └── formatters.js
 │   │
 │   ├── schemas/
 │   │   ├── transaksiSchema.js
+│   │   ├── akuntingSchema.js
 │   │   ├── anggotaSchema.js
 │   │   ├── rabSchema.js
 │   │   └── rapSchema.js
 │   │
 │   ├── constants/
 │   │   ├── roles.js
+│   │   ├── permissions.js
+│   │   ├── akunting.js
 │   │   ├── kategori.js
 │   │   └── routes.js
 │   │
@@ -629,21 +648,19 @@ kaswara/
 │   ├── main.jsx
 │   └── index.css
 │
-├── supabase/
-│   ├── migrations/
-│   │   ├── 001_create_tables.sql
-│   │   ├── 002_rls_policies.sql
-│   │   ├── 003_seed_kategori.sql
-│   │   ├── 004_fix_organisasi_rls.sql
-│   │   ├── 005_add_email_hp_to_anggota.sql
-│   │   ├── 006_ketua_manage_anggota.sql
-│   │   ├── 007_create_anggota_keluarga.sql
-│   │   ├── 008_personal_workspace.sql
-│   │   ├── 009_personal_rls.sql
-│   │   └── 010_can_manage_rab_and_transaksi_creator.sql
-│   └── functions/
-│       └── send-reminder/
+├── docs/
+│   └── AKUNTING.md                # Panduan engineering akunting Simple/Advance
 │
+├── supabase/
+│   ├── migrations/                # 001 … 025 (lihat folder untuk daftar lengkap)
+│   │   └── 025_akunting_sederhana.sql
+│   ├── config.toml
+│   └── functions/
+│       ├── create-anggota-with-auth/
+│       ├── send-reminder/
+│       └── send-whatsapp/
+│
+├── AGENTS.md                      # Setup lokal (Docker + Supabase CLI)
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -685,13 +702,34 @@ transaksi
   ├── id (uuid, PK)
   ├── organisasi_id (FK)
   ├── kategori_id (FK → kategori_transaksi)
-  ├── tipe ('pemasukan' | 'pengeluaran')
+  ├── tipe ('pemasukan' | 'pengeluaran' | 'transfer')
   ├── jumlah (numeric)
   ├── keterangan
   ├── tanggal (date)
+  ├── akun_keuangan_id (FK → akun_keuangan, nullable)
+  ├── akun_tujuan_id (FK → akun_keuangan, nullable; untuk transfer)
+  ├── jurnal_id (FK → jurnal, nullable)
   ├── dibuat_oleh (FK → auth.users)
   ├── rap_id (FK → rap, nullable)
   └── created_at
+
+akun_keuangan (tempat uang)
+  ├── id, organisasi_id, nama
+  ├── tipe ('cash' | 'bank' | 'ewallet' | 'lainnya')
+  ├── coa_id (FK → akun_coa)
+  ├── saldo_awal, is_default, aktif, urutan
+  └── …
+
+akun_coa / jurnal / jurnal_detail
+  └── Chart of Accounts + double-entry (lihat docs/AKUNTING.md)
+
+utang_piutang (+ utang_piutang_pembayaran)
+  ├── tipe ('utang' | 'piutang'), nama_pihak
+  ├── jumlah_awal, jumlah_terbayar, status, jatuh_tempo
+  └── jurnal_id, akun_keuangan_id
+
+pengaturan_user / pengaturan_akunting
+  └── mode_akunting per user; mata uang & sistem_aktif per org
 
 iuran_rutin
   ├── id (uuid, PK)
@@ -870,6 +908,29 @@ Bendahara catat pembayaran → status: 'lunas'
 Otomatis tercatat sebagai Transaksi Pemasukan
 ```
 
+### Alur Akunting (Simple / Advance)
+
+```
+Organisasi baru → seed COA + tempat uang default (trigger)
+         │
+         ▼
+(Opsional) Pengaturan → aktifkan_sistem_akunting + saldo awal
+         │
+         ▼
+Buat transaksi (draft) dengan akun_keuangan_id
+         │
+         ▼
+Submit transaksi → createJurnalFromTransaksi → jurnal posted
+         │
+         ├── Simple UI: Tempat Uang / Hutang-Piutang (label non-akuntansi)
+         └── Advance UI: Arus Kas, Laba Rugi, Neraca dari saldo COA
+         │
+         ▼
+Cancel transaksi → void jurnal (status 'void')
+```
+
+Detail tabel, jurnal rules, RLS, dan pitfalls: [docs/AKUNTING.md](docs/AKUNTING.md).
+
 ---
 
 ## Instalasi & Setup
@@ -1010,6 +1071,18 @@ Vercel otomatis build dan deploy setiap push ke branch `main`.
 npm run build
 # Output tersedia di folder /dist
 ```
+
+---
+
+## Dokumentasi Engineering
+
+Panduan teknis yang lebih dalam (arsitektur, codepath, runbook) ada di folder `docs/`:
+
+| Dokumen | Isi |
+|---------|-----|
+| [docs/AKUNTING.md](docs/AKUNTING.md) | Mode Simple/Advance, double-entry journal, tempat uang, hutang/piutang, closing, pitfalls |
+| [AGENTS.md](AGENTS.md) | Setup lokal Cloud/Docker: Supabase CLI, `.env.local`, gotcha `auto_expose_new_tables` |
+| [src/components/ui/README.md](src/components/ui/README.md) | Kontrak komponen UI primitif |
 
 ---
 
