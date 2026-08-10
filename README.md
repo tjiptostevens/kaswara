@@ -31,6 +31,7 @@
 - [Konfigurasi Supabase](#konfigurasi-supabase)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
+- [Dokumentasi Engineering](#dokumentasi-engineering)
 - [Kontribusi](#kontribusi)
 - [Lisensi](#lisensi)
 
@@ -85,6 +86,9 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 | **Mode Keluarga**                        | Toggle mode: RT/RW atau Keluarga                            | Admin           |
 | **Transparansi Publik**                  | Halaman publik read-only laporan organisasi                 | Admin/Warga     |
 | **Manajemen Surat**                      | Pengajuan surat warga + workflow persetujuan                | Pengurus        |
+| **Tempat Uang**                          | Cash/Bank/E-Wallet + transfer antar akun + saldo dari jurnal | Semua pengguna |
+| **Hutang & Piutang**                     | Catat hutang/piutang, pelunasan, terhubung jurnal           | Member org      |
+| **Mode Simple / Advance**                | Toggle tampilan per user; double-entry tersembunyi di Simple | Semua pengguna |
 
 ### Roadmap (v2.0)
 
@@ -529,6 +533,8 @@ Pengguna Login (Supabase Auth)
       - Scope: none | own | all
 ```
 
+Detail: [docs/PERMISSIONS.md](docs/PERMISSIONS.md).
+
 ---
 
 ## Struktur Folder
@@ -565,6 +571,12 @@ kaswara/
 │   │   │   ├── FormTransaksi.jsx
 │   │   │   ├── TransaksiTable.jsx
 │   │   │   └── FilterTransaksi.jsx
+│   │   ├── akunting/                  # Simple/Advance: tempat uang, hutang, laporan, settings
+│   │   │   ├── TempatUangGrid.jsx
+│   │   │   ├── FormAkunKeuangan.jsx
+│   │   │   ├── FormUtangPiutang.jsx
+│   │   │   ├── LaporanAdvance.jsx
+│   │   │   └── SettingsAkunting.jsx
 │   │   ├── anggota/
 │   │   │   ├── FormAnggota.jsx
 │   │   │   ├── AnggotaTable.jsx
@@ -587,23 +599,29 @@ kaswara/
 │   │   │   └── SetupOrganisasiPage.jsx
 │   │   ├── DashboardPage.jsx
 │   │   ├── TransaksiPage.jsx
+│   │   ├── TempatUangPage.jsx
+│   │   ├── UtangPiutangPage.jsx
 │   │   ├── AnggotaPage.jsx
 │   │   ├── IuranPage.jsx
-│   │   ├── KelargaPage.jsx
+│   │   ├── KeluargaPage.jsx
 │   │   ├── RABPage.jsx
 │   │   ├── RAPPage.jsx
+│   │   ├── SuratPage.jsx
 │   │   ├── LaporanPage.jsx
 │   │   ├── KategoriPage.jsx
+│   │   ├── PublikPage.jsx
 │   │   └── SettingsPage.jsx
 │   │
 │   ├── stores/
 │   │   ├── authStore.js
-│   │   ├── kasStore.js
+│   │   ├── kasStore.js           # transaksi; post/void jurnal saat submit/cancel
+│   │   ├── akuntingStore.js      # mode, tempat uang, hutang, closing
 │   │   ├── anggotaStore.js
 │   │   └── uiStore.js
 │   │
 │   ├── hooks/
-│   │   ├── useAuth.js
+│   │   ├── useAuth.js            # can() / permission matrix
+│   │   ├── useAkunting.js
 │   │   ├── useTransaksi.js
 │   │   ├── useAnggota.js
 │   │   ├── useRAB.js
@@ -611,17 +629,21 @@ kaswara/
 │   │
 │   ├── lib/
 │   │   ├── supabase.js
+│   │   ├── accountingService.js  # double-entry journal API
 │   │   ├── pdfExport.js
 │   │   └── formatters.js
 │   │
 │   ├── schemas/
 │   │   ├── transaksiSchema.js
+│   │   ├── akuntingSchema.js
 │   │   ├── anggotaSchema.js
 │   │   ├── rabSchema.js
 │   │   └── rapSchema.js
 │   │
 │   ├── constants/
 │   │   ├── roles.js
+│   │   ├── permissions.js
+│   │   ├── akunting.js
 │   │   ├── kategori.js
 │   │   └── routes.js
 │   │
@@ -629,21 +651,21 @@ kaswara/
 │   ├── main.jsx
 │   └── index.css
 │
-├── supabase/
-│   ├── migrations/
-│   │   ├── 001_create_tables.sql
-│   │   ├── 002_rls_policies.sql
-│   │   ├── 003_seed_kategori.sql
-│   │   ├── 004_fix_organisasi_rls.sql
-│   │   ├── 005_add_email_hp_to_anggota.sql
-│   │   ├── 006_ketua_manage_anggota.sql
-│   │   ├── 007_create_anggota_keluarga.sql
-│   │   ├── 008_personal_workspace.sql
-│   │   ├── 009_personal_rls.sql
-│   │   └── 010_can_manage_rab_and_transaksi_creator.sql
-│   └── functions/
-│       └── send-reminder/
+├── docs/
+│   ├── AKUNTING.md                # Simple/Advance accounting
+│   ├── PERMISSIONS.md             # Permission matrix + can()
+│   └── EDGE_FUNCTIONS.md          # Edge functions catalog
 │
+├── supabase/
+│   ├── migrations/                # 001 … 025 (lihat folder untuk daftar lengkap)
+│   │   └── 025_akunting_sederhana.sql
+│   ├── config.toml
+│   └── functions/
+│       ├── create-anggota-with-auth/
+│       ├── send-reminder/
+│       └── send-whatsapp/
+│
+├── AGENTS.md                      # Setup lokal (Docker + Supabase CLI)
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -662,7 +684,7 @@ kaswara/
 organisasi
   ├── id (uuid, PK)
   ├── nama
-  ├── tipe ('rt_rw' | 'keluarga')
+  ├── tipe ('rt_rw' | 'keluarga' | 'personal')
   ├── alamat
   └── created_at
 
@@ -675,6 +697,13 @@ anggota_organisasi
   ├── nomor_anggota
   └── aktif (boolean)
 
+anggota_permission
+  ├── anggota_organisasi_id (FK)
+  ├── resource ('transaksi' | 'iuran' | 'rab' | 'rap' | 'surat')
+  ├── action ('create' | 'read' | 'update' | 'delete' | 'submit' | 'approve' | 'cancel')
+  ├── scope ('none' | 'own' | 'all')
+  └── unique (anggota_organisasi_id, resource, action)
+
 kategori_transaksi
   ├── id (uuid, PK)
   ├── organisasi_id (FK)
@@ -685,13 +714,35 @@ transaksi
   ├── id (uuid, PK)
   ├── organisasi_id (FK)
   ├── kategori_id (FK → kategori_transaksi)
-  ├── tipe ('pemasukan' | 'pengeluaran')
+  ├── tipe ('pemasukan' | 'pengeluaran' | 'transfer')
   ├── jumlah (numeric)
   ├── keterangan
   ├── tanggal (date)
+  ├── status ('draft' | 'submitted' | 'cancelled' | 'amended')
+  ├── akun_keuangan_id (FK → akun_keuangan, nullable)
+  ├── akun_tujuan_id (FK → akun_keuangan, nullable; untuk transfer)
+  ├── jurnal_id (FK → jurnal, nullable)
   ├── dibuat_oleh (FK → auth.users)
   ├── rap_id (FK → rap, nullable)
   └── created_at
+
+akun_keuangan (tempat uang)
+  ├── id, organisasi_id, nama
+  ├── tipe ('cash' | 'bank' | 'ewallet' | 'lainnya')
+  ├── coa_id (FK → akun_coa)
+  ├── saldo_awal, is_default, aktif, urutan
+  └── …
+
+akun_coa / jurnal / jurnal_detail
+  └── Chart of Accounts + double-entry (lihat docs/AKUNTING.md)
+
+utang_piutang (+ utang_piutang_pembayaran)
+  ├── tipe ('utang' | 'piutang'), nama_pihak
+  ├── jumlah_awal, jumlah_terbayar, status, jatuh_tempo
+  └── jurnal_id, akun_keuangan_id
+
+pengaturan_user / pengaturan_akunting
+  └── mode_akunting per user; mata uang & sistem_aktif per org
 
 iuran_rutin
   ├── id (uuid, PK)
@@ -699,8 +750,8 @@ iuran_rutin
   ├── anggota_id (FK → anggota_organisasi)
   ├── periode (date)
   ├── jumlah (numeric)
-  ├── status ('belum_bayar' | 'lunas' | 'dispensasi')
-  ├── tanggal_bayar (date, nullable)
+  ├── status ('draft' | 'diajukan' | 'cancelled' | 'amended')
+  ├── kategori_iuran_id (FK → kategori_iuran, nullable)
   └── transaksi_id (FK → transaksi, nullable)
 
 rab
@@ -709,7 +760,7 @@ rab
   ├── nama_kegiatan
   ├── deskripsi
   ├── total_anggaran (numeric)
-  ├── status ('draft' | 'diajukan' | 'disetujui' | 'ditolak' | 'selesai')
+  ├── status ('draft' | 'diajukan' | 'disetujui' | 'ditolak' | 'selesai' | 'cancelled' | 'amended')
   ├── catatan_ketua (nullable)
   ├── diajukan_oleh (FK → auth.users)
   ├── disetujui_oleh (FK → auth.users, nullable)
@@ -755,7 +806,7 @@ create extension if not exists "uuid-ossp";
 create table organisasi (
   id uuid primary key default uuid_generate_v4(),
   nama text not null,
-  tipe text not null check (tipe in ('rt_rw', 'keluarga')),
+  tipe text not null check (tipe in ('rt_rw', 'keluarga', 'personal')),
   alamat text,
   created_at timestamptz default now()
 );
@@ -858,17 +909,43 @@ RAB status → 'selesai' (jika semua item terealisasi)
 ### Alur Iuran
 
 ```
-Setup iuran rutin (nominal & periode)
+Setup kategori iuran (tipe & frekuensi) + generate record per anggota
          │
          ▼
-Generate record iuran per anggota per bulan
+Iuran baru → status: 'draft'
          │
          ▼
-Bendahara catat pembayaran → status: 'lunas'
+Submit / catat pembayaran → status: 'diajukan'
          │
          ▼
-Otomatis tercatat sebagai Transaksi Pemasukan
+Otomatis tercatat sebagai Transaksi Pemasukan (bila di-wire)
+         │
+         ▼
+Cancel / amend → 'cancelled' / 'amended' (lihat workflow 014)
 ```
+
+### Alur Akunting (Simple / Advance)
+
+```
+Organisasi baru → seed COA + tempat uang default (trigger)
+         │
+         ▼
+(Opsional) Pengaturan → aktifkan_sistem_akunting + saldo awal
+         │
+         ▼
+Buat transaksi (draft) dengan akun_keuangan_id
+         │
+         ▼
+Submit transaksi → createJurnalFromTransaksi → jurnal posted
+         │
+         ├── Simple UI: Tempat Uang / Hutang-Piutang (label non-akuntansi)
+         └── Advance UI: Arus Kas, Laba Rugi, Neraca dari saldo COA
+         │
+         ▼
+Cancel transaksi → void jurnal (status 'void')
+```
+
+Detail tabel, jurnal rules, RLS, dan pitfalls: [docs/AKUNTING.md](docs/AKUNTING.md).
 
 ---
 
@@ -904,26 +981,19 @@ cp .env.example .env.local
 
 ### 4. Jalankan Migration Database
 
-Masuk ke Supabase Dashboard → SQL Editor, jalankan berurutan:
+Lokal (Docker + Supabase CLI) — prefer reset penuh agar 001…025 + views/RPC sinkron:
 
-```
-supabase/migrations/001_create_tables.sql
-supabase/migrations/002_rls_policies.sql
-supabase/migrations/003_seed_kategori.sql
-supabase/migrations/004_fix_organisasi_rls.sql
-supabase/migrations/005_add_email_hp_to_anggota.sql
-supabase/migrations/006_ketua_manage_anggota.sql
-supabase/migrations/007_create_anggota_keluarga.sql
-supabase/migrations/008_personal_workspace.sql
-supabase/migrations/009_personal_rls.sql
-supabase/migrations/010_can_manage_rab_and_transaksi_creator.sql
+```bash
+sudo -E env "PATH=$PATH" npx supabase db reset
 ```
 
-Atau dengan Supabase CLI:
+Atau apply migration ke project hosted:
 
 ```bash
 npx supabase db push
 ```
+
+Daftar file: `supabase/migrations/` (`001` … `025`, termasuk permission matrix `022`/`023` dan akunting `025`). Detail setup Cloud: [AGENTS.md](AGENTS.md).
 
 ### 5. Setup Storage Bucket
 
@@ -1010,6 +1080,20 @@ Vercel otomatis build dan deploy setiap push ke branch `main`.
 npm run build
 # Output tersedia di folder /dist
 ```
+
+---
+
+## Dokumentasi Engineering
+
+Panduan teknis yang lebih dalam (arsitektur, codepath, runbook) ada di folder `docs/`:
+
+| Dokumen | Isi |
+|---------|-----|
+| [docs/AKUNTING.md](docs/AKUNTING.md) | Mode Simple/Advance, double-entry journal, tempat uang, hutang/piutang, closing, pitfalls |
+| [docs/PERMISSIONS.md](docs/PERMISSIONS.md) | Matriks izin, `can()` / `canForRecord()`, RPC `save_anggota_permissions`, RLS |
+| [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) | Katalog edge functions, secrets, invite flow, known issues |
+| [AGENTS.md](AGENTS.md) | Setup lokal Cloud/Docker: Supabase CLI, `.env.local`, gotcha `auto_expose_new_tables` |
+| [src/components/ui/README.md](src/components/ui/README.md) | Kontrak komponen UI primitif |
 
 ---
 
