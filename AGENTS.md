@@ -4,7 +4,7 @@
 
 ### What this project is
 
-Kaswara is a single-product React 19 + Vite 8 SPA (Indonesian community/household finance app). There is no custom backend server — all data, auth, storage, and realtime come from **Supabase**. For local development the Supabase stack runs in Docker via the Supabase CLI, and 24 SQL migrations in `supabase/migrations/` define the schema (RLS policies, seed categories, workflows, storage bucket, permission matrix).
+Kaswara is a single-product React 19 + Vite 8 SPA (Indonesian community/household finance app). There is no custom backend server — all data, auth, storage, and realtime come from **Supabase**. For local development the Supabase stack runs in Docker via the Supabase CLI, and 25 SQL migrations in `supabase/migrations/` define the schema (RLS policies, seed categories, workflows, storage bucket, permission matrix, simple/advance accounting).
 
 ### Services and how to run them
 
@@ -30,7 +30,10 @@ The update script only refreshes npm dependencies. Docker + the Supabase stack a
   (The legacy JWT `ANON_KEY` from `supabase start` output is used, not the newer `PUBLISHABLE_KEY`.)
 - **Local auth has email confirmations disabled** (`config.toml` `[auth.email] enable_confirmations = false`), so signups log in immediately without an email step.
 - **Signup flow:** sign up → create/join an organisasi (or "Lewati" for personal mode) → dashboard. A user who creates a new organisasi becomes `bendahara` and can create transactions.
-- **Edge functions** in `supabase/functions/` (e.g. `create-anggota-with-auth`) are served automatically by the `supabase_edge_runtime` container from `supabase start`; the member-invite flow uses them. `send-reminder`/`send-whatsapp` need external API keys and are not wired into the UI.
+- **Edge functions** in `supabase/functions/` are served by the `supabase_edge_runtime` container from `supabase start`. Only `create-anggota-with-auth` is wired in the UI (member invite via `anggotaStore`). `send-reminder` / `send-whatsapp` need `RESEND_API_KEY` / `WA_API_TOKEN` and are not wired; reminder still queries obsolete iuran status `belum_bayar` (see `docs/EDGE_FUNCTIONS.md`).
+- **Permission matrix (migrations 022–024):** per-member scopes on `transaksi`/`iuran`/`rab`/`rap`/`surat`. UI uses `useAuth().can()` / `canForRecord()`; persists via RPC `save_anggota_permissions` (or edge upsert on create). Personal workspace bypasses the matrix in the frontend. Details: `docs/PERMISSIONS.md`.
+- **Accounting (migration 025):** new orgs auto-seed COA + default Cash/Bank via trigger. Journals post when a transaksi is **submitted** (not on draft create) and require `akun_keuangan_id` (plus `akun_tujuan_id` for transfers). Activate opening balances with RPC `aktifkan_sistem_akunting` from Settings. Mode Simple/Advance is a per-user UI preference (`pengaturan_user`), not a data fork. Engineering details: `docs/AKUNTING.md`.
+- After pulling schema changes, prefer `supabase db reset` locally so views (`v_saldo_akun_keuangan`, `v_saldo_coa`) and RPCs match the frontend.
 
 ### Lint / test / build
 
