@@ -654,7 +654,10 @@ kaswara/
 ├── docs/
 │   ├── AKUNTING.md                # Simple/Advance accounting
 │   ├── PERMISSIONS.md             # Permission matrix + can()
-│   └── EDGE_FUNCTIONS.md          # Edge functions catalog
+│   ├── EDGE_FUNCTIONS.md          # Edge functions catalog
+│   ├── PUBLIK.md                  # Transparansi publik (anon RLS)
+│   ├── SURAT.md                   # Permintaan surat workflow
+│   └── IURAN.md                   # Iuran + kategori + duplikat
 │
 ├── supabase/
 │   ├── migrations/                # 001 … 025 (lihat folder untuk daftar lengkap)
@@ -686,6 +689,7 @@ organisasi
   ├── nama
   ├── tipe ('rt_rw' | 'keluarga' | 'personal')
   ├── alamat
+  ├── publik_aktif (boolean) / publik_slug (text, unique)
   └── created_at
 
 anggota_organisasi
@@ -744,15 +748,27 @@ utang_piutang (+ utang_piutang_pembayaran)
 pengaturan_user / pengaturan_akunting
   └── mode_akunting per user; mata uang & sistem_aktif per org
 
+kategori_iuran
+  ├── id, organisasi_id, nama
+  ├── tipe ('sukarela' | 'sekali' | 'wajib')
+  ├── frekuensi (mingguan … tahunan, nullable)
+  └── nominal_default
+
 iuran_rutin
   ├── id (uuid, PK)
   ├── organisasi_id (FK)
   ├── anggota_id (FK → anggota_organisasi)
-  ├── periode (date)
+  ├── periode (date, awal bulan)
   ├── jumlah (numeric)
   ├── status ('draft' | 'diajukan' | 'cancelled' | 'amended')
   ├── kategori_iuran_id (FK → kategori_iuran, nullable)
   └── transaksi_id (FK → transaksi, nullable)
+
+permintaan_surat
+  ├── id, organisasi_id, judul, keperluan, detail
+  ├── status ('draft' | 'diajukan' | 'selesai' | 'cancelled')
+  ├── hasil_status ('approve' | 'reject', nullable)
+  └── dibuat_oleh / dibuat_oleh_anggota_id
 
 rab
   ├── id (uuid, PK)
@@ -918,11 +934,30 @@ Iuran baru → status: 'draft'
 Submit / catat pembayaran → status: 'diajukan'
          │
          ▼
-Otomatis tercatat sebagai Transaksi Pemasukan (bila di-wire)
+Otomatis insert Transaksi Pemasukan (status 'submitted')
          │
          ▼
 Cancel / amend → 'cancelled' / 'amended' (lihat workflow 014)
 ```
+
+Detail duplikat, permissions, dan gap jurnal: [docs/IURAN.md](docs/IURAN.md).
+
+### Alur Surat
+
+```
+Draft permintaan surat
+         │
+         ▼
+Ajukan → status: 'diajukan'
+         │
+         ▼
+Approver (matrix surat.approve / ketua/bendahara)
+         │
+         ▼
+Selesai + hasil_status approve|reject  (atau cancel dari draft/diajukan)
+```
+
+Detail RLS vs UI own-read: [docs/SURAT.md](docs/SURAT.md). Publik transparansi: [docs/PUBLIK.md](docs/PUBLIK.md).
 
 ### Alur Akunting (Simple / Advance)
 
@@ -1092,6 +1127,9 @@ Panduan teknis yang lebih dalam (arsitektur, codepath, runbook) ada di folder `d
 | [docs/AKUNTING.md](docs/AKUNTING.md) | Mode Simple/Advance, double-entry journal, tempat uang, hutang/piutang, closing, pitfalls |
 | [docs/PERMISSIONS.md](docs/PERMISSIONS.md) | Matriks izin, `can()` / `canForRecord()`, RPC `save_anggota_permissions`, RLS |
 | [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) | Katalog edge functions, secrets, invite flow, known issues |
+| [docs/PUBLIK.md](docs/PUBLIK.md) | Transparansi publik: slug/UUID, anon RLS, Settings QR |
+| [docs/SURAT.md](docs/SURAT.md) | Permintaan surat: status flow, matrix approve, RLS |
+| [docs/IURAN.md](docs/IURAN.md) | Kategori iuran, workflow, unique periode, transaksi otomatis |
 | [AGENTS.md](AGENTS.md) | Setup lokal Cloud/Docker: Supabase CLI, `.env.local`, gotcha `auto_expose_new_tables` |
 | [src/components/ui/README.md](src/components/ui/README.md) | Kontrak komponen UI primitif |
 
