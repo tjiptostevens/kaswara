@@ -97,9 +97,9 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 - [ ] WhatsApp gateway untuk pengingat iuran
 - [x] Approval workflow digital RAB (diajukan → disetujui/ditolak/dibatalkan/amandemen) ✓ — notifikasi real-time via web notif masih pending
 - [ ] Multi-RT (untuk kelurahan dengan menambahkan id RT)
-- [x] Skema sambungan RAB/RAP → transaksi (FK `rap_id` pada tabel transaksi) ✓ — otomatisasi insert transaksi saat RAP disetujui masih pending
-- [x] Supabase Storage untuk upload foto bukti RAP ✓
-- [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — RAP & RAB detail masih tampilkan UUID
+- [x] Skema sambungan RAB/RAP → transaksi (FK `rap_id` pada `transaksi` + `transaksi_id` pada `rap`) ✓ — insert transaksi pengeluaran otomatis saat RAP **disetujui** (client-side di `RAPPage.handleApprove`; bukan DB trigger)
+- [x] Supabase Storage untuk upload foto bukti RAP ✓ (bucket `rap-foto`, public read — lihat `docs/RAB_RAP.md`)
+- [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — join nama juga ada di fetch RAB/RAP; fallback UUID jika anggota hilang
 - [ ] Cetak laporan dengan filter range tanggal (organisasi & personal)
 - [x] **Halaman transparansi publik** — URL read-only untuk warga tanpa login (`/publik/:handle`) ✓
 
@@ -657,7 +657,8 @@ kaswara/
 │   ├── EDGE_FUNCTIONS.md          # Edge functions catalog
 │   ├── PUBLIK.md                  # Transparansi publik (anon RLS)
 │   ├── SURAT.md                   # Permintaan surat workflow
-│   └── IURAN.md                   # Iuran + kategori + duplikat
+│   ├── IURAN.md                   # Iuran + kategori + duplikat
+│   └── RAB_RAP.md                 # RAB/RAP workflow, RPC, storage
 │
 ├── supabase/
 │   ├── migrations/                # 001 … 025 (lihat folder untuk daftar lengkap)
@@ -913,14 +914,22 @@ Ketua review RAB
     └── Tolak   → status: 'ditolak'  → ada catatan penolakan
          │
          ▼ (jika disetujui)
-Bendahara buat RAP per item + upload foto bukti
+Bendahara buat RAP (draft) + item realisasi + upload foto bukti
          │
          ▼
-Otomatis tercatat sebagai Transaksi Pengeluaran
+Bendahara submit RAP → status: 'submitted'
          │
          ▼
-RAB status → 'selesai' (jika semua item terealisasi)
+Approver setujui RAP → status: 'approved'
+         │
+         ▼
+Client insert Transaksi Pengeluaran (status 'submitted') + set rap.transaksi_id
+         │
+         ▼
+RAB status → 'selesai' (jika semua RAP aktif sudah approved)
 ```
+
+Detail schema, RLS, RPC, dan pitfalls: [docs/RAB_RAP.md](docs/RAB_RAP.md).
 
 ### Alur Iuran
 
@@ -1035,9 +1044,9 @@ Daftar file: `supabase/migrations/` (`001` … `025`, termasuk permission matrix
 Supabase Dashboard → Storage → Create Bucket:
 
 - Nama: `rap-foto`
-- Public: **Tidak**
+- Public: **Ya** (migration `016` — diperlukan agar `getPublicUrl` menampilkan bukti)
 - File size limit: `10MB`
-- Allowed MIME types: `image/jpeg, image/png, image/webp`
+- Allowed MIME types: `image/jpeg, image/png, image/webp, image/gif, image/heic, image/heif`
 
 ### 6. Jalankan Development Server
 
@@ -1130,6 +1139,7 @@ Panduan teknis yang lebih dalam (arsitektur, codepath, runbook) ada di folder `d
 | [docs/PUBLIK.md](docs/PUBLIK.md) | Transparansi publik: slug/UUID, anon RLS, Settings QR |
 | [docs/SURAT.md](docs/SURAT.md) | Permintaan surat: status flow, matrix approve, RLS |
 | [docs/IURAN.md](docs/IURAN.md) | Kategori iuran, workflow, unique periode, transaksi otomatis |
+| [docs/RAB_RAP.md](docs/RAB_RAP.md) | RAB/RAP status, approve→transaksi, cancel RPC, storage `rap-foto` |
 | [AGENTS.md](AGENTS.md) | Setup lokal Cloud/Docker: Supabase CLI, `.env.local`, gotcha `auto_expose_new_tables` |
 | [src/components/ui/README.md](src/components/ui/README.md) | Kontrak komponen UI primitif |
 
