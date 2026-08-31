@@ -85,7 +85,7 @@ Aturan jurnal (`accountingService`):
 | `pengeluaran` | COA kategori (atau sub_tipe `beban`) | COA tempat uang |
 | `transfer` | COA akun tujuan | COA akun asal |
 
-Constraint: total debit = total kredit (±0.01); minimal 2 baris. Transaksi legacy tanpa `akun_keuangan_id` di-skip (tidak error).
+Constraint: total debit = total kredit (±0.01); minimal 2 baris. Tanpa `akun_keuangan_id`, `createJurnalFromTransaksi` **mengembalikan error** (`Pilih tempat uang…`); `kasStore.updateTransaksiStatus` mengabaikan error itu (transaksi tetap `submitted`, tanpa jurnal).
 
 ### 3. Hutang / piutang
 
@@ -106,7 +106,7 @@ Pelunasan via `bayarUtangPiutang` → `utang_piutang_pembayaran` + jurnal; updat
 
 | Route | Page | Catatan |
 |-------|------|---------|
-| `/` | `DashboardPage` | Simple: `TempatUangGrid`; Advance: ringkasan COA-oriented |
+| `/` | `DashboardPage` | Simple: `TempatUangGrid`; Advance: `StatGrid` (saldo / pemasukan / pengeluaran) |
 | `/tempat-uang` | `TempatUangPage` | CRUD tempat uang |
 | `/utang-piutang` | `UtangPiutangPage` | Hutang/piutang + bayar |
 | `/transaksi` | `TransaksiPage` | Form mendukung transfer + pilih akun |

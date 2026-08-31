@@ -36,6 +36,7 @@ The update script only refreshes npm dependencies. Docker + the Supabase stack a
 - **Publik transparansi (013):** enable `organisasi.publik_aktif` (+ optional `publik_slug`) in Settings; anon RLS only exposes org/transaksi/kategori for active orgs. Prefer `/publik/{uuid|slug}` — `PublikLandingPage` currently references `supabase` without importing it. Details: `docs/PUBLIK.md`.
 - **Surat (018 + 022):** table `permintaan_surat`; UI gates via matrix resource `surat`; SELECT RLS is member-wide (own/all filtered in UI). Details: `docs/SURAT.md`.
 - **Iuran (014 + 020):** statuses `draft|diajukan|cancelled|amended` (not `belum_bayar`/`lunas`); unique active row per anggota+kategori+periode; `ajukanIuran` inserts submitted transaksi **without** `akun_keuangan_id` (no journal). Details: `docs/IURAN.md`.
+- **RAB/RAP (010–012, 016–017, 019, 021–022):** RAB statuses Indonesian (`diajukan`/`disetujui`); RAP English (`submitted`/`approved`). Auto transaksi on RAP **approve** is client-side (`RAPPage.handleApprove`), not a DB trigger; also omits `akun_keuangan_id`. Bucket `rap-foto` is **public**. Details: `docs/RAB_RAP.md`.
 - After pulling schema changes, prefer `supabase db reset` locally so views (`v_saldo_akun_keuangan`, `v_saldo_coa`) and RPCs match the frontend.
 
 ### Lint / test / build

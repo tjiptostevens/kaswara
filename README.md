@@ -934,10 +934,10 @@ Detail schema, RLS, RPC, dan pitfalls: [docs/RAB_RAP.md](docs/RAB_RAP.md).
 ### Alur Iuran
 
 ```
-Setup kategori iuran (tipe & frekuensi) + generate record per anggota
+Setup kategori iuran (tipe & frekuensi)
          │
          ▼
-Iuran baru → status: 'draft'
+Tambah iuran per anggota (UI `addIuran`) → status: 'draft'
          │
          ▼
 Submit / catat pembayaran → status: 'diajukan'
