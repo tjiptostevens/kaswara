@@ -535,6 +535,8 @@ Pengguna Login (Supabase Auth)
 
 Detail: [docs/PERMISSIONS.md](docs/PERMISSIONS.md).
 
+Setiap signup otomatis mendapat workspace **personal** (trigger DB). Buat/bergabung organisasi bersifat opsional — lihat [docs/ONBOARDING.md](docs/ONBOARDING.md).
+
 ---
 
 ## Struktur Folder
@@ -655,6 +657,7 @@ kaswara/
 │   ├── AKUNTING.md                # Simple/Advance accounting
 │   ├── PERMISSIONS.md             # Permission matrix + can()
 │   ├── EDGE_FUNCTIONS.md          # Edge functions catalog
+│   ├── ONBOARDING.md              # Personal workspace, setup, join
 │   ├── PUBLIK.md                  # Transparansi publik (anon RLS)
 │   ├── SURAT.md                   # Permintaan surat workflow
 │   ├── IURAN.md                   # Iuran + kategori + duplikat
@@ -700,7 +703,20 @@ anggota_organisasi
   ├── role ('bendahara' | 'ketua' | 'anggota')
   ├── nama_lengkap
   ├── nomor_anggota
+  ├── can_approve_join_request (boolean, legacy flag)
   └── aktif (boolean)
+
+organisasi_join_request
+  ├── organisasi_id, user_id
+  ├── status ('pending' | 'approved' | 'rejected')
+  ├── nama_lengkap, email, no_hp
+  └── processed_by / processed_at / rejection_reason
+  └── unique pending per (organisasi_id, user_id)
+
+anggota_keluarga
+  ├── anggota_id (FK → anggota_organisasi), organisasi_id
+  ├── nama, hubungan ('suami'|'istri'|'anak'|'orang_tua'|'lainnya')
+  └── tanggal_lahir (nullable)
 
 anggota_permission
   ├── anggota_organisasi_id (FK)
@@ -899,6 +915,22 @@ create policy "bendahara_kelola_transaksi"
 ---
 
 ## Alur Aplikasi
+
+### Alur Onboarding (Personal & Bergabung)
+
+```
+Signup → trigger create_personal_workspace (tipe personal, role bendahara)
+         │
+         ▼
+Login → Dashboard (personal aktif; localStorage bisa override)
+         │
+         ├── Opsional: /setup → Buat org (rt_rw|keluarga) sebagai bendahara
+         ├── Opsional: /setup → Bergabung (UUID/QR) → join_request pending
+         │                      → pengurus approve di Anggota
+         └── Switch workspace di Sidebar
+```
+
+Kode undangan = `organisasi.id` (+ QR di Pengaturan). Detail RLS preview join, flag `can_approve_join_request`, dan nav personal: [docs/ONBOARDING.md](docs/ONBOARDING.md).
 
 ### Alur RAB → RAP
 
@@ -1136,6 +1168,7 @@ Panduan teknis yang lebih dalam (arsitektur, codepath, runbook) ada di folder `d
 | [docs/AKUNTING.md](docs/AKUNTING.md) | Mode Simple/Advance, double-entry journal, tempat uang, hutang/piutang, closing, pitfalls |
 | [docs/PERMISSIONS.md](docs/PERMISSIONS.md) | Matriks izin, `can()` / `canForRecord()`, RPC `save_anggota_permissions`, RLS |
 | [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) | Katalog edge functions, secrets, invite flow, known issues |
+| [docs/ONBOARDING.md](docs/ONBOARDING.md) | Personal workspace, setup org, join request, kode/QR, nav personal vs org |
 | [docs/PUBLIK.md](docs/PUBLIK.md) | Transparansi publik: slug/UUID, anon RLS, Settings QR |
 | [docs/SURAT.md](docs/SURAT.md) | Permintaan surat: status flow, matrix approve, RLS |
 | [docs/IURAN.md](docs/IURAN.md) | Kategori iuran, workflow, unique periode, transaksi otomatis |
