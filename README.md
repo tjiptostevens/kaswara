@@ -31,6 +31,7 @@
 - [Konfigurasi Supabase](#konfigurasi-supabase)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
+- [Dokumentasi Engineering](#dokumentasi-engineering)
 - [Kontribusi](#kontribusi)
 - [Lisensi](#lisensi)
 
@@ -85,6 +86,9 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 | **Mode Keluarga**                        | Toggle mode: RT/RW atau Keluarga                            | Admin           |
 | **Transparansi Publik**                  | Halaman publik read-only laporan organisasi                 | Admin/Warga     |
 | **Manajemen Surat**                      | Pengajuan surat warga + workflow persetujuan                | Pengurus        |
+| **Tempat Uang**                          | Cash/Bank/E-Wallet + transfer antar akun + saldo dari jurnal | Semua pengguna |
+| **Hutang & Piutang**                     | Catat hutang/piutang, pelunasan, terhubung jurnal           | Member org      |
+| **Mode Simple / Advance**                | Toggle tampilan per user; double-entry tersembunyi di Simple | Semua pengguna |
 
 ### Roadmap (v2.0)
 
@@ -93,9 +97,9 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 - [ ] WhatsApp gateway untuk pengingat iuran
 - [x] Approval workflow digital RAB (diajukan → disetujui/ditolak/dibatalkan/amandemen) ✓ — notifikasi real-time via web notif masih pending
 - [ ] Multi-RT (untuk kelurahan dengan menambahkan id RT)
-- [x] Skema sambungan RAB/RAP → transaksi (FK `rap_id` pada tabel transaksi) ✓ — otomatisasi insert transaksi saat RAP disetujui masih pending
-- [x] Supabase Storage untuk upload foto bukti RAP ✓
-- [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — RAP & RAB detail masih tampilkan UUID
+- [x] Skema sambungan RAB/RAP → transaksi (FK `rap_id` pada `transaksi` + `transaksi_id` pada `rap`) ✓ — insert transaksi pengeluaran otomatis saat RAP **disetujui** (client-side di `RAPPage.handleApprove`; bukan DB trigger)
+- [x] Supabase Storage untuk upload foto bukti RAP ✓ (bucket `rap-foto`, public read — lihat `docs/RAB_RAP.md`)
+- [x] Tampilkan nama anggota pada transaksi (join `anggota_organisasi` via `dibuat_oleh_anggota_id`) ✓ — join nama juga ada di fetch RAB/RAP; fallback UUID jika anggota hilang
 - [ ] Cetak laporan dengan filter range tanggal (organisasi & personal)
 - [x] **Halaman transparansi publik** — URL read-only untuk warga tanpa login (`/publik/:handle`) ✓
 
@@ -126,7 +130,7 @@ Pembaruan yang sudah ditambahkan di aplikasi:
 | **Form**             | React Hook Form + Zod | Validasi form & schema            |
 | **Database**         | Supabase (PostgreSQL) | Relasional, gratis s.d. 500MB     |
 | **Auth**             | Supabase Auth         | Email/password + Magic Link       |
-| **Storage**          | Supabase Storage      | Upload foto bukti (max 50MB/file) |
+| **Storage**          | Supabase Storage      | Upload foto bukti (max 10MB/file, bucket `rap-foto`) |
 | **Realtime**         | Supabase Realtime     | Saldo update otomatis             |
 | **PDF Export**       | jsPDF + html2canvas   | Generate laporan PDF di browser   |
 | **Hosting**          | Vercel / Netlify      | Deploy dari GitHub, gratis        |
@@ -529,6 +533,10 @@ Pengguna Login (Supabase Auth)
       - Scope: none | own | all
 ```
 
+Detail: [docs/PERMISSIONS.md](docs/PERMISSIONS.md).
+
+Setiap signup otomatis mendapat workspace **personal** (trigger DB). Buat/bergabung organisasi bersifat opsional — lihat [docs/ONBOARDING.md](docs/ONBOARDING.md).
+
 ---
 
 ## Struktur Folder
@@ -537,7 +545,8 @@ Pengguna Login (Supabase Auth)
 kaswara/
 ├── public/
 │   ├── favicon.ico
-│   └── og-image.png
+│   ├── logo.png
+│   └── _redirects          # SPA fallback (Netlify)
 │
 ├── src/
 │   ├── assets/                    # Gambar, logo, icon statis
@@ -565,6 +574,12 @@ kaswara/
 │   │   │   ├── FormTransaksi.jsx
 │   │   │   ├── TransaksiTable.jsx
 │   │   │   └── FilterTransaksi.jsx
+│   │   ├── akunting/                  # Simple/Advance: tempat uang, hutang, laporan, settings
+│   │   │   ├── TempatUangGrid.jsx
+│   │   │   ├── FormAkunKeuangan.jsx
+│   │   │   ├── FormUtangPiutang.jsx
+│   │   │   ├── LaporanAdvance.jsx
+│   │   │   └── SettingsAkunting.jsx
 │   │   ├── anggota/
 │   │   │   ├── FormAnggota.jsx
 │   │   │   ├── AnggotaTable.jsx
@@ -587,23 +602,29 @@ kaswara/
 │   │   │   └── SetupOrganisasiPage.jsx
 │   │   ├── DashboardPage.jsx
 │   │   ├── TransaksiPage.jsx
+│   │   ├── TempatUangPage.jsx
+│   │   ├── UtangPiutangPage.jsx
 │   │   ├── AnggotaPage.jsx
 │   │   ├── IuranPage.jsx
-│   │   ├── KelargaPage.jsx
+│   │   ├── KeluargaPage.jsx
 │   │   ├── RABPage.jsx
 │   │   ├── RAPPage.jsx
+│   │   ├── SuratPage.jsx
 │   │   ├── LaporanPage.jsx
 │   │   ├── KategoriPage.jsx
+│   │   ├── PublikPage.jsx
 │   │   └── SettingsPage.jsx
 │   │
 │   ├── stores/
 │   │   ├── authStore.js
-│   │   ├── kasStore.js
+│   │   ├── kasStore.js           # transaksi; post/void jurnal saat submit/cancel
+│   │   ├── akuntingStore.js      # mode, tempat uang, hutang, closing
 │   │   ├── anggotaStore.js
 │   │   └── uiStore.js
 │   │
 │   ├── hooks/
-│   │   ├── useAuth.js
+│   │   ├── useAuth.js            # can() / permission matrix
+│   │   ├── useAkunting.js
 │   │   ├── useTransaksi.js
 │   │   ├── useAnggota.js
 │   │   ├── useRAB.js
@@ -611,17 +632,21 @@ kaswara/
 │   │
 │   ├── lib/
 │   │   ├── supabase.js
+│   │   ├── accountingService.js  # double-entry journal API
 │   │   ├── pdfExport.js
 │   │   └── formatters.js
 │   │
 │   ├── schemas/
 │   │   ├── transaksiSchema.js
+│   │   ├── akuntingSchema.js
 │   │   ├── anggotaSchema.js
 │   │   ├── rabSchema.js
 │   │   └── rapSchema.js
 │   │
 │   ├── constants/
 │   │   ├── roles.js
+│   │   ├── permissions.js
+│   │   ├── akunting.js
 │   │   ├── kategori.js
 │   │   └── routes.js
 │   │
@@ -629,21 +654,29 @@ kaswara/
 │   ├── main.jsx
 │   └── index.css
 │
-├── supabase/
-│   ├── migrations/
-│   │   ├── 001_create_tables.sql
-│   │   ├── 002_rls_policies.sql
-│   │   ├── 003_seed_kategori.sql
-│   │   ├── 004_fix_organisasi_rls.sql
-│   │   ├── 005_add_email_hp_to_anggota.sql
-│   │   ├── 006_ketua_manage_anggota.sql
-│   │   ├── 007_create_anggota_keluarga.sql
-│   │   ├── 008_personal_workspace.sql
-│   │   ├── 009_personal_rls.sql
-│   │   └── 010_can_manage_rab_and_transaksi_creator.sql
-│   └── functions/
-│       └── send-reminder/
+├── docs/
+│   ├── LOCAL_DEV.md               # Boot lokal + troubleshooting runbook
+│   ├── MIGRATIONS.md              # Katalog migrasi 001–025 + RPC/view index
+│   ├── AMENDMENTS.md              # Pola amend draft (transaksi/RAB/RAP/iuran)
+│   ├── AKUNTING.md                # Simple/Advance accounting
+│   ├── PERMISSIONS.md             # Permission matrix + can()
+│   ├── EDGE_FUNCTIONS.md          # Edge functions catalog
+│   ├── ONBOARDING.md              # Personal workspace, setup, join
+│   ├── PUBLIK.md                  # Transparansi publik (anon RLS)
+│   ├── SURAT.md                   # Permintaan surat workflow
+│   ├── IURAN.md                   # Iuran + kategori + duplikat
+│   └── RAB_RAP.md                 # RAB/RAP workflow, RPC, storage
 │
+├── supabase/
+│   ├── migrations/                # 001 … 025 — lihat docs/MIGRATIONS.md
+│   │   └── 025_akunting_sederhana.sql
+│   ├── config.toml
+│   └── functions/
+│       ├── create-anggota-with-auth/
+│       ├── send-reminder/
+│       └── send-whatsapp/
+│
+├── AGENTS.md                      # Setup lokal (Docker + Supabase CLI)
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -662,8 +695,9 @@ kaswara/
 organisasi
   ├── id (uuid, PK)
   ├── nama
-  ├── tipe ('rt_rw' | 'keluarga')
+  ├── tipe ('rt_rw' | 'keluarga' | 'personal')
   ├── alamat
+  ├── publik_aktif (boolean) / publik_slug (text, unique)
   └── created_at
 
 anggota_organisasi
@@ -673,7 +707,27 @@ anggota_organisasi
   ├── role ('bendahara' | 'ketua' | 'anggota')
   ├── nama_lengkap
   ├── nomor_anggota
+  ├── can_approve_join_request (boolean, legacy flag)
   └── aktif (boolean)
+
+organisasi_join_request
+  ├── organisasi_id, user_id
+  ├── status ('pending' | 'approved' | 'rejected')
+  ├── nama_lengkap, email, no_hp
+  └── processed_by / processed_at / rejection_reason
+  └── unique pending per (organisasi_id, user_id)
+
+anggota_keluarga
+  ├── anggota_id (FK → anggota_organisasi), organisasi_id
+  ├── nama, hubungan ('suami'|'istri'|'anak'|'orang_tua'|'lainnya')
+  └── tanggal_lahir (nullable)
+
+anggota_permission
+  ├── anggota_organisasi_id (FK)
+  ├── resource ('transaksi' | 'iuran' | 'rab' | 'rap' | 'surat')
+  ├── action ('create' | 'read' | 'update' | 'delete' | 'submit' | 'approve' | 'cancel')
+  ├── scope ('none' | 'own' | 'all')
+  └── unique (anggota_organisasi_id, resource, action)
 
 kategori_transaksi
   ├── id (uuid, PK)
@@ -685,23 +739,57 @@ transaksi
   ├── id (uuid, PK)
   ├── organisasi_id (FK)
   ├── kategori_id (FK → kategori_transaksi)
-  ├── tipe ('pemasukan' | 'pengeluaran')
+  ├── tipe ('pemasukan' | 'pengeluaran' | 'transfer')
   ├── jumlah (numeric)
   ├── keterangan
   ├── tanggal (date)
+  ├── status ('draft' | 'submitted' | 'cancelled' | 'amended')
+  ├── akun_keuangan_id (FK → akun_keuangan, nullable)
+  ├── akun_tujuan_id (FK → akun_keuangan, nullable; untuk transfer)
+  ├── jurnal_id (FK → jurnal, nullable)
   ├── dibuat_oleh (FK → auth.users)
   ├── rap_id (FK → rap, nullable)
   └── created_at
+
+akun_keuangan (tempat uang)
+  ├── id, organisasi_id, nama
+  ├── tipe ('cash' | 'bank' | 'ewallet' | 'lainnya')
+  ├── coa_id (FK → akun_coa)
+  ├── saldo_awal, is_default, aktif, urutan
+  └── …
+
+akun_coa / jurnal / jurnal_detail
+  └── Chart of Accounts + double-entry (lihat docs/AKUNTING.md)
+
+utang_piutang (+ utang_piutang_pembayaran)
+  ├── tipe ('utang' | 'piutang'), nama_pihak
+  ├── jumlah_awal, jumlah_terbayar, status, jatuh_tempo
+  └── jurnal_id, akun_keuangan_id
+
+pengaturan_user / pengaturan_akunting
+  └── mode_akunting per user; mata uang & sistem_aktif per org
+
+kategori_iuran
+  ├── id, organisasi_id, nama
+  ├── tipe ('sukarela' | 'sekali' | 'wajib')
+  ├── frekuensi (mingguan … tahunan, nullable)
+  └── nominal_default
 
 iuran_rutin
   ├── id (uuid, PK)
   ├── organisasi_id (FK)
   ├── anggota_id (FK → anggota_organisasi)
-  ├── periode (date)
+  ├── periode (date, awal bulan)
   ├── jumlah (numeric)
-  ├── status ('belum_bayar' | 'lunas' | 'dispensasi')
-  ├── tanggal_bayar (date, nullable)
+  ├── status ('draft' | 'diajukan' | 'cancelled' | 'amended')
+  ├── kategori_iuran_id (FK → kategori_iuran, nullable)
   └── transaksi_id (FK → transaksi, nullable)
+
+permintaan_surat
+  ├── id, organisasi_id, judul, keperluan, detail
+  ├── status ('draft' | 'diajukan' | 'selesai' | 'cancelled')
+  ├── hasil_status ('approve' | 'reject', nullable)
+  └── dibuat_oleh / dibuat_oleh_anggota_id
 
 rab
   ├── id (uuid, PK)
@@ -709,7 +797,7 @@ rab
   ├── nama_kegiatan
   ├── deskripsi
   ├── total_anggaran (numeric)
-  ├── status ('draft' | 'diajukan' | 'disetujui' | 'ditolak' | 'selesai')
+  ├── status ('draft' | 'diajukan' | 'disetujui' | 'ditolak' | 'selesai' | 'cancelled' | 'amended')
   ├── catatan_ketua (nullable)
   ├── diajukan_oleh (FK → auth.users)
   ├── disetujui_oleh (FK → auth.users, nullable)
@@ -755,7 +843,7 @@ create extension if not exists "uuid-ossp";
 create table organisasi (
   id uuid primary key default uuid_generate_v4(),
   nama text not null,
-  tipe text not null check (tipe in ('rt_rw', 'keluarga')),
+  tipe text not null check (tipe in ('rt_rw', 'keluarga', 'personal')),
   alamat text,
   created_at timestamptz default now()
 );
@@ -832,6 +920,22 @@ create policy "bendahara_kelola_transaksi"
 
 ## Alur Aplikasi
 
+### Alur Onboarding (Personal & Bergabung)
+
+```
+Signup → trigger create_personal_workspace (tipe personal, role bendahara)
+         │
+         ▼
+Login → Dashboard (personal aktif; localStorage bisa override)
+         │
+         ├── Opsional: /setup → Buat org (rt_rw|keluarga) sebagai bendahara
+         ├── Opsional: /setup → Bergabung (UUID/QR) → join_request pending
+         │                      → pengurus approve di Anggota
+         └── Switch workspace di Sidebar
+```
+
+Kode undangan = `organisasi.id` (+ QR di Pengaturan). Detail RLS preview join, flag `can_approve_join_request`, dan nav personal: [docs/ONBOARDING.md](docs/ONBOARDING.md).
+
 ### Alur RAB → RAP
 
 ```
@@ -846,29 +950,82 @@ Ketua review RAB
     └── Tolak   → status: 'ditolak'  → ada catatan penolakan
          │
          ▼ (jika disetujui)
-Bendahara buat RAP per item + upload foto bukti
+Bendahara buat RAP (draft) + item realisasi + upload foto bukti
          │
          ▼
-Otomatis tercatat sebagai Transaksi Pengeluaran
+Bendahara submit RAP → status: 'submitted'
          │
          ▼
-RAB status → 'selesai' (jika semua item terealisasi)
+Approver setujui RAP → status: 'approved'
+         │
+         ▼
+Client insert Transaksi Pengeluaran (status 'submitted') + set rap.transaksi_id
+         │
+         ▼
+RAB status → 'selesai' (jika semua RAP aktif sudah approved)
 ```
+
+Detail schema, RLS, RPC, dan pitfalls: [docs/RAB_RAP.md](docs/RAB_RAP.md).
 
 ### Alur Iuran
 
 ```
-Setup iuran rutin (nominal & periode)
+Setup kategori iuran (tipe & frekuensi)
          │
          ▼
-Generate record iuran per anggota per bulan
+Tambah iuran per anggota (UI `addIuran`) → status: 'draft'
          │
          ▼
-Bendahara catat pembayaran → status: 'lunas'
+Submit / catat pembayaran → status: 'diajukan'
          │
          ▼
-Otomatis tercatat sebagai Transaksi Pemasukan
+Otomatis insert Transaksi Pemasukan (status 'submitted')
+         │
+         ▼
+Cancel / amend → 'cancelled' / 'amended' (lihat workflow 014)
 ```
+
+Detail duplikat, permissions, dan gap jurnal: [docs/IURAN.md](docs/IURAN.md).
+
+### Alur Surat
+
+```
+Draft permintaan surat
+         │
+         ▼
+Ajukan → status: 'diajukan'
+         │
+         ▼
+Approver (matrix surat.approve / ketua/bendahara)
+         │
+         ▼
+Selesai + hasil_status approve|reject  (atau cancel dari draft/diajukan)
+```
+
+Detail RLS vs UI own-read: [docs/SURAT.md](docs/SURAT.md). Publik transparansi: [docs/PUBLIK.md](docs/PUBLIK.md).
+
+### Alur Akunting (Simple / Advance)
+
+```
+Organisasi baru → seed COA + tempat uang default (trigger)
+         │
+         ▼
+(Opsional) Pengaturan → aktifkan_sistem_akunting + saldo awal
+         │
+         ▼
+Buat transaksi (draft) dengan akun_keuangan_id
+         │
+         ▼
+Submit transaksi → createJurnalFromTransaksi → jurnal posted
+         │
+         ├── Simple UI: Tempat Uang / Hutang-Piutang (label non-akuntansi)
+         └── Advance UI: Arus Kas, Laba Rugi, Neraca dari saldo COA
+         │
+         ▼
+Cancel transaksi → void jurnal (status 'void')
+```
+
+Detail tabel, jurnal rules, RLS, dan pitfalls: [docs/AKUNTING.md](docs/AKUNTING.md).
 
 ---
 
@@ -902,37 +1059,34 @@ pnpm install
 cp .env.example .env.local
 ```
 
-### 4. Jalankan Migration Database
+### 4. Jalankan Stack Lokal & Migration
 
-Masuk ke Supabase Dashboard → SQL Editor, jalankan berurutan:
+Lokal memakai Docker + Supabase CLI. Ringkas:
 
-```
-supabase/migrations/001_create_tables.sql
-supabase/migrations/002_rls_policies.sql
-supabase/migrations/003_seed_kategori.sql
-supabase/migrations/004_fix_organisasi_rls.sql
-supabase/migrations/005_add_email_hp_to_anggota.sql
-supabase/migrations/006_ketua_manage_anggota.sql
-supabase/migrations/007_create_anggota_keluarga.sql
-supabase/migrations/008_personal_workspace.sql
-supabase/migrations/009_personal_rls.sql
-supabase/migrations/010_can_manage_rab_and_transaksi_creator.sql
+```bash
+# Docker daemon (jika belum jalan) → lalu:
+sudo -E env "PATH=$PATH" npx supabase start
+sudo -E env "PATH=$PATH" npx supabase db reset   # 001…025 + views/RPC
 ```
 
-Atau dengan Supabase CLI:
+Untuk `.env.local` demo, port map, smoke test, dan troubleshooting (`permission denied`, jurnal kosong, join UUID, dll.) lihat **[docs/LOCAL_DEV.md](docs/LOCAL_DEV.md)**. Setup Cloud Agent: [AGENTS.md](AGENTS.md).
+
+Atau apply migration ke project hosted:
 
 ```bash
 npx supabase db push
 ```
+
+Daftar file: `supabase/migrations/` (`001` … `025`, termasuk permission matrix `022`/`023` dan akunting `025`).
 
 ### 5. Setup Storage Bucket
 
 Supabase Dashboard → Storage → Create Bucket:
 
 - Nama: `rap-foto`
-- Public: **Tidak**
+- Public: **Ya** (migration `016` — diperlukan agar `getPublicUrl` menampilkan bukti)
 - File size limit: `10MB`
-- Allowed MIME types: `image/jpeg, image/png, image/webp`
+- Allowed MIME types: `image/jpeg, image/png, image/webp, image/gif, image/heic, image/heif`
 
 ### 6. Jalankan Development Server
 
@@ -1010,6 +1164,28 @@ Vercel otomatis build dan deploy setiap push ke branch `main`.
 npm run build
 # Output tersedia di folder /dist
 ```
+
+---
+
+## Dokumentasi Engineering
+
+Panduan teknis yang lebih dalam (arsitektur, codepath, runbook) ada di folder `docs/`:
+
+| Dokumen | Isi |
+|---------|-----|
+| [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) | Boot Docker/Supabase/Vite, smoke test, troubleshooting PostgREST/RLS/jurnal/join |
+| [docs/MIGRATIONS.md](docs/MIGRATIONS.md) | Katalog migrasi `001`–`025`, RPC/view yang sering disentuh, catatan GRANT sebelum 2026-10-30 |
+| [docs/AMENDMENTS.md](docs/AMENDMENTS.md) | Pola amend→draft baru (transaksi/RAB/RAP/iuran), wiring UI vs `amendmentService` |
+| [docs/AKUNTING.md](docs/AKUNTING.md) | Mode Simple/Advance, double-entry journal, tempat uang, hutang/piutang, closing, pitfalls |
+| [docs/PERMISSIONS.md](docs/PERMISSIONS.md) | Matriks izin, `can()` / `canForRecord()`, RPC `save_anggota_permissions`, RLS |
+| [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) | Katalog edge functions, secrets, invite flow, known issues |
+| [docs/ONBOARDING.md](docs/ONBOARDING.md) | Personal workspace, setup org, join request, kode/QR, nav personal vs org |
+| [docs/PUBLIK.md](docs/PUBLIK.md) | Transparansi publik: slug/UUID, anon RLS, Settings QR |
+| [docs/SURAT.md](docs/SURAT.md) | Permintaan surat: status flow, matrix approve, RLS |
+| [docs/IURAN.md](docs/IURAN.md) | Kategori iuran, workflow, unique periode, transaksi otomatis |
+| [docs/RAB_RAP.md](docs/RAB_RAP.md) | RAB/RAP status, approve→transaksi, cancel RPC, storage `rap-foto` |
+| [AGENTS.md](AGENTS.md) | Setup lokal Cloud/Docker: Supabase CLI, `.env.local`, gotcha `auto_expose_new_tables` |
+| [src/components/ui/README.md](src/components/ui/README.md) | Kontrak komponen UI primitif |
 
 ---
 
